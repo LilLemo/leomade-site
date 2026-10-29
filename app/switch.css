@@ -5,20 +5,20 @@
 .switchRocker { position: relative; z-index: 1; display: block; width: 14px; height: 22px; margin-top: -2px; border-radius: 3px; background: linear-gradient(var(--rocker-light, #fff) 0%, #f7f4ec 44%, var(--rocker-mid, #d9d3c3) 52%, var(--rocker-dark, #e4e0d3) 100%); box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 var(--rocker-drop, 2px) 2px rgba(0,0,0,.18); transform: rotateX(var(--tilt, 0deg)); transform-origin: 50% 50%; transition: transform .24s cubic-bezier(.45,-.6,.3,1.7), box-shadow .24s, background .24s; }
 .switchRocker > i { position: absolute; left: 3px; right: 3px; height: 1px; border-radius: 1px; background: rgba(0,0,0,.12); top: var(--groove, 4px); transition: top .24s; }
 .switchPilot { position: absolute; bottom: 5px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #c9c4b4; transition: background .3s, box-shadow .3s; }
-/* Off: the bottom of the key is pressed in, the pilot light glows in the dark. */
-.lightSwitch.isOff .switchRocker { --tilt: 26deg; --rocker-light: #ffffff; --rocker-mid: #d6cfbe; --rocker-dark: #c9c2b0; --rocker-drop: 3px; --groove: 4px; }
+/* Off: the top of the key is pressed in, the pilot light glows in the dark. */
+.lightSwitch.isOff .switchRocker { --tilt: -26deg; --rocker-light: #c9c2b0; --rocker-mid: #f2eee4; --rocker-dark: #ffffff; --rocker-drop: -1px; --groove: 15px; }
 .lightSwitch.isOff .switchPilot { background: #b9f27c; box-shadow: 0 0 6px 1px rgba(185,242,124,.85); animation: pilotBreath 3.2s ease-in-out infinite; }
-/* On: the top is pressed in. */
-.lightSwitch.isOn .switchRocker { --tilt: -26deg; --rocker-light: #c9c2b0; --rocker-mid: #f2eee4; --rocker-dark: #ffffff; --rocker-drop: -1px; --groove: 15px; }
+/* On: the bottom is pressed in. */
+.lightSwitch.isOn .switchRocker { --tilt: 26deg; --rocker-light: #ffffff; --rocker-mid: #d6cfbe; --rocker-dark: #c9c2b0; --rocker-drop: 3px; --groove: 4px; }
 /* Hover hints at the direction of the click. */
-.lightSwitch:hover .switchRocker { --tilt: 14deg; }
-.lightSwitch.isOn:hover .switchRocker { --tilt: -14deg; }
+.lightSwitch:hover .switchRocker { --tilt: -14deg; }
+.lightSwitch.isOn:hover .switchRocker { --tilt: 14deg; }
 .lightSwitch:hover .switchText em { transform: translateX(4px); }
 .lightSwitch:active .switchPlate { transform: scale(.95); }
 /* Click: the key snaps to the other side and the plate takes the press. */
 .lightSwitch.flipping .switchPlate { animation: platePress .32s cubic-bezier(.3,.7,.3,1.4); }
-.lightSwitch.isOff.flipping .switchRocker { --tilt: -26deg; --rocker-light: #c9c2b0; --rocker-mid: #f2eee4; --rocker-dark: #ffffff; --rocker-drop: -1px; --groove: 15px; }
-.lightSwitch.isOn.flipping .switchRocker { --tilt: 26deg; --rocker-light: #ffffff; --rocker-mid: #d6cfbe; --rocker-dark: #c9c2b0; --rocker-drop: 3px; --groove: 4px; }
+.lightSwitch.isOff.flipping .switchRocker { --tilt: 26deg; --rocker-light: #ffffff; --rocker-mid: #d6cfbe; --rocker-dark: #c9c2b0; --rocker-drop: 3px; --groove: 4px; }
+.lightSwitch.isOn.flipping .switchRocker { --tilt: -26deg; --rocker-light: #c9c2b0; --rocker-mid: #f2eee4; --rocker-dark: #ffffff; --rocker-drop: -1px; --groove: 15px; }
 .lightSwitch.isOff.flipping .switchPilot { animation: none; background: #c9c4b4; box-shadow: none; }
 .lightSwitch.isOn.flipping .switchPilot { background: #b9f27c; box-shadow: 0 0 6px 1px rgba(185,242,124,.85); }
 .switchText { display: flex; flex-direction: column; gap: 3px; line-height: 1.1; text-align: left; }
@@ -69,7 +69,7 @@ html[data-light-leaving] body::after { opacity: 0; }
   .switchRocker { width: 12px; height: 19px; }
   .switchPlate::before { width: 15px; height: 22px; }
   html[data-light-arrival]::before, .curtainCopy small { top: calc(50% + 46px); }
-  .lightSwitch.isOn .switchRocker, .lightSwitch.isOff.flipping .switchRocker { --groove: 13px; }
+  .lightSwitch.isOff .switchRocker, .lightSwitch.isOn.flipping .switchRocker { --groove: 13px; }
   .switchText strong { font-size: 12.5px; }
   .switchText small { font-size: 7.5px; }
   .studioNav.menuOpen nav a.lightSwitch { padding: 10px 0 !important; }

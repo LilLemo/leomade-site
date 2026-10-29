@@ -21,7 +21,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: lightArrivalScript }} /></head>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: lightArrivalScript }} />
+        {["instrument-serif", "instrument-serif-italic", "inter-regular", "inter-medium"].map(font => <link key={font} rel="preload" href={`/fonts/${font}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />)}
+      </head>
       <body><LightArrival /><ScrollProgress /><RevealObserver />{children}</body>
     </html>
   );
