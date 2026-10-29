@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+out/
+site-build.tgz
+*.log
+.DS_Store
+.vinext/
+.wrangler/
+upload/
+video-frame.jpg
+.codex/
+.agents/
+.sites-runtime/
