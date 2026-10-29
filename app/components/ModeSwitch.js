@@ -62,8 +62,8 @@ export default function ModeSwitch({ personal = false }) {
         later(() => window.location.assign(href), 640);
       }, 190);
     }}>
-    <span className="switchPlate" aria-hidden="true"><span className="switchRocker"><i /></span><span className="switchPilot" /></span>
     <span className="switchText"><small>{personal ? "APAGUE A LUZ" : "ACENDA A LUZ"}</small><strong>{personal ? "Estúdio" : "Sobre mim"}<em>→</em></strong></span>
+    <span className="switchPlate" aria-hidden="true"><span className="switchRocker"><i /></span><span className="switchPilot" /></span>
   </a>;
 }
 
