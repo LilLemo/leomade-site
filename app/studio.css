@@ -631,18 +631,7 @@ section[id], footer[id] { scroll-margin-top: 110px; }
 }
 
 /* One switch, two places: the studio at night and the person in daylight. */
-.modeSwitch { display: inline-flex !important; align-items: center; gap: 9px; white-space: nowrap; font-size: 12px !important; padding: 7px 0 !important; min-height: 44px; }
-.modeSwitch > span { opacity: .52; }
-.modeSwitch > span.active { opacity: 1; }
-.modeSwitch > i { display: block; width: 48px; height: 28px; padding: 3px; border: 1px solid currentColor; border-radius: 30px; background: rgba(184,244,209,.1); font-style: normal; }
-.modeSwitch b { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #d2e99b; color: #0b3b2e; font-size: 14px; font-weight: 400; transform: translateX(20px); transition: transform .3s; box-shadow: 0 0 12px rgba(210,233,155,.3); }
-.modeSwitch.personalMode b { transform: translateX(0); background: #eee8d5; }
-.modeSwitch[aria-busy="true"] b { transform: translateX(10px); }
-.curiosityHeader > .modeSwitch { margin-left: auto; }
-html::after { content: ""; position: fixed; z-index: 1000; inset: 0; pointer-events: none; background: #03110c; opacity: 0; transition: opacity .4s ease; }
-html[data-light-transition="out"]::after { opacity: 1; }
-html[data-light-transition="in"]::after { animation: lightArrival .8s ease-out both; }
-@keyframes lightArrival { from { opacity: 1; } to { opacity: 0; } }
+/* The wall switch and the light curtain live in switch.css. */
 
 .leoPage { --studio-line: rgba(23,63,48,.23); background: #dce6ce; color: #173f30; }
 .leoPage .studioNav { color: #173f30; }
@@ -702,14 +691,9 @@ html[data-light-transition="in"]::after { animation: lightArrival .8s ease-out b
 .casePremises ul { padding-left: 20px; margin: 0; color: #b8f4d1; font-size: 14px; line-height: 1.9; }
 .casePremises p { color: #a6b6a4; font: 10px/1.6 ui-monospace,monospace; margin: 20px 0 0; }
 @media (max-width:720px) {
- .modeSwitch { gap: 6px; font-size: 11px !important; }
  .curiosityHeader { gap: 12px; }
- .curiosityHeader .modeSwitch { font-size: 10px !important; }
- .curiosityHeader .modeSwitch i { width: 44px; }
- .curiosityHeader .modeSwitch b { transform: translateX(16px); }
  .professionalCases { padding-top: 65px; }
  .professionalCases > div { grid-template-columns: 1fr; }
  .professionalCases button { padding: 25px; }
  .casePremises { padding: 20px 16px; }
 }
-@media (prefers-reduced-motion:reduce) { html::after { display: none; } }

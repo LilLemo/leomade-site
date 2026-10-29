@@ -1,0 +1,81 @@
+/* A real wall switch. The studio is the room at night; "Sobre mim" is the room with the light on. */
+.lightSwitch { --plate-shadow: 0 1px 1px rgba(0,0,0,.25), 0 8px 18px rgba(0,0,0,.32); display: inline-flex !important; align-items: center; gap: 12px; min-height: 48px; padding: 4px 2px !important; color: inherit; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+.switchPlate { position: relative; flex: none; display: grid; place-items: center; width: 30px; height: 44px; border-radius: 7px; background: linear-gradient(165deg, #fffefa 0%, #f1eee5 52%, #e0dccf 100%); box-shadow: inset 0 1px 0 #fff, inset 0 -1.5px 0 rgba(0,0,0,.07), var(--plate-shadow); perspective: 90px; transition: transform .2s cubic-bezier(.3,.7,.3,1.4), box-shadow .2s; }
+.switchPlate::before { content: ""; position: absolute; left: 50%; top: 50%; width: 17px; height: 25px; transform: translate(-50%, -54%); border-radius: 4px; background: linear-gradient(#cfc9b9, #e9e5da); box-shadow: inset 0 1px 2px rgba(0,0,0,.22); }
+.switchRocker { position: relative; z-index: 1; display: block; width: 14px; height: 22px; margin-top: -2px; border-radius: 3px; background: linear-gradient(var(--rocker-light, #fff) 0%, #f7f4ec 44%, var(--rocker-mid, #d9d3c3) 52%, var(--rocker-dark, #e4e0d3) 100%); box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 var(--rocker-drop, 2px) 2px rgba(0,0,0,.18); transform: rotateX(var(--tilt, 0deg)); transform-origin: 50% 50%; transition: transform .24s cubic-bezier(.45,-.6,.3,1.7), box-shadow .24s, background .24s; }
+.switchRocker > i { position: absolute; left: 3px; right: 3px; height: 1px; border-radius: 1px; background: rgba(0,0,0,.12); top: var(--groove, 4px); transition: top .24s; }
+.switchPilot { position: absolute; bottom: 5px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #c9c4b4; transition: background .3s, box-shadow .3s; }
+/* Off: the bottom of the key is pressed in, the pilot light glows in the dark. */
+.lightSwitch.isOff .switchRocker { --tilt: 26deg; --rocker-light: #ffffff; --rocker-mid: #d6cfbe; --rocker-dark: #c9c2b0; --rocker-drop: 3px; --groove: 4px; }
+.lightSwitch.isOff .switchPilot { background: #b9f27c; box-shadow: 0 0 6px 1px rgba(185,242,124,.85); animation: pilotBreath 3.2s ease-in-out infinite; }
+/* On: the top is pressed in. */
+.lightSwitch.isOn .switchRocker { --tilt: -26deg; --rocker-light: #c9c2b0; --rocker-mid: #f2eee4; --rocker-dark: #ffffff; --rocker-drop: -1px; --groove: 15px; }
+/* Hover hints at the direction of the click. */
+.lightSwitch:hover .switchRocker { --tilt: 14deg; }
+.lightSwitch.isOn:hover .switchRocker { --tilt: -14deg; }
+.lightSwitch:hover .switchText em { transform: translateX(4px); }
+.lightSwitch:active .switchPlate { transform: scale(.95); }
+/* Click: the key snaps to the other side and the plate takes the press. */
+.lightSwitch.flipping .switchPlate { animation: platePress .32s cubic-bezier(.3,.7,.3,1.4); }
+.lightSwitch.isOff.flipping .switchRocker { --tilt: -26deg; --rocker-light: #c9c2b0; --rocker-mid: #f2eee4; --rocker-dark: #ffffff; --rocker-drop: -1px; --groove: 15px; }
+.lightSwitch.isOn.flipping .switchRocker { --tilt: 26deg; --rocker-light: #ffffff; --rocker-mid: #d6cfbe; --rocker-dark: #c9c2b0; --rocker-drop: 3px; --groove: 4px; }
+.lightSwitch.isOff.flipping .switchPilot { animation: none; background: #c9c4b4; box-shadow: none; }
+.lightSwitch.isOn.flipping .switchPilot { background: #b9f27c; box-shadow: 0 0 6px 1px rgba(185,242,124,.85); }
+.switchText { display: flex; flex-direction: column; gap: 3px; line-height: 1.1; text-align: left; }
+.switchText small { font: 8.5px/1 ui-monospace, monospace; letter-spacing: .16em; opacity: .62; }
+.switchText strong { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 500; }
+.switchText em { font-style: normal; display: inline-block; transition: transform .25s; }
+.studioNav nav a.lightSwitch { padding: 4px 2px !important; }
+.studioNav nav a.lightSwitch:hover { color: inherit; }
+.studioNav nav a.lightSwitch:hover strong { color: var(--studio-lime); }
+.leoPage .studioNav nav a.lightSwitch:hover strong { color: #37694d; }
+.curiosityHome .lightSwitch, .leoPage .lightSwitch { --plate-shadow: 0 0 0 1px rgba(11,59,46,.12), 0 1px 1px rgba(11,59,46,.12), 0 6px 14px rgba(11,59,46,.16); }
+.curiosityHeader > a.lightSwitch { margin-left: auto; font-size: inherit; padding: 4px 2px !important; }
+
+/* The curtain that covers the trip between pages. */
+.lightCurtain { position: fixed; inset: 0; z-index: 1000; pointer-events: all; clip-path: circle(0 at var(--x) var(--y)); animation: curtainOpen .62s cubic-bezier(.7,0,.25,1) forwards; }
+.lightCurtain.to-light, html[data-light-arrival="light"]::after { background: radial-gradient(circle at 50% 42%, #fffaf0 0%, #f2edd9 32%, #e4e8d3 72%, #d6e2c8 100%); color: #173f30; }
+.lightCurtain.to-dark, html[data-light-arrival="dark"]::after { background: radial-gradient(circle at 50% 42%, #0e4434 0%, #082a20 45%, #030d09 100%); color: #eee8d5; }
+.curtainCopy { position: absolute; inset: 0; }
+.curtainFilament, html[data-light-arrival] body::after { position: fixed; left: 50%; top: calc(50% - 84px); width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; }
+.curtainCopy strong, html[data-light-arrival] body::before { position: fixed; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font: italic 400 clamp(46px, 6.4vw, 96px)/1 var(--font-display); letter-spacing: -.035em; white-space: nowrap; }
+.curtainCopy small { position: fixed; left: 0; right: 0; top: calc(50% + 62px); text-align: center; font: 10px/1 ui-monospace, monospace; letter-spacing: .2em; opacity: .55; }
+.curtainCopy strong, .curtainCopy small, .curtainFilament { opacity: 0; animation: curtainCopyIn .45s .22s ease-out forwards; }
+.to-light .curtainFilament, html[data-light-arrival="light"] body::after { background: #fff6cf; box-shadow: 0 0 0 1px rgba(23,63,48,.2), 0 0 26px 12px rgba(255,226,140,.75), 0 0 90px 40px rgba(255,236,180,.45); }
+.to-dark .curtainFilament, html[data-light-arrival="dark"] body::after { background: transparent; box-shadow: 0 0 0 1px rgba(238,232,213,.55), 0 0 0 6px rgba(185,242,124,.08); }
+/* Arrival: the same curtain is already there before the first paint, then lifts. */
+html[data-light-arrival]::after { content: ""; position: fixed; inset: 0; z-index: 1000; pointer-events: none; transition: opacity .55s ease .14s; }
+html[data-light-arrival]::before { content: "SOBRE MIM"; position: fixed; left: 0; right: 0; top: calc(50% + 62px); z-index: 1001; text-align: center; font: 10px/1 ui-monospace, monospace; letter-spacing: .2em; color: #173f30; opacity: .55; pointer-events: none; transition: opacity .2s ease; }
+html[data-light-arrival="dark"]::before { content: "ESTÚDIO LEOMADE"; color: #eee8d5; }
+html[data-light-leaving]::before { opacity: 0; }
+html[data-light-arrival] body::before { content: "Acendendo a luz."; z-index: 1001; pointer-events: none; transition: opacity .22s ease, transform .4s ease; }
+html[data-light-arrival="dark"] body::before { content: "Apagando a luz."; color: #eee8d5; }
+html[data-light-arrival="light"] body::before { color: #173f30; }
+html[data-light-arrival] body::after { content: ""; z-index: 1001; pointer-events: none; transition: opacity .22s ease; }
+html[data-light-leaving]::after { opacity: 0; }
+html[data-light-leaving] body::before { opacity: 0; transform: translateY(calc(-50% - 14px)); }
+html[data-light-leaving] body::after { opacity: 0; }
+
+@keyframes curtainOpen { to { clip-path: circle(160vmax at var(--x) var(--y)); } }
+@keyframes curtainCopyIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes platePress { 0% { transform: scale(1); } 35% { transform: scale(.9) translateY(1px); } 100% { transform: scale(1); } }
+@keyframes pilotBreath { 0%, 100% { box-shadow: 0 0 6px 1px rgba(185,242,124,.85); } 50% { box-shadow: 0 0 3px 0 rgba(185,242,124,.5); } }
+
+.welcomeBottom p { max-width: 720px; text-wrap: pretty; }
+
+@media (max-width: 720px) {
+  .lightSwitch { gap: 9px; }
+  .switchPlate { width: 26px; height: 38px; border-radius: 6px; }
+  .switchRocker { width: 12px; height: 19px; }
+  .switchPlate::before { width: 15px; height: 22px; }
+  html[data-light-arrival]::before, .curtainCopy small { top: calc(50% + 46px); }
+  .lightSwitch.isOn .switchRocker, .lightSwitch.isOff.flipping .switchRocker { --groove: 13px; }
+  .switchText strong { font-size: 12.5px; }
+  .switchText small { font-size: 7.5px; }
+  .studioNav.menuOpen nav a.lightSwitch { padding: 10px 0 !important; }
+  .curtainCopy strong, html[data-light-arrival] body::before { font-size: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lightCurtain, html[data-light-arrival]::after, html[data-light-arrival]::before, html[data-light-arrival] body::before, html[data-light-arrival] body::after { display: none; }
+  .switchPilot { animation: none !important; }
+}

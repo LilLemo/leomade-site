@@ -1,7 +1,8 @@
 import "./globals.css";
 import "./studio.css";
 import "./impact.css";
-import { LightArrival } from "./components/ModeSwitch";
+import "./switch.css";
+import { LightArrival, lightArrivalScript } from "./components/ModeSwitch";
 import { RevealObserver, ScrollProgress } from "./components/Motion";
 
 export const metadata = {
@@ -19,7 +20,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: lightArrivalScript }} /></head>
       <body><LightArrival /><ScrollProgress /><RevealObserver />{children}</body>
     </html>
   );
