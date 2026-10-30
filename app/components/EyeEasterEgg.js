@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 const ALMOND = "M5 24C14 11 25 5 40 5s26 6 35 19c-9 13-20 19-35 19S14 37 5 24Z";
 const IDLE_LINE = "Uma pergunta pode mudar tudo.";
@@ -11,28 +11,55 @@ const buttonLines = { 1: "Isso. Aperta à vontade.", 3: "Satisfatório, né?", 5
 const PANEL_AT = 7;
 const FLOORS = ["T", "1", "2", "3", "4", "5"];
 
-// The eye talks: each line is typed out, letter by letter.
-function useTyped(text) {
-  const [shown, setShown] = useState(text);
+// The eye talks like an AI answering: the words arrive in small chunks, already in their final place.
+function useChunks(text) {
+  const words = text.split(" ");
+  const [count, setCount] = useState(words.length);
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setShown(text); return; }
-    let i = 0;
-    setShown("");
-    const id = setInterval(() => { i += 1; setShown(text.slice(0, i)); if (i >= text.length) clearInterval(id); }, 26);
-    return () => clearInterval(id);
+    const total = text.split(" ").length;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setCount(total); return; }
+    let shown = 0, timer;
+    setCount(0);
+    const step = () => {
+      shown = Math.min(total, shown + 1 + Math.floor(Math.random() * 3));
+      setCount(shown);
+      if (shown < total) timer = setTimeout(step, 90 + Math.random() * 90);
+    };
+    timer = setTimeout(step, 120);
+    return () => clearTimeout(timer);
   }, [text]);
-  return shown;
+  return { words, count };
 }
+
+// Every order of L, E and O gets its own answer.
+const anagrams = {
+  LEO: "L-E-O. Prazer, sou eu.",
+  ELO: "ELO. É o que eu faço: ligo áreas, dados e pessoas.",
+  OLE: "OLÉ! Driblou a ordem certinho.",
+  EOL: "EOL: end of line. Fim de linha, em programês.",
+  LOE: "LOE? Parece nome de framework novo.",
+  OEL: "OEL. É LEO de trás pra frente. Quase lá.",
+};
+const keyReply = typed => {
+  const last = typed.slice(-3);
+  if (anagrams[last]) return anagrams[last];
+  if (last.length === 3 && last[0] === last[1] && last[1] === last[2]) return "Calma, uma tecla de cada vez.";
+  return typed;
+};
 
 function BigRedButton({ onPress, small = false }) {
   const [down, setDown] = useState(false);
+  const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   return <button tabIndex={-1} className={`toyButton redButton ${down ? "down" : ""} ${small ? "small" : ""}`} onPointerDown={() => { setDown(true); onPress(); }} onPointerUp={() => setDown(false)} onPointerLeave={() => setDown(false)}>
     <svg viewBox="0 0 120 92" aria-hidden="true">
+      {/* The cap only shows above the rim, so pressing it really sinks it into the hole. */}
+      <defs><clipPath id={`hole${id}`}><path d="M0 0H120V58H100A40 11 0 0 1 20 58H0Z" /></clipPath></defs>
       <ellipse className="toyShadow" cx="60" cy="80" rx="54" ry="9" />
       <path className="metalSide" d="M10 60v9a50 15 0 0 0 100 0v-9" />
       <ellipse className="metalTop" cx="60" cy="60" rx="50" ry="15" />
       <ellipse className="metalHole" cx="60" cy="58" rx="40" ry="11" />
-      <g className="cap"><path className="capSide" d="M22 38v18a38 11 0 0 0 76 0V38" /><ellipse className="capTop" cx="60" cy="38" rx="38" ry="11.5" /><path className="capShine" d="M36 34c8-4 22-5 32-3" /></g>
+      <g clipPath={`url(#hole${id})`}><g className="cap"><path className="capSide" d="M22 38v20a38 11 0 0 0 76 0V38" /><ellipse className="capTop" cx="60" cy="38" rx="38" ry="11.5" /><path className="capShine" d="M36 34c8-4 22-5 32-3" /></g></g>
+      <path className="metalLip" d="M10 60A50 15 0 0 0 110 60L100 58A40 11 0 0 1 20 58Z" /><path className="lipEdge" d="M10 60A50 15 0 0 0 110 60M20 58A40 11 0 0 0 100 58" />
     </svg>
   </button>;
 }
@@ -101,7 +128,7 @@ export default function EyeEasterEgg() {
   const [presses, setPresses] = useState(0);
   const pokes = useRef(0);
   const typed = useRef("");
-  const spoken = useTyped(line);
+  const speech = useChunks(line);
   const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
   const pendingLine = useRef(null);
   const say = (text, then) => { clearTimeout(pendingLine.current); setLine(text); if (then) pendingLine.current = setTimeout(() => setLine(then), 1200); };
@@ -187,11 +214,11 @@ export default function EyeEasterEgg() {
     {stage === "button" && <div className="eggButtonStage"><BigRedButton onPress={pressBig} /><span className="pressCount">{presses ? `${presses} ${presses === 1 ? "CLIQUE" : "CLIQUES"}` : "PODE APERTAR"}</span></div>}
     {stage === "panel" && <div className="eggPanel">
       <BigRedButton small onPress={() => { setPresses(p => p + 1); say(["Clássico.", "O vermelho nunca falha.", "Ainda esse? Respeito."][Math.floor(Math.random() * 3)]); }} />
-      <MacroPad onKey={k => { typed.current = (typed.current + k).slice(-9); say(typed.current.endsWith("LEO") ? "L-E-O. Prazer, sou eu." : typed.current); }} />
+      <MacroPad onKey={k => { typed.current = (typed.current + k).slice(-9); const reply = keyReply(typed.current); if (reply !== typed.current) typed.current = ""; say(reply); }} />
       <OnOffButton onState={on => say(on ? "Ligado. Agora a curiosidade é oficial." : "Desligado. Mas ninguém desliga a curiosidade.")} />
       <ElevatorPanel onFloor={f => f === "T" ? say("Térreo. Fim da linha.") : say(`Subindo para o ${f}º andar...`, "Ding.")} />
     </div>}
-    <p className="eyeSpeech" aria-live="polite"><span>{spoken}</span><i className={spoken.length < line.length ? "typing" : ""} /></p>
+    <p className="eyeSpeech" aria-live="polite" key={line}>{speech.words.map((w, i) => <span key={i} className={i < speech.count ? "on" : ""}>{w}{i < speech.words.length - 1 ? " " : ""}</span>)}</p>
     {stage === "panel" && <button tabIndex={-1} className="eggReset" onClick={reset}>Devolver o olho</button>}
   </div>;
 }

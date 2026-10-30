@@ -193,8 +193,10 @@ html[data-light-leaving] body::after { opacity: 0; }
 .redButton .capTop { fill: #e5574a; }
 .redButton .capShine { fill: none; stroke: #fff6ee; stroke-width: 2.6; opacity: .75; }
 .redButton .cap { transition: transform .09s ease-out; }
+.redButton .metalLip { fill: #e6e9e2; stroke: none !important; }
+.redButton .lipEdge { fill: none; }
 .redButton:hover .cap { transform: translateY(-1.5px); }
-.redButton.down .cap { transform: translateY(8px); transition-duration: .05s; }
+.redButton.down .cap { transform: translateY(10px); transition-duration: .05s; }
 .redButton.down { animation: thump .25s ease-out; }
 .eggPanel { display: grid; grid-template-columns: 1.1fr 1fr; gap: 2% 6%; align-items: center; justify-items: center; width: 96%; margin-top: -8%; }
 .eggPanel > * { animation: toyPop .6s cubic-bezier(.3,1.6,.4,1) both; }
@@ -237,3 +239,7 @@ html[data-light-leaving] body::after { opacity: 0; }
   .lensEye.closing { opacity: 0; }
   .eyeSpeech i.typing { animation: none; }
 }
+
+.eyeSpeech > span { opacity: 0; filter: blur(4px); transition: opacity .32s ease, filter .32s ease; }
+.eyeSpeech > span.on { opacity: 1; filter: blur(0); }
+@media (prefers-reduced-motion: reduce) { .eyeSpeech > span { transition: none; filter: none; } }
