@@ -79,3 +79,6 @@ html[data-light-leaving] body::after { opacity: 0; }
   .lightCurtain, html[data-light-arrival]::after, html[data-light-arrival]::before, html[data-light-arrival] body::before, html[data-light-arrival] body::after { display: none; }
   .switchPilot { animation: none !important; }
 }
+
+/* Opening title: a sturdier italic for the key word, easier to read at large sizes. */
+.studioWelcome h1 em { font-family: "DM Serif Display", var(--font-display); font-style: italic; letter-spacing: -.035em; padding-right: .06em; }

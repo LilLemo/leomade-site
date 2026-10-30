@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import StudioEntrance from "./components/StudioEntrance";
 import ProjectExperience from "./components/ProjectExperience";
 import { StudioHeader, StudioFooter } from "./components/StudioChrome";
@@ -5,8 +6,9 @@ import { ProjectDetailProvider } from "./components/ProjectDetail";
 import { ImpactTeaser } from "./components/Impact";
 
 export default function Home() {
+  preload("/fonts/dm-serif-display-italic.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return <StudioEntrance><ProjectDetailProvider><StudioHeader />
-    <section className="studioWelcome" id="inicio"><p className="monoLabel">LEOMADE / MEU ESTÚDIO INDEPENDENTE</p><h1 id="studio-start" tabIndex={-1}>Transformo perguntas<br />em <em>possibilidades.</em></h1><div className="welcomeBottom"><p>Crio software, exploro dados e experimento com inteligência artificial.<br />Este é meu espaço para tirar ideias do papel e descobrir até onde elas podem ir.</p><a className="textLink" href="#laboratorio">Conheça minhas ideias <span>↓</span></a></div></section>
+    <section className="studioWelcome" id="inicio"><p className="monoLabel">LEOMADE / MEU ESTÚDIO INDEPENDENTE</p><h1 id="studio-start" tabIndex={-1}>Transformo perguntas{"\u00a0"}em<br /><em>possibilidades.</em></h1><div className="welcomeBottom"><p>Crio software, exploro dados e experimento com inteligência artificial.<br />Este é meu espaço para tirar ideias do papel e descobrir até onde elas podem ir.</p><a className="textLink" href="#laboratorio">Conheça minhas ideias <span>↓</span></a></div></section>
     <div className="curiosityRibbon" aria-hidden="true"><div>{Array.from({ length: 4 }, (_, i) => <span key={i}>CURIOSIDADE É MATÉRIA-PRIMA <i>✳</i> MADE WITH CURIOSITY <i>✳</i> IDEIAS EM MOVIMENTO <i>✳</i></span>)}</div></div>
     <ProjectExperience />
     <ImpactTeaser />
