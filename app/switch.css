@@ -131,3 +131,34 @@ html[data-light-leaving] body::after { opacity: 0; }
   .coinBody { transition: none; }
   .coin.tossing .coinToss, .coin::before, .coin.tossing::after, .coinFace::after { animation: none !important; }
 }
+
+/* Soft seams between layers. */
+.leomadePage .studioFooter { background: linear-gradient(#071e17 0, rgba(7,30,23,0) 220px), radial-gradient(ellipse at 60% 80%, #18513c 0%, #0a2c21 45%, #071e17 100%); }
+.leoPage .reuseMetro { padding-top: 200px; padding-bottom: 210px; background: linear-gradient(#e1e7cf 0, rgba(225,231,207,.85) 40px, rgba(14,68,52,.6) 120px, rgba(11,59,46,0) 190px), linear-gradient(to top, #eee8d5 0, rgba(238,232,213,.85) 40px, rgba(10,40,31,.6) 120px, rgba(7,31,24,0) 190px), radial-gradient(ellipse at 20% 30%, #185442 0%, #0b3b2e 45%, #071f18 100%); }
+@media (max-width: 720px) { .leoPage .reuseMetro { padding-top: 150px; padding-bottom: 160px; } }
+
+/* The living eye on the opening screen. */
+.lensEye { cursor: pointer; -webkit-tap-highlight-color: transparent; transform: translate(calc(var(--px) * .6), calc(var(--py) * .6)); transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+.lensEye svg { touch-action: manipulation; }
+.eyeLid { transform-box: view-box; transform-origin: 40px 24px; }
+.eyeIris { transform: translate(var(--px), var(--py)); transition: transform .35s cubic-bezier(.2,.75,.3,1.1); }
+.eyePupil { transform-box: view-box; transform-origin: 40px 24px; animation: eyeBreathe 6s ease-in-out infinite; }
+.lensEye.blink .eyeLid { animation: eyeBlink .24s ease-in-out; }
+.lensEye.poke .eyeLid { animation: eyePoke .95s cubic-bezier(.3,.6,.3,1); }
+.lensEye.poke .eyePupil { animation: pupilPoke .95s ease-out; }
+.lensEye.poke { transform: translate(calc(var(--px) * .6), calc(var(--py) * .6)) scale(.97); transition-duration: .15s; }
+.curiosityLens > span.eyeOuch { color: var(--studio-green); animation: ouchIn .35s cubic-bezier(.3,.7,.3,1.5); }
+.eyeShut { opacity: 0; }
+.lensEye.blink .eyeShut { animation: shutBlink .24s ease-in-out; }
+.lensEye.poke .eyeShut { animation: shutPoke .95s cubic-bezier(.3,.6,.3,1); }
+@keyframes eyeBlink { 0%, 100% { transform: scaleY(1); opacity: 1; } 42%, 58% { transform: scaleY(.12); opacity: 0; } }
+@keyframes shutBlink { 0%, 30%, 70%, 100% { opacity: 0; } 42%, 58% { opacity: 1; } }
+@keyframes shutPoke { 0%, 4% { opacity: 0; } 10%, 38% { opacity: 1; } 48%, 100% { opacity: 0; } }
+@keyframes eyePoke { 0% { transform: scaleY(1); opacity: 1; } 10% { transform: scaleY(.12); opacity: 0; } 38% { transform: scaleY(.12); opacity: 0; } 46% { opacity: 1; } 52% { transform: scaleY(.55) translateX(-1.4px); } 62% { transform: scaleY(.62) translateX(1.4px); } 72% { transform: scaleY(.66) translateX(-.7px); } 86% { transform: scaleY(.9); } 100% { transform: scaleY(1); } }
+@keyframes pupilPoke { 0%, 40% { transform: scale(.55); } 70% { transform: scale(.7); } 100% { transform: scale(1); } }
+@keyframes ouchIn { from { transform: translateY(6px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .lensEye, .eyeIris { transition: none; }
+  .lensEye.poke .eyeLid { animation: eyeBlink .3s ease-in-out; }
+  .lensEye.poke .eyePupil, .eyePupil { animation: none; }
+}
