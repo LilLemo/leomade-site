@@ -162,3 +162,78 @@ html[data-light-leaving] body::after { opacity: 0; }
   .lensEye.poke .eyeLid { animation: eyeBlink .3s ease-in-out; }
   .lensEye.poke .eyePupil, .eyePupil { animation: none; }
 }
+
+/* Easter egg: the eye talks, gets annoyed, turns into a button, then into a panel of buttons. */
+.eyeEgg { position: absolute; inset: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; padding: 9% 7% 10%; color: var(--studio-green); }
+.eyeEgg .lensEye { width: 84%; }
+.eyeSpeech { align-self: end; max-width: 86%; min-height: 2.5em; margin: 0; text-align: center; font: italic 400 clamp(20px, 1.85vw, 28px)/1.16 "DM Serif Display", var(--font-display); letter-spacing: -.005em; color: var(--studio-green); text-wrap: balance; }
+.eyeSpeech i { display: inline-block; width: 2px; height: .85em; margin-left: 3px; vertical-align: -.08em; background: currentColor; opacity: 0; }
+.eyeSpeech i.typing { opacity: 1; animation: caretBlink .5s steps(1) infinite; }
+.eyeBrow { opacity: 0; transform: translateY(-5px); transition: opacity .25s, transform .3s cubic-bezier(.3,1.5,.4,1); }
+.lensEye.angry .eyeBrow { opacity: 1; transform: none; }
+.lensEye.angry .eyeLid { transform: scaleY(.74); transition: transform .3s; }
+.lensEye.angry .eyePupil { animation: none; transform: scale(.72); }
+.lensEye.angry { animation: angryShake .45s ease-in-out; }
+.lensEye.shut .eyeLid { opacity: 0; transform: scaleY(.12); transition: transform .14s, opacity .1s; }
+.lensEye.shut .eyeShut { opacity: 1; transition: opacity .1s; }
+.lensEye.closing { animation: eyeAway 1.1s cubic-bezier(.6,0,.4,1) forwards; }
+.toyButton { position: relative; display: block; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.toyButton svg { display: block; width: 100%; overflow: visible; }
+.toyButton svg * { stroke: var(--studio-green); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.toyButton text { stroke: none; fill: var(--studio-green); font: 600 9px/1 "Inter", sans-serif; pointer-events: none; }
+.toyButton .screw { fill: #b8b3a5; stroke-width: 1.4; }
+.eggButtonStage { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 70%; animation: toyPop .7s cubic-bezier(.3,1.6,.4,1) both; }
+.eggButtonStage .redButton { width: 100%; }
+.pressCount { font: 10px/1 ui-monospace, monospace; letter-spacing: .14em; color: #426354; }
+.redButton .toyShadow { fill: rgba(11,59,46,.12); stroke: none; }
+.redButton .metalSide { fill: #b5bbb2; }
+.redButton .metalTop { fill: #e6e9e2; }
+.redButton .metalHole { fill: #8f988d; stroke-width: 1.6; }
+.redButton .capSide { fill: #b9382e; }
+.redButton .capTop { fill: #e5574a; }
+.redButton .capShine { fill: none; stroke: #fff6ee; stroke-width: 2.6; opacity: .75; }
+.redButton .cap { transition: transform .09s ease-out; }
+.redButton:hover .cap { transform: translateY(-1.5px); }
+.redButton.down .cap { transform: translateY(8px); transition-duration: .05s; }
+.redButton.down { animation: thump .25s ease-out; }
+.eggPanel { display: grid; grid-template-columns: 1.1fr 1fr; gap: 2% 6%; align-items: center; justify-items: center; width: 96%; margin-top: -8%; }
+.eggPanel > * { animation: toyPop .6s cubic-bezier(.3,1.6,.4,1) both; }
+.eggPanel > :nth-child(1) { width: 100%; animation-delay: .05s; }
+.eggPanel > :nth-child(2) { width: 100%; animation-delay: .2s; }
+.eggPanel > :nth-child(3) { width: 34%; animation-delay: .35s; }
+.eggPanel > :nth-child(4) { width: 42%; animation-delay: .5s; }
+.macroPad .padSide { fill: #dcd8cb; }
+.macroPad .padTop { fill: #f5f2ea; }
+.macroPad .keySide { fill: #e4dfd1; }
+.macroPad .keyTop { fill: #fffdf8; }
+.macroPad .keycap { cursor: pointer; transition: transform .07s; }
+.macroPad .keycap:hover .keyTop { fill: #ffffff; }
+.macroPad .keycap.down { transform: translateY(6px); }
+.onOff .housing { fill: #23302a; }
+.onOff .half { cursor: pointer; transform-box: fill-box; transform-origin: center; transition: transform .07s; }
+.onOff .half.red path:first-child { fill: #e5574a; }
+.onOff .half.green path:first-child { fill: #5bb878; }
+.onOff .label { fill: none; stroke: #f4f1e8 !important; stroke-width: 3 !important; }
+.onOff .half.down { transform: scale(.92); }
+.onOff .lamp { fill: #6c746f; transition: fill .2s, filter .2s; }
+.onOff.isOn .lamp { fill: #b9f27c; filter: drop-shadow(0 0 4px rgba(185,242,124,.9)); }
+.elevator .steel { fill: #e3e6e0; }
+.elevator .floor { cursor: pointer; }
+.elevator .floorPlate { fill: #f3f4f0; stroke-width: 1.6; }
+.elevator .floorRing { fill: #c8cdc5; stroke-width: 1.6; transition: fill .15s, filter .15s; }
+.elevator .floor:hover .floorRing { fill: #d8ddd5; }
+.elevator .floor.lit .floorRing { fill: #f3d77a; filter: drop-shadow(0 0 3px rgba(243,200,90,.9)); }
+.elevator .floor:active .floorRing { transform: translateY(.6px); }
+.elevator text { font-size: 8.5px; }
+.eggReset { position: absolute; left: 50%; bottom: -1%; transform: translateX(-50%); padding: 10px 6px; border: 0; background: none; color: #426354; font: 10px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; white-space: nowrap; }
+.eggReset:hover { color: var(--studio-green); }
+@keyframes caretBlink { 50% { opacity: 0; } }
+@keyframes angryShake { 0%, 100% { translate: 0 0; } 20% { translate: -4px 0; } 40% { translate: 4px 0; } 60% { translate: -3px 0; } 80% { translate: 2px 0; } }
+@keyframes eyeAway { 0%, 50% { opacity: 1; scale: 1; } 70% { opacity: 1; scale: 1.06; } 100% { opacity: 0; scale: .2; } }
+@keyframes toyPop { from { opacity: 0; transform: scale(.4) translateY(20px); } to { opacity: 1; transform: none; } }
+@keyframes thump { 0% { scale: 1; } 40% { scale: .97 1.02; } 100% { scale: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .eggButtonStage, .eggPanel > *, .lensEye.angry, .lensEye.closing, .redButton.down { animation: none !important; }
+  .lensEye.closing { opacity: 0; }
+  .eyeSpeech i.typing { animation: none; }
+}
