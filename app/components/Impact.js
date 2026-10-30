@@ -93,11 +93,20 @@ export function ImpactAtlas() {
   </section>;
 }
 
+// Every line departs from the same terminal: listening before building.
+const terminal = {
+  id: "terminal", terminal: true, lines: reuseLines.map(l => l.id),
+  label: "00 · TERMINAL · EM TODO PROJETO",
+  name: "Ouvir e entender a necessidade",
+  note: "Todo trem sai daqui. Antes de reaproveitar qualquer peça, escuto quem vive a rotina e entendo a regra, as exceções e o que significa pronto.",
+};
+const metroStations = [terminal, ...reuseStations];
+
 // Which later stations each station "fed", line by line.
-const feeds = reuseStations.map((s, si) => {
+const feeds = metroStations.map((s, si) => {
   const byLine = {};
   s.lines.forEach(l => {
-    const targets = reuseStations.map((t, ti) => ti > si && t.lines.includes(l) ? ti : -1).filter(ti => ti >= 0);
+    const targets = metroStations.map((t, ti) => ti > si && t.lines.includes(l) ? ti : -1).filter(ti => ti >= 0);
     if (targets.length) byLine[l] = targets;
   });
   return { byLine, all: [...new Set(Object.values(byLine).flat())].sort((x, y) => x - y) };
@@ -111,7 +120,7 @@ export function ReuseMetro() {
   const mapRef = useRef(null);
   const stops = useRef([]);
   const bounds = Object.fromEntries(reuseLines.map(l => {
-    const idx = reuseStations.map((s, i) => s.lines.includes(l.id) ? i : -1).filter(i => i >= 0);
+    const idx = metroStations.map((s, i) => s.lines.includes(l.id) ? i : -1).filter(i => i >= 0);
     return [l.id, [Math.min(...idx), Math.max(...idx), idx.length]];
   }));
 
@@ -171,22 +180,22 @@ export function ReuseMetro() {
     if (next !== null) sfx.metro();
   };
   const fed = source === null ? [] : feeds[source].all;
-  const nameOf = i => deliveries.find(x => x.id === reuseStations[i].id).name;
+  const nameOf = i => deliveries.find(x => x.id === metroStations[i].id).name;
   return <section className="reuseMetro" id="reaproveitamento" aria-labelledby="metro-title">
     <div className="metroIntro" data-reveal>
       <p className="monoLabel">UMA FERRAMENTA PUXA A OUTRA</p>
       <h2 id="metro-title">Não começo<br /><em>do zero.</em></h2>
-      <p>Cada ferramenta deixa peças prontas para a próxima. Foi assim que uma conferência pedida por uma área virou plataforma para várias frentes.</p>
-      <div className="metroLegend" role="group" aria-label="Destacar uma peça reaproveitada">{reuseLines.map(l => <button key={l.id} style={{ "--line": l.color }} aria-pressed={active === l.id} onClick={() => { setActive(active === l.id ? null : l.id); setSource(null); }}><i />{l.label}<small>{bounds[l.id][2]}×</small></button>)}</div>
+      <p>Não começar do zero não é só reaproveitar peças. Toda linha sai do mesmo terminal: ouvir e entender a necessidade. Depois, cada ferramenta deixa peças prontas para a próxima.</p>
+      <div className="metroLegend" role="group" aria-label="Destacar uma peça reaproveitada">{reuseLines.map(l => <button key={l.id} style={{ "--line": l.color }} aria-pressed={active === l.id} onClick={() => { setActive(active === l.id ? null : l.id); setSource(null); }}><i />{l.label}<small>{bounds[l.id][2] - 1}×</small></button>)}</div>
       <p className="metroHint"><i />TOQUE NUMA ESTAÇÃO PARA VER O QUE ELA ALIMENTOU</p>
       <blockquote>Quando alguém de outra frente viu uma ferramenta pronta, pediu uma igual. É o indicador de que eu mais gosto.</blockquote>
     </div>
     <ol ref={mapRef} className={`metroMap ${active ? "focused" : ""} ${active || source !== null ? "showAll" : ""} ${source !== null ? "routing" : ""}`} aria-label="Ferramentas em ordem aproximada de criação">
-      {reuseStations.map((s, si) => {
-        const d = deliveries.find(x => x.id === s.id);
+      {metroStations.map((s, si) => {
+        const d = s.terminal ? null : deliveries.find(x => x.id === s.id);
         const role = source === null ? "" : si === source ? "source" : fed.includes(si) ? "fed" : "idle";
         const on = active ? s.lines.includes(active) : role !== "idle";
-        return <li key={s.id} ref={el => { stops.current[si] = el; }} className={`metroStop ${on ? "" : "dim"} ${role}`}>
+        return <li key={s.id} ref={el => { stops.current[si] = el; }} className={`metroStop ${on ? "" : "dim"} ${role} ${s.terminal ? "terminal" : ""}`}>
           <div className="metroTracks" aria-hidden="true">{reuseLines.map(l => {
             const [first, last] = bounds[l.id];
             const passes = si >= first && si <= last;
@@ -196,12 +205,12 @@ export function ReuseMetro() {
             return <span key={l.id} className={cls} style={{ "--line": l.color }}><i /></span>;
           })}</div>
           <div className="metroInfo">
-            <span>{String(si + 1).padStart(2, "0")} · {areaById[d.area].label} · {d.status}</span>
-            <h3><button className="metroStation" aria-pressed={source === si} onClick={() => choose(si)}>{d.name}</button></h3>
+            <span>{s.terminal ? s.label : `${String(si).padStart(2, "0")} · ${areaById[d.area].label} · ${d.status}`}</span>
+            <h3><button className="metroStation" aria-pressed={source === si} onClick={() => choose(si)}>{s.terminal ? s.name : d.name}</button></h3>
             <p>{s.note}</p>
             <div className="metroPieces">{s.lines.map(id => <i key={id} style={{ "--line": reuseLines.find(l => l.id === id).color }} title={reuseLines.find(l => l.id === id).label} />)}</div>
-            {source === si && <p className="metroFed" aria-live="polite">{fed.length ? <><b>Alimentou {fed.length} {fed.length > 1 ? "ferramentas" : "ferramenta"}:</b> {fed.map(nameOf).join(", ")}.</> : <b>Ponta da linha, por enquanto. A próxima ferramenta sai daqui.</b>}</p>}
-            {d.caseId && <button className="metroCase" onClick={() => open(d.caseId)}>Ver o case ↗</button>}
+            {source === si && <p className="metroFed" aria-live="polite">{s.terminal ? <><b>Todas as linhas saem daqui.</b> As {fed.length} ferramentas começaram com alguém me contando o que precisava.</> : fed.length ? <><b>Alimentou {fed.length} {fed.length > 1 ? "ferramentas" : "ferramenta"}:</b> {fed.map(nameOf).join(", ")}.</> : <b>Ponta da linha, por enquanto. A próxima ferramenta sai daqui.</b>}</p>}
+            {d?.caseId && <button className="metroCase" onClick={() => open(d.caseId)}>Ver o case ↗</button>}
           </div>
         </li>;
       })}
