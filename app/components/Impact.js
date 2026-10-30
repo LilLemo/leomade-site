@@ -122,16 +122,23 @@ export function ReuseMetro() {
     const reveal = () => stops.current.forEach(li => { if (!li) return; li.style.setProperty("--fill", "1"); li.classList.add("reached"); });
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { reveal(); return; }
     map.classList.add("scrolly");
-    let frame;
+    let frame, locked = false;
+    const fills = [], reached = [];
+    // One way only: what has appeared stays; once the last station is reached, everything locks on.
     const update = () => {
+      if (locked) return;
       const head = window.innerHeight * .58;
+      const last = stops.current.length - 1;
       stops.current.forEach((li, i) => {
         if (!li) return;
         const r = li.getBoundingClientRect();
         const stopY = parseFloat(getComputedStyle(li).getPropertyValue("--stop-y")) || 46;
-        li.style.setProperty("--fill", Math.max(0, Math.min(1, (head - r.top) / r.height)).toFixed(3));
-        li.classList.toggle("reached", i === 0 || head >= r.top + stopY);
+        fills[i] = Math.max(fills[i] || 0, Math.min(1, (head - r.top) / r.height));
+        reached[i] = reached[i] || i === 0 || head >= r.top + stopY;
+        li.style.setProperty("--fill", fills[i].toFixed(3));
+        li.classList.toggle("reached", reached[i]);
       });
+      if (reached[last]) { locked = true; reveal(); map.classList.add("complete"); }
     };
     const request = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
     update();

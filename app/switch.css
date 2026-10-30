@@ -250,7 +250,7 @@ html[data-light-leaving] body::after { opacity: 0; }
 .metroMap.scrolly .metroStop:not(.reached) .metroTrack.stops > i { transform: translate(-50%, -50%) scale(0); }
 .metroMap.scrolly .metroInfo { transition: opacity .55s ease, transform .6s cubic-bezier(.2,.75,.25,1); }
 .metroMap.scrolly .metroStop:not(.reached) .metroInfo { opacity: 0; transform: translateY(22px); }
-.metroMap.showAll .metroStop .metroTrack.passes::before { transform: translateX(-50%) scaleY(1); }
+.metroMap.showAll .metroStop .metroTrack.passes::before, .metroMap.complete .metroStop .metroTrack.passes::before { transform: translateX(-50%) scaleY(1); }
 .metroMap.showAll .metroStop .metroTrack.stops > i { transform: translate(-50%, -50%) scale(1); }
 .metroMap.showAll .metroStop .metroInfo { opacity: 1; transform: none; }
 .metroMap.showAll .metroStop.dim .metroInfo { opacity: .3; }
