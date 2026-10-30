@@ -52,6 +52,7 @@ export const sfx = {
   floor() { noise({ dur: .012, gain: .06, filter: "highpass", freq: 2600 }); tone({ freq: 1250, dur: .05, gain: .035 }); },
   ding() { tone({ freq: 1318.5, dur: 1.2, gain: .07, attack: .006 }); tone({ freq: 1046.5, delay: .2, dur: 1.4, gain: .07, attack: .006 }); },
   lightSwitch() { noise({ dur: .01, gain: .13, filter: "highpass", freq: 2200 }); noise({ delay: .028, dur: .022, gain: .09, filter: "bandpass", freq: 1300, q: 1.4 }); tone({ freq: 95, to: 60, delay: .028, dur: .06, gain: .08 }); },
+  metro() { tone({ freq: 784, dur: .45, gain: .06, attack: .01 }); tone({ freq: 659.3, delay: .22, dur: .55, gain: .06, attack: .01 }); tone({ freq: 523.3, delay: .44, dur: .8, gain: .06, attack: .01 }); },
   coinFlip() { tone({ freq: 2400, to: 3100, dur: .09, gain: .03, type: "triangle" }); noise({ dur: .02, gain: .04, filter: "highpass", freq: 5000 }); },
   coinLand() { tone({ freq: 2637, dur: .5, gain: .035, type: "triangle" }); tone({ freq: 3520, delay: .015, dur: .35, gain: .022 }); noise({ dur: .02, gain: .05, filter: "bandpass", freq: 3200, q: 2 }); },
 };

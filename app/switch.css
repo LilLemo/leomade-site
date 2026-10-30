@@ -242,3 +242,46 @@ html[data-light-leaving] body::after { opacity: 0; }
 .eyeSpeech > span { opacity: 0; filter: blur(4px); transition: opacity .32s ease, filter .32s ease; }
 .eyeSpeech > span.on { opacity: 1; filter: blur(0); }
 @media (prefers-reduced-motion: reduce) { .eyeSpeech > span { transition: none; filter: none; } }
+
+/* Metro: drawn by scrolling, trains run from a chosen station to everything it fed. */
+.metroMap { position: relative; }
+.metroMap.scrolly .metroTrack.passes::before { transform: translateX(-50%) scaleY(var(--fill, 0)); transform-origin: 50% 0; transition: transform .25s linear; }
+.metroMap.scrolly .metroTrack.stops > i { transition: transform .45s cubic-bezier(.3,1.6,.4,1); }
+.metroMap.scrolly .metroStop:not(.reached) .metroTrack.stops > i { transform: translate(-50%, -50%) scale(0); }
+.metroMap.scrolly .metroInfo { transition: opacity .55s ease, transform .6s cubic-bezier(.2,.75,.25,1); }
+.metroMap.scrolly .metroStop:not(.reached) .metroInfo { opacity: 0; transform: translateY(22px); }
+.metroMap.showAll .metroStop .metroTrack.passes::before { transform: translateX(-50%) scaleY(1); }
+.metroMap.showAll .metroStop .metroTrack.stops > i { transform: translate(-50%, -50%) scale(1); }
+.metroMap.showAll .metroStop .metroInfo { opacity: 1; transform: none; }
+.metroMap.showAll .metroStop.dim .metroInfo { opacity: .3; }
+.metroStation { display: inline; padding: 0; border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: rgba(238,232,213,0); text-decoration-thickness: 1px; text-underline-offset: 6px; transition: color .25s, text-decoration-color .25s; }
+.metroStation:hover { text-decoration-color: rgba(238,232,213,.45); }
+.metroStation[aria-pressed="true"] { color: var(--studio-lime); text-decoration-color: rgba(210,233,155,.6); }
+.metroInfo .metroCase { margin-top: 10px; }
+.metroHint { display: flex; align-items: center; gap: 10px; margin: -14px 0 30px; font: 9.5px/1.4 ui-monospace, monospace; letter-spacing: .12em; color: rgba(184,244,209,.75); }
+.metroHint i { width: 8px; height: 8px; border-radius: 50%; background: var(--studio-lime); box-shadow: 0 0 0 0 rgba(210,233,155,.6); animation: hintPulse 2s ease-out infinite; }
+.metroFed { margin: 16px 0 0 !important; padding: 12px 14px; max-width: 470px; border-left: 2px solid var(--studio-lime); background: rgba(210,233,155,.07); font-size: 13.5px !important; line-height: 1.6 !important; color: rgba(238,232,213,.82) !important; animation: sceneIn .45s both; }
+.metroFed b { font-weight: 500; color: var(--studio-lime); }
+.metroStop.source .metroTrack.stops > i { box-shadow: 0 0 0 4px rgba(255,255,255,.12), 0 0 18px var(--line); }
+.metroStop.fed .metroTrack.stops:not(.faded) > i { animation: stopPulse 1.6s ease-out infinite; }
+.metroStop.fed h3 .metroStation { color: #fff7e0; }
+.metroTrains { position: absolute; inset: 0; pointer-events: none; list-style: none; }
+.metroTrain { position: absolute; width: 10px; height: 28px; margin: -14px 0 0 -5px; border-radius: 6px; background: linear-gradient(var(--line), color-mix(in srgb, var(--line) 70%, #fff)); border: 2px solid #0b3b2e; box-shadow: 0 0 14px var(--line), 0 0 0 1px rgba(255,255,255,.3); opacity: 0; z-index: 2; animation-name: trainRun; animation-timing-function: cubic-bezier(.45,0,.55,1); animation-iteration-count: infinite; }
+.metroTrain::after { content: ""; position: absolute; left: 2px; right: 2px; top: 5px; height: 6px; border-radius: 2px; background: rgba(11,59,46,.55); }
+@keyframes trainRun { 0% { transform: translateY(0); opacity: 0; } 8% { opacity: 1; } 88% { opacity: 1; } 100% { transform: translateY(var(--run)); opacity: 0; } }
+@keyframes stopPulse { 0% { box-shadow: 0 0 0 0 var(--line); } 70% { box-shadow: 0 0 0 9px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
+@keyframes hintPulse { 0% { box-shadow: 0 0 0 0 rgba(210,233,155,.6); } 70%, 100% { box-shadow: 0 0 0 8px rgba(210,233,155,0); } }
+@media (max-width: 720px) {
+  .metroTrain { width: 8px; height: 22px; margin: -11px 0 0 -4px; }
+  .metroFed { font-size: 13px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .metroTrain { animation: none; opacity: 1; transform: translateY(var(--run)); }
+  .metroHint i, .metroStop.fed .metroTrack.stops > i { animation: none; }
+}
+.metroInfo .metroStation { display: inline; min-height: 0; margin: 0; padding: 0; border: 0; font: inherit; color: inherit; }
+.metroInfo .metroStation[aria-pressed="true"] { color: var(--studio-lime); }
+.metroStop.fed .metroInfo .metroStation { color: #fff7e0; }
+.metroMap.scrolly .metroStop { min-height: 38vh; }
+.metroMap.scrolly .metroStop:nth-child(6) { min-height: 0; }
+@media (max-width: 720px) { .metroMap.scrolly .metroStop { min-height: 32vh; } }

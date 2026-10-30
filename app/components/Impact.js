@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { areas, toolTypes, deliveries, reuseLines, reuseStations, impactNumbers, inUseStatuses } from "./impactData";
 import { useProjectDetail } from "./ProjectDetail";
+import { sfx } from "./sound";
 
 const areaById = Object.fromEntries(areas.map(a => [a.id, a]));
 const typeById = Object.fromEntries(toolTypes.map(t => [t.id, t]));
@@ -92,35 +93,116 @@ export function ImpactAtlas() {
   </section>;
 }
 
+// Which later stations each station "fed", line by line.
+const feeds = reuseStations.map((s, si) => {
+  const byLine = {};
+  s.lines.forEach(l => {
+    const targets = reuseStations.map((t, ti) => ti > si && t.lines.includes(l) ? ti : -1).filter(ti => ti >= 0);
+    if (targets.length) byLine[l] = targets;
+  });
+  return { byLine, all: [...new Set(Object.values(byLine).flat())].sort((x, y) => x - y) };
+});
+
 export function ReuseMetro() {
   const { open } = useProjectDetail();
   const [active, setActive] = useState(null);
+  const [source, setSource] = useState(null);
+  const [geo, setGeo] = useState(null);
+  const mapRef = useRef(null);
+  const stops = useRef([]);
   const bounds = Object.fromEntries(reuseLines.map(l => {
     const idx = reuseStations.map((s, i) => s.lines.includes(l.id) ? i : -1).filter(i => i >= 0);
     return [l.id, [Math.min(...idx), Math.max(...idx), idx.length]];
   }));
+
+  // Scroll draws the lines downwards and opens one station at a time.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const reveal = () => stops.current.forEach(li => { if (!li) return; li.style.setProperty("--fill", "1"); li.classList.add("reached"); });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { reveal(); return; }
+    map.classList.add("scrolly");
+    let frame;
+    const update = () => {
+      const head = window.innerHeight * .58;
+      stops.current.forEach((li, i) => {
+        if (!li) return;
+        const r = li.getBoundingClientRect();
+        const stopY = parseFloat(getComputedStyle(li).getPropertyValue("--stop-y")) || 46;
+        li.style.setProperty("--fill", Math.max(0, Math.min(1, (head - r.top) / r.height)).toFixed(3));
+        li.classList.toggle("reached", i === 0 || head >= r.top + stopY);
+      });
+    };
+    const request = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", request); window.removeEventListener("resize", request); };
+  }, []);
+
+  // Where each line runs and where each station sits, for the trains.
+  useEffect(() => {
+    if (source === null) return;
+    const measure = () => {
+      const map = mapRef.current, first = stops.current[0];
+      if (!map || !first) return;
+      const mr = map.getBoundingClientRect();
+      const x = {};
+      first.querySelectorAll(".metroTrack").forEach((t, i) => { const r = t.getBoundingClientRect(); x[reuseLines[i].id] = r.left + r.width / 2 - mr.left; });
+      const y = stops.current.map(li => { const r = li.getBoundingClientRect(); return r.top - mr.top + (parseFloat(getComputedStyle(li).getPropertyValue("--stop-y")) || 46); });
+      setGeo({ x, y });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [source]);
+
+  const choose = si => {
+    const next = source === si ? null : si;
+    setSource(next);
+    setActive(null);
+    if (next !== null) sfx.metro();
+  };
+  const fed = source === null ? [] : feeds[source].all;
+  const nameOf = i => deliveries.find(x => x.id === reuseStations[i].id).name;
   return <section className="reuseMetro" id="reaproveitamento" aria-labelledby="metro-title">
     <div className="metroIntro" data-reveal>
       <p className="monoLabel">UMA FERRAMENTA PUXA A OUTRA</p>
       <h2 id="metro-title">Não começo<br /><em>do zero.</em></h2>
-      <p>Cada ferramenta deixa peças prontas para a próxima: um visual que as pessoas já reconhecem, a planilha que se arrasta e solta, o treemap que mergulha até o detalhe. Foi assim que uma conferência pedida por uma área virou plataforma para várias frentes.</p>
-      <div className="metroLegend" role="group" aria-label="Destacar uma peça reaproveitada">{reuseLines.map(l => <button key={l.id} style={{ "--line": l.color }} aria-pressed={active === l.id} onClick={() => setActive(active === l.id ? null : l.id)}><i />{l.label}<small>{bounds[l.id][2]}×</small></button>)}</div>
+      <p>Cada ferramenta deixa peças prontas para a próxima. Foi assim que uma conferência pedida por uma área virou plataforma para várias frentes.</p>
+      <div className="metroLegend" role="group" aria-label="Destacar uma peça reaproveitada">{reuseLines.map(l => <button key={l.id} style={{ "--line": l.color }} aria-pressed={active === l.id} onClick={() => { setActive(active === l.id ? null : l.id); setSource(null); }}><i />{l.label}<small>{bounds[l.id][2]}×</small></button>)}</div>
+      <p className="metroHint"><i />TOQUE NUMA ESTAÇÃO PARA VER O QUE ELA ALIMENTOU</p>
       <blockquote>Quando alguém de outra frente viu uma ferramenta pronta, pediu uma igual. É o indicador de que eu mais gosto.</blockquote>
     </div>
-    <ol className={`metroMap ${active ? "focused" : ""}`} aria-label="Ferramentas em ordem aproximada de criação">
+    <ol ref={mapRef} className={`metroMap ${active ? "focused" : ""} ${active || source !== null ? "showAll" : ""} ${source !== null ? "routing" : ""}`} aria-label="Ferramentas em ordem aproximada de criação">
       {reuseStations.map((s, si) => {
         const d = deliveries.find(x => x.id === s.id);
-        const on = !active || s.lines.includes(active);
-        return <li key={s.id} className={`metroStop ${on ? "" : "dim"}`}>
+        const role = source === null ? "" : si === source ? "source" : fed.includes(si) ? "fed" : "idle";
+        const on = active ? s.lines.includes(active) : role !== "idle";
+        return <li key={s.id} ref={el => { stops.current[si] = el; }} className={`metroStop ${on ? "" : "dim"} ${role}`}>
           <div className="metroTracks" aria-hidden="true">{reuseLines.map(l => {
             const [first, last] = bounds[l.id];
             const passes = si >= first && si <= last;
-            const cls = ["metroTrack", passes && "passes", s.lines.includes(l.id) && "stops", si === first && "start", si === last && "end", active && active !== l.id && "faded"].filter(Boolean).join(" ");
+            const carries = source !== null && feeds[source].byLine[l.id] && si >= source && si <= Math.max(...feeds[source].byLine[l.id]);
+            const faded = (active && active !== l.id) || (source !== null && !carries);
+            const cls = ["metroTrack", passes && "passes", s.lines.includes(l.id) && "stops", si === first && "start", si === last && "end", faded && "faded"].filter(Boolean).join(" ");
             return <span key={l.id} className={cls} style={{ "--line": l.color }}><i /></span>;
           })}</div>
-          <div className="metroInfo"><span>{String(si + 1).padStart(2, "0")} · {areaById[d.area].label} · {d.status}</span><h3>{d.name}</h3><p>{s.note}</p><div className="metroPieces">{s.lines.map(id => <i key={id} style={{ "--line": reuseLines.find(l => l.id === id).color }} title={reuseLines.find(l => l.id === id).label} />)}</div>{d.caseId && <button onClick={() => open(d.caseId)}>Ver o case ↗</button>}</div>
+          <div className="metroInfo">
+            <span>{String(si + 1).padStart(2, "0")} · {areaById[d.area].label} · {d.status}</span>
+            <h3><button className="metroStation" aria-pressed={source === si} onClick={() => choose(si)}>{d.name}</button></h3>
+            <p>{s.note}</p>
+            <div className="metroPieces">{s.lines.map(id => <i key={id} style={{ "--line": reuseLines.find(l => l.id === id).color }} title={reuseLines.find(l => l.id === id).label} />)}</div>
+            {source === si && <p className="metroFed" aria-live="polite">{fed.length ? <><b>Alimentou {fed.length} {fed.length > 1 ? "ferramentas" : "ferramenta"}:</b> {fed.map(nameOf).join(", ")}.</> : <b>Ponta da linha, por enquanto. A próxima ferramenta sai daqui.</b>}</p>}
+            {d.caseId && <button className="metroCase" onClick={() => open(d.caseId)}>Ver o case ↗</button>}
+          </div>
         </li>;
       })}
+      {source !== null && geo && <li className="metroTrains" aria-hidden="true">{Object.entries(feeds[source].byLine).map(([lineId, targets], k) => {
+        const y0 = geo.y[source], y1 = geo.y[Math.max(...targets)];
+        const color = reuseLines.find(l => l.id === lineId).color;
+        return [0, 1].map(car => <span key={`${lineId}${car}`} className="metroTrain" style={{ left: geo.x[lineId], top: y0, "--run": `${y1 - y0}px`, "--line": color, animationDuration: `${Math.max(1.6, (y1 - y0) / 260)}s`, animationDelay: `${k * .18 + car * Math.max(.8, (y1 - y0) / 520)}s` }} />);
+      })}</li>}
     </ol>
   </section>;
 }
