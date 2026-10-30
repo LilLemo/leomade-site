@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { sfx } from "./sound";
 
 const ALMOND = "M5 24C14 11 25 5 40 5s26 6 35 19c-9 13-20 19-35 19S14 37 5 24Z";
 const IDLE_LINE = "Uma pergunta pode mudar tudo.";
@@ -50,7 +51,7 @@ const keyReply = typed => {
 function BigRedButton({ onPress, small = false }) {
   const [down, setDown] = useState(false);
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
-  return <button tabIndex={-1} className={`toyButton redButton ${down ? "down" : ""} ${small ? "small" : ""}`} onPointerDown={() => { setDown(true); onPress(); }} onPointerUp={() => setDown(false)} onPointerLeave={() => setDown(false)}>
+  return <button tabIndex={-1} className={`toyButton redButton ${down ? "down" : ""} ${small ? "small" : ""}`} onPointerDown={() => { setDown(true); sfx.bigDown(); onPress(); }} onPointerUp={() => { setDown(false); sfx.bigUp(); }} onPointerLeave={() => setDown(false)}>
     <svg viewBox="0 0 120 92" aria-hidden="true">
       {/* The cap only shows above the rim, so pressing it really sinks it into the hole. */}
       <defs><clipPath id={`hole${id}`}><path d="M0 0H120V58H100A40 11 0 0 1 20 58H0Z" /></clipPath></defs>
@@ -73,7 +74,7 @@ function MacroPad({ onKey }) {
       <circle className="screw" cx="14" cy="45" r="2.4" /><circle className="screw" cx="116" cy="45" r="2.4" />
       {["L", "E", "O"].map((k, i) => {
         const x = 20 + i * 34;
-        return <g key={k} className={`keycap ${down === k ? "down" : ""}`} onPointerDown={() => { setDown(k); onKey(k); }} onPointerUp={() => setDown(null)} onPointerLeave={() => setDown(null)}>
+        return <g key={k} className={`keycap ${down === k ? "down" : ""}`} onPointerDown={() => { setDown(k); sfx.key(i); onKey(k); }} onPointerUp={() => setDown(null)} onPointerLeave={() => setDown(null)}>
           <path className="keySide" d={`M${x} 18h26v22a4 4 0 0 1-4 4H${x + 4}a4 4 0 0 1-4-4Z`} />
           <rect className="keyTop" x={x + 2} y="10" width="22" height="20" rx="4" />
           <text x={x + 13} y="24.5" textAnchor="middle">{k}</text>
@@ -86,7 +87,7 @@ function MacroPad({ onKey }) {
 function OnOffButton({ onState }) {
   const [on, setOn] = useState(false);
   const [down, setDown] = useState(null);
-  const press = which => { setDown(which); const next = which === "I"; setOn(next); onState(next); };
+  const press = which => { setDown(which); const next = which === "I"; sfx.clack(next); setOn(next); onState(next); };
   return <div className={`toyButton onOff ${on ? "isOn" : ""}`}>
     <svg viewBox="0 0 70 104" aria-hidden="true">
       <rect className="housing" x="8" y="6" width="54" height="92" rx="27" />
@@ -109,7 +110,7 @@ function ElevatorPanel({ onFloor }) {
       <circle className="screw" cx="12" cy="12" r="2" /><circle className="screw" cx="68" cy="12" r="2" /><circle className="screw" cx="12" cy="96" r="2" /><circle className="screw" cx="68" cy="96" r="2" />
       {FLOORS.map((f, i) => {
         const x = 16 + (i % 2) * 30, y = 22 + Math.floor(i / 2) * 26;
-        return <g key={f} className={`floor ${lit === f ? "lit" : ""}`} onPointerDown={() => { setLit(f); onFloor(f); }}>
+        return <g key={f} className={`floor ${lit === f ? "lit" : ""}`} onPointerDown={() => { setLit(f); sfx.floor(); onFloor(f); }}>
           <rect className="floorPlate" x={x - 4} y={y - 8} width="28" height="18" rx="9" />
           <text x={x + 3} y={y + 4.5} textAnchor="middle">{f}</text>
           <circle className="floorRing" cx={x + 15} cy={y + 1} r="5.5" />
@@ -131,7 +132,7 @@ export default function EyeEasterEgg() {
   const speech = useChunks(line);
   const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
   const pendingLine = useRef(null);
-  const say = (text, then) => { clearTimeout(pendingLine.current); setLine(text); if (then) pendingLine.current = setTimeout(() => setLine(then), 1200); };
+  const say = (text, then, onThen) => { clearTimeout(pendingLine.current); setLine(text); if (then) pendingLine.current = setTimeout(() => { setLine(then); onThen?.(); }, 1200); };
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -164,11 +165,12 @@ export default function EyeEasterEgg() {
     if (stage !== "eye" || lid === "poke") return;
     pokes.current += 1;
     const n = pokes.current;
+    sfx.poke();
     if (n >= BUTTON_AT) {
       setLine("Ok. Você quer clicar? Toma um botão pra você clicar.");
       setLid("shut");
       setStage("closing");
-      later(() => setStage("button"), 1100);
+      later(() => { setStage("button"); sfx.pop(); }, 1100);
       return;
     }
     setLid("poke");
@@ -216,7 +218,7 @@ export default function EyeEasterEgg() {
       <BigRedButton small onPress={() => { setPresses(p => p + 1); say(["Clássico.", "O vermelho nunca falha.", "Ainda esse? Respeito."][Math.floor(Math.random() * 3)]); }} />
       <MacroPad onKey={k => { typed.current = (typed.current + k).slice(-9); const reply = keyReply(typed.current); if (reply !== typed.current) typed.current = ""; say(reply); }} />
       <OnOffButton onState={on => say(on ? "Ligado. Agora a curiosidade é oficial." : "Desligado. Mas ninguém desliga a curiosidade.")} />
-      <ElevatorPanel onFloor={f => f === "T" ? say("Térreo. Fim da linha.") : say(`Subindo para o ${f}º andar...`, "Ding.")} />
+      <ElevatorPanel onFloor={f => f === "T" ? say("Térreo. Fim da linha.") : say(`Subindo para o ${f}º andar...`, "Ding.", sfx.ding)} />
     </div>}
     <p className="eyeSpeech" aria-live="polite" key={line}>{speech.words.map((w, i) => <span key={i} className={i < speech.count ? "on" : ""}>{w}{i < speech.words.length - 1 ? " " : ""}</span>)}</p>
     {stage === "panel" && <button tabIndex={-1} className="eggReset" onClick={reset}>Devolver o olho</button>}

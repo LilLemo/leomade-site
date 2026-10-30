@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { sfx } from "./sound";
 
 const KEY = "leomade-light-switch";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -47,6 +48,7 @@ export default function ModeSwitch({ personal = false }) {
       e.preventDefault();
       if (state !== "idle") return;
       prefetch();
+      sfx.lightSwitch();
       setState("flipping");
       const plate = e.currentTarget.querySelector(".switchPlate").getBoundingClientRect();
       const x = plate.left + plate.width / 2, y = plate.top + plate.height / 2;

@@ -197,7 +197,6 @@ html[data-light-leaving] body::after { opacity: 0; }
 .redButton .lipEdge { fill: none; }
 .redButton:hover .cap { transform: translateY(-1.5px); }
 .redButton.down .cap { transform: translateY(10px); transition-duration: .05s; }
-.redButton.down { animation: thump .25s ease-out; }
 .eggPanel { display: grid; grid-template-columns: 1.1fr 1fr; gap: 2% 6%; align-items: center; justify-items: center; width: 96%; margin-top: -8%; }
 .eggPanel > * { animation: toyPop .6s cubic-bezier(.3,1.6,.4,1) both; }
 .eggPanel > :nth-child(1) { width: 100%; animation-delay: .05s; }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
+import { sfx } from "./sound";
 
 // Heads: something human about me. Tails: something about the AI-built tools I make.
 const sides = {
@@ -77,6 +78,7 @@ export default function CoinFlip() {
   const timer = useRef(null);
   const flip = () => {
     if (tossing) return;
+    sfx.coinFlip();
     const kind = Math.random() < .5 ? "cara" : "coroa";
     const line = pick(sides[kind].lines, last.current[kind]);
     last.current[kind] = line;
@@ -92,6 +94,7 @@ export default function CoinFlip() {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       setTossing(false);
+      sfx.coinLand();
       setScore(s => ({ ...s, [kind]: s[kind] + 1 }));
       setResult(`${kind === "cara" ? "Cara" : "Coroa"}: ${line}`);
     }, reduced ? 50 : 1500);
