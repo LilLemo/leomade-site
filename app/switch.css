@@ -82,3 +82,39 @@ html[data-light-leaving] body::after { opacity: 0; }
 
 /* Opening title: a sturdier italic for the key word, easier to read at large sizes. */
 .studioWelcome h1 em { font-family: "DM Serif Display", var(--font-display); font-style: italic; letter-spacing: -.035em; padding-right: .06em; }
+
+/* Human × AI coin: heads shows a human trait, tails a trait of the AI-built tools. */
+.coinStage { justify-self: center; width: 100%; max-width: 370px; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.coin { position: relative; display: block; width: 100%; aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: none; color: #eee8d5; perspective: 1400px; -webkit-tap-highlight-color: transparent; }
+.coin::before { content: ""; position: absolute; inset: -16px; border: 1px dashed rgba(238,232,213,.14); border-radius: 50%; animation: badgeSpin 40s linear infinite; }
+.coinToss { display: block; width: 100%; height: 100%; transform: rotate(-10deg); transform-style: preserve-3d; }
+.coin.tossing .coinToss { animation: coinToss 1.5s cubic-bezier(.3,.6,.35,1); }
+.coinBody { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateY(var(--angle)); transition: transform 1.5s cubic-bezier(.12,.62,.22,1); }
+.coin:not(.tossing):hover .coinBody { transform: rotateY(calc(var(--angle) + 14deg)) rotateX(-6deg); transition-duration: .5s; }
+.coinFace { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 16%; border-radius: 50%; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(5px); }
+.coinFace.back { transform: rotateY(180deg) translateZ(5px); }
+.coinRim { position: absolute; inset: 0; border-radius: 50%; background: #3f6a55; transform: translateZ(var(--z)); }
+.coinFace.intro { background: radial-gradient(circle at 34% 28%, #10392c, #0a2a20 70%); border: 1px solid rgba(238,232,213,.3); }
+.coinIntro { font-size: clamp(32px, 3.8vw, 62px); line-height: 1; letter-spacing: -.065em; }
+.coinIntro em { color: var(--mint); font-family: var(--font-display); font-size: 1.5em; letter-spacing: -.05em; }
+.coinFace small { font: 8px/1.4 ui-monospace, monospace; letter-spacing: .14em; opacity: .75; }
+.coinFace strong { font: italic 400 clamp(21px, 2.1vw, 30px)/1.12 "DM Serif Display", var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
+.coinHint { font: 400 7.5px/1 ui-monospace, monospace; letter-spacing: .14em; opacity: .55; transition: opacity .3s; }
+.coin:hover .coinHint { opacity: 1; }
+.coinFace.cara { background: radial-gradient(circle at 34% 28%, #1a5743, #0c3528 70%); color: #eee8d5; box-shadow: inset 0 0 0 9px #0c3528, inset 0 0 0 10px rgba(238,232,213,.28), 0 0 0 1px rgba(238,232,213,.35); }
+.coinFace.cara small { color: var(--mint); }
+.coinFace.coroa { background: radial-gradient(circle at 34% 28%, #f1fbe2, #c9f3d7 48%, #93d9b0); color: #0b3b2e; box-shadow: inset 0 0 0 9px #b6ebc8, inset 0 0 0 10px rgba(11,59,46,.3), 0 0 0 1px rgba(11,59,46,.25); }
+.coinScore { margin: 0; font: 10px/1.4 ui-monospace, monospace; letter-spacing: .14em; color: rgba(238,232,213,.55); }
+.coinScore b { font-weight: 400; color: var(--studio-lime); }
+@keyframes coinToss { 0% { transform: rotate(-10deg) translateY(0) scale(1); } 40% { transform: rotate(-4deg) translateY(-70px) scale(1.07); } 78% { transform: rotate(-10deg) translateY(4px) scale(.99); } 100% { transform: rotate(-10deg) translateY(0) scale(1); } }
+@media (max-width: 720px) {
+  .coinStage { max-width: 270px; gap: 22px; }
+  .coinIntro { font-size: 34px; }
+  .coinFace { gap: 12px; padding: 15%; }
+  .coinFace strong { font-size: 20px; }
+  .coinFace small { font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coinBody { transition: none; }
+  .coin.tossing .coinToss, .coin::before { animation: none; }
+}
