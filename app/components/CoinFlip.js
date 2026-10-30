@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
 // Heads: something human about me. Tails: something about the AI-built tools I make.
 const sides = {
@@ -30,9 +30,41 @@ const sides = {
 const intro = { kind: "intro" };
 const pick = (list, avoid) => { const pool = list.filter(item => item !== avoid); return pool[Math.floor(Math.random() * pool.length)]; };
 
+const arcs = {
+  intro: ["LEOMADE · MADE WITH CURIOSITY", "TOQUE PARA JOGAR"],
+  cara: ["CARA · LADO HUMANO", "LEOMADE · MMXXVI"],
+  coroa: ["COROA · LADO IA", "FEITO EM CONVERSA"],
+};
+
+// An original commemorative coin: reeded rim, engraved arcs, an emblem per side.
+function CoinArt({ kind }) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const [top, bottom] = arcs[kind];
+  const star = (x, y) => <path d={`M${x} ${y - 4}L${x + 1.1} ${y - 1.1}L${x + 4} ${y}L${x + 1.1} ${y + 1.1}L${x} ${y + 4}L${x - 1.1} ${y + 1.1}L${x - 4} ${y}L${x - 1.1} ${y - 1.1}Z`} />;
+  return <svg className="coinArt" viewBox="0 0 200 200" aria-hidden="true">
+    <defs>
+      <path id={`top${id}`} d="M 26,100 A 74,74 0 0 1 174,100" />
+      <path id={`bot${id}`} d="M 19,100 A 81,81 0 0 0 181,100" />
+    </defs>
+    <circle className="coinReed" cx="100" cy="100" r="95.5" />
+    <circle className="coinLineDark" cx="100" cy="100" r="91.5" />
+    <circle className="coinLineLight" cx="100" cy="100" r="90.5" />
+    <circle className="coinLineDark" cx="100" cy="100" r="66.5" />
+    <circle className="coinLineLight" cx="100" cy="100" r="65.5" />
+    <circle className="coinDots" cx="100" cy="100" r="69.5" />
+    <text className="coinArc"><textPath href={`#top${id}`} startOffset="50%" textAnchor="middle">{top}</textPath></text>
+    <text className="coinArc"><textPath href={`#bot${id}`} startOffset="50%" textAnchor="middle">{bottom}</textPath></text>
+    <g className="coinOrnament">{star(21, 100)}{star(179, 100)}</g>
+    {kind === "cara" && <g className="coinEmblem" transform="translate(86.5 44) scale(.34)"><path d="M5 24C14 11 25 5 40 5s26 6 35 19c-9 13-20 19-35 19S14 37 5 24Z" /><circle cx="40" cy="24" r="11" /><circle cx="40" cy="24" r="4" className="fill" /></g>}
+    {kind === "coroa" && <g className="coinEmblem"><path d="M100 41v20M91.3 46l17.4 10M91.3 56l17.4-10" /><circle cx="100" cy="51" r="2.6" className="fill" /><circle cx="86" cy="51" r="1.3" className="fill" /><circle cx="114" cy="51" r="1.3" className="fill" /></g>}
+  </svg>;
+}
+
 function Face({ face, back }) {
-  if (face.kind === "intro") return <span className={`coinFace intro ${back ? "back" : ""}`}><span className="coinIntro">HUMAN<br /><em>× AI</em></span><small>FEITO EM CONVERSA</small><b className="coinHint">TOQUE PARA JOGAR</b></span>;
-  return <span className={`coinFace ${face.kind} ${back ? "back" : ""}`}><small>{sides[face.kind].label}</small><strong>{face.line}</strong><b className="coinHint">JOGAR DE NOVO</b></span>;
+  return <span className={`coinFace ${face.kind} ${back ? "back" : ""}`}>
+    <CoinArt kind={face.kind} />
+    {face.kind === "intro" ? <span className="coinIntro">HUMAN<br /><em>× AI</em></span> : <strong>{face.line}</strong>}
+  </span>;
 }
 
 export default function CoinFlip() {

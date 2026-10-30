@@ -91,30 +91,43 @@ html[data-light-leaving] body::after { opacity: 0; }
 .coin.tossing .coinToss { animation: coinToss 1.5s cubic-bezier(.3,.6,.35,1); }
 .coinBody { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotateY(var(--angle)); transition: transform 1.5s cubic-bezier(.12,.62,.22,1); }
 .coin:not(.tossing):hover .coinBody { transform: rotateY(calc(var(--angle) + 14deg)) rotateX(-6deg); transition-duration: .5s; }
-.coinFace { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 16%; border-radius: 50%; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(5px); }
+.coin::after { content: ""; position: absolute; left: 14%; right: 14%; bottom: -9%; height: 9%; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,.45), transparent); transform: translateZ(-40px); transition: transform .3s, opacity .3s; }
+.coin.tossing::after { animation: coinShadow 1.5s cubic-bezier(.3,.6,.35,1); }
+.coinFace { --ink: #2f352f; --hi: rgba(255,255,255,.6); --lo: rgba(0,0,0,.28); position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25% 21% 21%; border-radius: 50%; overflow: hidden; text-align: center; color: var(--ink); backface-visibility: hidden; -webkit-backface-visibility: hidden; transform: translateZ(5px); box-shadow: 0 0 0 1px rgba(0,0,0,.25), inset 0 2px 3px rgba(255,255,255,.45), inset 0 -3px 6px rgba(0,0,0,.25); }
+.coinFace::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.07) 0 1.5deg, rgba(0,0,0,.05) 1.5deg 3deg); -webkit-mask: radial-gradient(circle, #000 0 64%, transparent 64.5%); mask: radial-gradient(circle, #000 0 64%, transparent 64.5%); }
+.coinFace::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.5) 48%, transparent 62%); background-size: 260% 100%; background-position: 120% 0; mix-blend-mode: soft-light; pointer-events: none; }
+.coin:hover .coinFace::after, .coin.tossing .coinFace::after { animation: coinSheen 1.2s ease; }
 .coinFace.back { transform: rotateY(180deg) translateZ(5px); }
-.coinRim { position: absolute; inset: 0; border-radius: 50%; background: #3f6a55; transform: translateZ(var(--z)); }
-.coinFace.intro { background: radial-gradient(circle at 34% 28%, #10392c, #0a2a20 70%); border: 1px solid rgba(238,232,213,.3); }
-.coinIntro { font-size: clamp(32px, 3.8vw, 62px); line-height: 1; letter-spacing: -.065em; }
-.coinIntro em { color: var(--mint); font-family: var(--font-display); font-size: 1.5em; letter-spacing: -.05em; }
-.coinFace small { font: 8px/1.4 ui-monospace, monospace; letter-spacing: .14em; opacity: .75; }
-.coinFace strong { font: italic 400 clamp(21px, 2.1vw, 30px)/1.12 "DM Serif Display", var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
-.coinHint { font: 400 7.5px/1 ui-monospace, monospace; letter-spacing: .14em; opacity: .55; transition: opacity .3s; }
-.coin:hover .coinHint { opacity: 1; }
-.coinFace.cara { background: radial-gradient(circle at 34% 28%, #1a5743, #0c3528 70%); color: #eee8d5; box-shadow: inset 0 0 0 9px #0c3528, inset 0 0 0 10px rgba(238,232,213,.28), 0 0 0 1px rgba(238,232,213,.35); }
-.coinFace.cara small { color: var(--mint); }
-.coinFace.coroa { background: radial-gradient(circle at 34% 28%, #f1fbe2, #c9f3d7 48%, #93d9b0); color: #0b3b2e; box-shadow: inset 0 0 0 9px #b6ebc8, inset 0 0 0 10px rgba(11,59,46,.3), 0 0 0 1px rgba(11,59,46,.25); }
+.coinRim { position: absolute; inset: 0; border-radius: 50%; background: #7d796a; transform: translateZ(var(--z)); }
+.coinArt { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.coinReed { fill: none; stroke: var(--lo); stroke-width: 7; stroke-dasharray: 1.1 1.5; }
+.coinLineDark { fill: none; stroke: var(--lo); stroke-width: .9; }
+.coinLineLight { fill: none; stroke: var(--hi); stroke-width: .7; }
+.coinDots { fill: none; stroke: var(--ink); stroke-width: 1.1; stroke-dasharray: .1 3.6; stroke-linecap: round; opacity: .45; }
+.coinArc { fill: var(--ink); font: 500 8.4px/1 "Inter", sans-serif; letter-spacing: 2.1px; paint-order: stroke; stroke: var(--hi); stroke-width: .35px; }
+.coinOrnament path { fill: var(--ink); opacity: .8; }
+.coinEmblem { fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 .6px 0 var(--hi)); }
+.coinEmblem path, .coinEmblem circle { vector-effect: non-scaling-stroke; stroke-width: 1.6; }
+.coinEmblem .fill { fill: var(--ink); }
+.coinFace strong, .coinIntro { position: relative; z-index: 1; color: var(--ink); text-shadow: 0 1px 0 var(--hi), 0 -1px 0 var(--lo); }
+.coinFace strong { font: italic 400 clamp(19px, 1.9vw, 27px)/1.1 "DM Serif Display", var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
+.coinIntro { margin-top: -10%; font-size: clamp(30px, 3.4vw, 54px); line-height: 1; letter-spacing: -.065em; }
+.coinIntro em { font-family: var(--font-display); font-size: 1.5em; letter-spacing: -.05em; }
+/* Three metals: green patina before the first toss, silver for the human side, gold for the AI side. */
+.coinFace.intro { --ink: #0f2f24; --hi: rgba(225,255,236,.45); --lo: rgba(0,20,10,.35); background: radial-gradient(circle at 32% 26%, #d5efdc 0%, #9cc9ae 24%, #5f9a7e 55%, #356b54 82%, #24503e 100%); }
+.coinFace.cara { --ink: #2b302c; background: radial-gradient(circle at 32% 26%, #ffffff 0%, #e8eae5 20%, #c3c7c0 52%, #959b93 80%, #747a72 100%); }
+.coinFace.coroa { --ink: #4a3110; --hi: rgba(255,248,220,.6); --lo: rgba(80,50,0,.35); background: radial-gradient(circle at 32% 26%, #fff7da 0%, #f3da92 22%, #d8b25b 52%, #ad8131 80%, #84601f 100%); }
 .coinScore { margin: 0; font: 10px/1.4 ui-monospace, monospace; letter-spacing: .14em; color: rgba(238,232,213,.55); }
 .coinScore b { font-weight: 400; color: var(--studio-lime); }
+@keyframes coinSheen { from { background-position: 120% 0; } to { background-position: -40% 0; } }
+@keyframes coinShadow { 0%, 100% { transform: translateZ(-40px) scale(1); opacity: 1; } 40% { transform: translateZ(-40px) scale(.7); opacity: .45; } }
 @keyframes coinToss { 0% { transform: rotate(-10deg) translateY(0) scale(1); } 40% { transform: rotate(-4deg) translateY(-70px) scale(1.07); } 78% { transform: rotate(-10deg) translateY(4px) scale(.99); } 100% { transform: rotate(-10deg) translateY(0) scale(1); } }
 @media (max-width: 720px) {
   .coinStage { max-width: 270px; gap: 22px; }
-  .coinIntro { font-size: 34px; }
-  .coinFace { gap: 12px; padding: 15%; }
-  .coinFace strong { font-size: 20px; }
-  .coinFace small { font-size: 7px; }
+  .coinIntro { font-size: 30px; }
+  .coinFace strong { font-size: 17px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .coinBody { transition: none; }
-  .coin.tossing .coinToss, .coin::before { animation: none; }
+  .coin.tossing .coinToss, .coin::before, .coin.tossing::after, .coinFace::after { animation: none !important; }
 }
