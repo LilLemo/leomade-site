@@ -4,212 +4,240 @@ import { useEffect, useRef, useState } from "react";
 import { sfx } from "./sound";
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function useTimers() {
+  const timers = useRef([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  return (fn, ms) => timers.current.push(setTimeout(fn, reducedMotion() ? 0 : ms));
+}
 
-/* 04 · Conference desk: scan the pile, fix the exceptions, then stamp it. */
+/* ───────── 04 · Conference desk: scan, fix the exceptions, seal it. ───────── */
 const pile = [
-  { id: "#1041", who: "Padaria Aurora", how: "Boleto", val: "1.280,00" },
-  { id: "#1042", who: "Transportes Rio Claro", how: "Boleto", val: "3.215,40", issue: "Boleto sem código de barras", fix: "Código de barras incluído" },
-  { id: "#1043", who: "Gráfica Ponto Final", how: "TED", val: "860,00" },
-  { id: "#1044", who: "Mercado Bom Fim", how: "TED", val: "2.004,90", issue: "Conta do mesmo banco marcada como TED", fix: "Ajustado para crédito em conta" },
-  { id: "#1045", who: "Café Duas Pontes", how: "Crédito em conta", val: "540,00" },
+  { id: "1041", who: "Padaria Aurora", how: "Boleto", val: "1.280,00" },
+  { id: "1042", who: "Transportes Rio Claro", how: "Boleto", val: "3.215,40", issue: "Boleto sem código de barras", impact: "Travaria a remessa inteira.", fix: "Código de barras incluído" },
+  { id: "1043", who: "Gráfica Ponto Final", how: "TED", val: "860,00" },
+  { id: "1044", who: "Mercado Bom Fim", how: "TED", val: "2.004,90", issue: "Conta do mesmo banco marcada como TED", impact: "Seria rejeitado pelo banco.", fix: "Ajustado para crédito em conta", fixedHow: "Crédito em conta" },
+  { id: "1045", who: "Café Duas Pontes", how: "Crédito em conta", val: "540,00" },
 ];
 
+function Seal() {
+  return <svg className="seal" viewBox="0 0 160 160" aria-hidden="true">
+    <defs><path id="sealArc" d="M80 80m-58 0a58 58 0 1 1 116 0a58 58 0 1 1-116 0" /></defs>
+    <circle cx="80" cy="80" r="72" className="sealRing" /><circle cx="80" cy="80" r="44" className="sealRing thin" />
+    <text className="sealText"><textPath href="#sealArc" startOffset="0">CONFERIDO · APROVADO POR PESSOAS · HISTÓRICO SALVO ·</textPath></text>
+    <path className="sealCheck" d="M62 80l12 12 24-26" />
+    <text className="sealDate" x="80" y="112" textAnchor="middle">01·11</text>
+  </svg>;
+}
+
 export function StampDesk() {
+  const later = useTimers();
   const [phase, setPhase] = useState("idle");
   const [scanned, setScanned] = useState(0);
   const [fixed, setFixed] = useState([]);
   const [nope, setNope] = useState(false);
-  const timers = useRef([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const issues = pile.filter(r => r.issue).map(r => r.id);
-  const open = issues.filter(id => !fixed.includes(id));
+  const found = pile.slice(0, scanned).filter(r => r.issue);
+  const open = pile.filter(r => r.issue && !fixed.includes(r.id));
   const ready = phase === "review" && open.length === 0;
   const scan = () => {
     setPhase("scanning"); setScanned(0); setFixed([]);
-    const step = reducedMotion() ? 0 : 330;
-    pile.forEach((r, i) => timers.current.push(setTimeout(() => { setScanned(i + 1); r.issue ? sfx.alert() : sfx.scan(); if (i === pile.length - 1) setPhase("review"); }, step * (i + 1))));
+    pile.forEach((r, i) => later(() => { setScanned(i + 1); r.issue ? sfx.alert() : sfx.scan(); if (i === pile.length - 1) setPhase("review"); }, 380 * (i + 1)));
   };
-  const stamp = () => {
-    if (phase === "stamped") return;
-    if (!ready) { setNope(true); sfx.buzz(); timers.current.push(setTimeout(() => setNope(false), 500)); return; }
-    sfx.stamp(); setPhase("stamped");
-    timers.current.push(setTimeout(() => sfx.print(10), 350));
+  const approve = () => {
+    if (!ready) { setNope(true); sfx.buzz(); later(() => setNope(false), 450); return; }
+    setPhase("sealed"); sfx.stamp(); later(() => sfx.print(10), 420);
   };
-  const status = (r, i) => i >= scanned ? "wait" : r.issue && !fixed.includes(r.id) ? "bad" : "ok";
-  const hint = phase === "idle" ? "Coloque a pilha do dia no scanner." : phase === "scanning" ? "Conferindo título por título..." : phase === "stamped" ? "Aprovado, com histórico guardado." : open.length ? `${open.length} ${open.length > 1 ? "exceções" : "exceção"} antes da remessa. Corrija para liberar o carimbo.` : "Tudo certo. Pode carimbar.";
-  return <div className={`projectVisual toyVisual stampDesk phase-${phase}`}>
-    <div className="toyTop"><span className="flowEyebrow">MESA DE CONFERÊNCIA</span><span className="toyHint">{hint}</span></div>
-    <div className="deskBody">
-      <div className="deskPaper">
-        <div className="paperHead"><span>TÍTULO</span><span>FORNECEDOR</span><span>FORMA</span><span>R$</span></div>
-        {pile.map((r, i) => {
-          const st = status(r, i);
-          return <div key={r.id} className={`paperRow ${st} ${fixed.includes(r.id) ? "fixed" : ""}`}>
-            <span className="rowMark">{st === "wait" ? "·" : st === "bad" ? "!" : "✓"}</span>
-            <span>{r.id}</span><span>{r.who}</span><span>{fixed.includes(r.id) && r.id === "#1044" ? "Crédito em conta" : r.how}</span><span>{r.val}</span>
-            {st === "bad" && <button className="rowFix" onClick={() => { setFixed(f => [...f, r.id]); sfx.fix(); }}><b>{r.issue}</b><i>Corrigir</i></button>}
-            {fixed.includes(r.id) && <em className="rowFixed">{r.fix}</em>}
-          </div>;
-        })}
-        {phase === "scanning" && <i className="scanBeam" />}
-        {phase === "stamped" && <span className="inkStamp" aria-label="Aprovado">APROVADO<small>CONFERIDO · 5 TÍTULOS · 2 AJUSTES</small></span>}
+  const st = (r, i) => i >= scanned ? "wait" : r.issue && !fixed.includes(r.id) ? "bad" : "ok";
+  const hint = { idle: "A remessa do dia chegou na mesa.", scanning: "Conferindo título por título…", sealed: "Aprovado, com rastro de cada ajuste." }[phase] || (open.length ? `${open.length} ${open.length > 1 ? "exceções" : "exceção"} antes da remessa sair.` : "Tudo certo. A decisão é sua.");
+  return <div className={`projectVisual toyVisual deskVisual phase-${phase}`}>
+    <div className="toyTop"><span className="toyEyebrow">MESA DE CONFERÊNCIA</span><span className="toyHint">{hint}</span></div>
+    <div className="deskGrid">
+      <div className="paper">
+        <div className="paperTitle"><span>REMESSA · 01/11 · 5 TÍTULOS</span><strong>Pagamentos do dia</strong></div>
+        <div className="paperHead"><span /><span>Nº</span><span>Fornecedor</span><span>Forma</span><span>R$</span></div>
+        {pile.map((r, i) => { const s = st(r, i); return <div key={r.id} className={`paperRow ${s} ${fixed.includes(r.id) ? "fixed" : ""}`}>
+          <i className="rowStatus" /><span>{r.id}</span><span>{r.who}</span><span>{fixed.includes(r.id) && r.fixedHow ? r.fixedHow : r.how}</span><span>{r.val}</span>
+        </div>; })}
+        <div className="paperFoot">
+          <div className="approvalBox"><span>APROVAÇÃO</span>{phase === "sealed" && <div className="sealMark"><Seal /></div>}</div>
+          <div className="paperTotal"><span>TOTAL</span><b>7.900,30</b></div>
+        </div>
+        {phase === "scanning" && <i className="scanLine" />}
       </div>
-      <div className="deskSide">
-        {phase === "idle" ? <button className="deskStart" onClick={scan}>Conferir a pilha <span>→</span></button> : <button className={`stampTool ${nope ? "nope" : ""} ${phase === "stamped" ? "used" : ""} ${ready ? "ready" : ""}`} onClick={stamp} aria-label="Carimbar aprovação">
-          <svg viewBox="0 0 90 120" aria-hidden="true"><g className="stampMove"><circle className="knob" cx="45" cy="18" r="13" /><rect className="neck" x="38" y="29" width="14" height="34" rx="4" /><path className="base" d="M14 66h62l6 18H8Z" /><rect className="rubber" x="10" y="84" width="70" height="10" rx="2" /></g><rect className="pad" x="6" y="104" width="78" height="10" rx="3" /></svg>
-          <span>{phase === "stamped" ? "Carimbado" : "Carimbar"}</span>
-        </button>}
-        {phase === "stamped" && <div className="receipt"><b>RECIBO</b><span>14:02 · pilha conferida</span><span>2 exceções corrigidas</span><span>aprovado por pessoas</span><span>histórico salvo ✓</span></div>}
-        {phase === "stamped" && <button className="toyReset" onClick={() => { setPhase("idle"); setScanned(0); setFixed([]); }}>Nova pilha</button>}
-      </div>
+      <aside className="deskAside">
+        <span className="asideLabel">EXCEÇÕES {phase !== "idle" && <b>{open.length}/{pile.filter(r => r.issue).length}</b>}</span>
+        {phase === "idle" && <p className="asideEmpty">Nenhuma conferida ainda.</p>}
+        {phase !== "idle" && !found.length && <p className="asideEmpty">Procurando…</p>}
+        {found.map(r => <div key={r.id} className={`issueCard ${fixed.includes(r.id) ? "done" : ""}`}>
+          <span>Nº {r.id}</span>
+          <strong>{fixed.includes(r.id) ? r.fix : r.issue}</strong>
+          {!fixed.includes(r.id) && <><em>{r.impact}</em><button onClick={() => { setFixed(f => [...f, r.id]); sfx.fix(); }}>Corrigir</button></>}
+        </div>)}
+        <div className="asideAction">
+          {phase === "idle" && <button className="primaryAction" onClick={scan}>Conferir remessa</button>}
+          {(phase === "scanning" || phase === "review") && <button className={`primaryAction ${ready ? "" : "locked"} ${nope ? "nope" : ""}`} onClick={approve} disabled={phase === "scanning"}>{ready ? "Aprovar e selar" : "Aprovação travada"}</button>}
+          {phase === "sealed" && <div className="thermal"><b>LEOMADE · CONFERÊNCIA</b><span>5 títulos lidos</span><span>2 exceções corrigidas</span><span>aprovado às 14:02</span><span className="ok">histórico salvo ✓</span></div>}
+          {phase === "sealed" && <button className="ghostAction" onClick={() => { setPhase("idle"); setScanned(0); setFixed([]); }}>Nova remessa</button>}
+        </div>
+      </aside>
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;
 }
 
-/* 05 · Shape mold: four fronts, four ways of working, one language for management. */
+/* ───────── 05 · Closing platform: each front closes its day, one standard file, one panel. ───────── */
 const fronts = [
-  { id: 1, color: "#e5574a", shapes: ["circle", "tri", "star"] },
-  { id: 2, color: "#f3c84b", shapes: ["tri", "star", "diamond"] },
-  { id: 3, color: "#7cc4e8", shapes: ["star", "circle", "diamond"] },
-  { id: 4, color: "#c58fe0", shapes: ["diamond", "tri", "circle"] },
+  { id: "a", name: "Frente A", rule: "Filtra por forma de pagamento", total: 412, items: 38, color: "#b8f4d1" },
+  { id: "b", name: "Frente B", rule: "Separa adiantamentos", total: 1240, items: 91, color: "#d2e99b" },
+  { id: "c", name: "Frente C", rule: "Soma lançamentos manuais", total: 287, items: 24, color: "#eebda9" },
+  { id: "d", name: "Frente D", rule: "Converte moeda estrangeira", total: 640, items: 17, color: "#a9cdee" },
 ];
-function Shape({ kind, x, y, color }) {
-  const s = 9;
-  if (kind === "circle") return <circle cx={x} cy={y} r={s} fill={color} />;
-  if (kind === "tri") return <path d={`M${x} ${y - s}L${x + s} ${y + s * .8}H${x - s}Z`} fill={color} />;
-  if (kind === "diamond") return <path d={`M${x} ${y - s}L${x + s} ${y}L${x} ${y + s}L${x - s} ${y}Z`} fill={color} />;
-  return <path d={`M${x} ${y - s}L${x + 2.6} ${y - 3}L${x + s} ${y - 2.6}L${x + 4} ${y + 2}L${x + 5.5} ${y + s}L${x} ${y + 5}L${x - 5.5} ${y + s}L${x - 4} ${y + 2}L${x - s} ${y - 2.6}L${x - 2.6} ${y - 3}Z`} fill={color} />;
-}
-export function ShapeMold() {
+const pastDays = ["20", "21", "22", "23", "24", "27", "28", "29", "30", "31"];
+const money = k => k >= 1000 ? `R$ ${(k / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} mi` : `R$ ${k} mil`;
+export function ClosingHub() {
+  const later = useTimers();
   const [closed, setClosed] = useState([]);
-  const [busy, setBusy] = useState(null);
-  const timers = useRef([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const close = id => {
-    if (closed.includes(id) || busy) return;
-    setBusy(id); sfx.drop(0); sfx.drop(1); sfx.drop(2);
-    timers.current.push(setTimeout(() => { setClosed(c => [...c, id]); setBusy(null); [0, 1, 2].forEach(i => sfx.block(i)); }, reducedMotion() ? 0 : 750));
+  const [flying, setFlying] = useState(null);
+  const [range, setRange] = useState("hoje");
+  const close = f => {
+    if (closed.includes(f.id) || flying) return;
+    setFlying(f.id); sfx.print(4);
+    later(() => { setClosed(c => [...c, f.id]); setFlying(null); sfx.block(1); }, 900);
   };
-  const all = closed.length === fronts.length;
-  return <div className={`projectVisual toyVisual shapeMold ${all ? "allClosed" : ""}`}>
-    <div className="toyTop"><span className="flowEyebrow">CADA FRENTE NO SEU JEITO</span><span className="toyHint">{all ? "Quatro jeitos de trabalhar, uma língua só." : "Feche o dia de cada frente."}</span></div>
-    <svg className="moldArt" viewBox="0 0 400 250" aria-hidden="true">
-      {fronts.map((f, i) => {
-        const x = 50 + i * 100, done = closed.includes(f.id), going = busy === f.id;
-        return <g key={f.id} className={`front ${done ? "done" : ""} ${going ? "going" : ""}`} onClick={() => close(f.id)}>
-          <path className="hopper" d={`M${x - 34} 14h68l-18 46h-32Z`} />
-          <g className="hopperShapes">{f.shapes.map((k, j) => <g key={j} className="fallShape" style={{ "--j": j }}><Shape kind={k} x={x - 16 + j * 16} y={32 + (j % 2) * 8} color={f.color} /></g>)}</g>
-          <text x={x} y="8" textAnchor="middle">FRENTE {f.id}</text>
-        </g>;
-      })}
-      <rect className="mold" x="14" y="86" width="372" height="34" rx="8" />
-      {fronts.map((f, i) => <rect key={f.id} className={`moldHole ${busy === f.id ? "hot" : ""}`} x={36 + i * 100} y="94" width="28" height="18" rx="3" />)}
-      <text className="moldLabel" x="200" y="134" textAnchor="middle">CONTRATO DE COLUNAS</text>
-      <rect className="screen" x="60" y="146" width="280" height="98" rx="10" />
-      <text className="screenLabel" x="200" y="162" textAnchor="middle">PAINEL DA GESTÃO</text>
-      <line className="axis" x1="80" y1="232" x2="320" y2="232" />
-      {fronts.map((f, i) => closed.includes(f.id) && [0, 1, 2].map(b => <rect key={`${f.id}${b}`} className="block" style={{ "--b": b, "--c": f.color }} x={98 + i * 60} y={214 - b * 19} width="26" height="16" rx="3" />))}
-    </svg>
-    <div className="moldButtons">{fronts.map(f => <button key={f.id} disabled={closed.includes(f.id) || !!busy} onClick={() => close(f.id)} style={{ "--c": f.color }}><i />{closed.includes(f.id) ? "Fechada ✓" : `Fechar frente ${f.id}`}</button>)}{all && <button className="toyReset" onClick={() => setClosed([])}>Novo dia</button>}</div>
-    <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
-  </div>;
-}
-
-/* 07 · Ticket machine: messy requests become numbered tickets in a visible queue. */
-const kinds = [["EMBALAGEM", "12/11"], ["EVENTO", "18/11"], ["FLYER", "08/11"], ["POST", "06/11"], ["APRESENTAÇÃO", "21/11"]];
-const MAX = 6;
-export function TicketMachine() {
-  const [next, setNext] = useState(41);
-  const [queue, setQueue] = useState([]);
-  const [printing, setPrinting] = useState(null);
-  const [serving, setServing] = useState(null);
-  const [loose, setLoose] = useState(5);
-  const timers = useRef([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const take = () => {
-    if (printing) return;
-    const [type, due] = kinds[(next - 41) % kinds.length];
-    const t = { n: next, type, due };
-    setPrinting(t); setNext(n => n + 1); setLoose(l => Math.max(0, l - 1)); sfx.print(7);
-    timers.current.push(setTimeout(() => { setQueue(q => [...q, t]); setPrinting(null); }, reducedMotion() ? 0 : 950));
-  };
-  const call = () => { if (!queue.length) return; setServing(queue[0]); setQueue(q => q.slice(1)); sfx.ding(); };
-  const load = Math.min(1, queue.length / MAX);
-  const level = queue.length >= 5 ? "red" : queue.length >= 3 ? "yellow" : "green";
-  const msg = level === "red" ? "Fila cheia. Hora de renegociar prazo." : level === "yellow" ? "A fila está enchendo." : queue.length ? "Fila tranquila." : "Pegue uma senha.";
-  return <div className={`projectVisual toyVisual ticketMachine level-${level}`}>
-    <div className="toyTop"><span className="flowEyebrow">UM PEDIDO, UM CAMINHO</span><span className="toyHint">{msg}</span></div>
-    <div className="ticketBody">
-      <div className="chaos" aria-label="Pedidos soltos">{["E-MAIL", "WHATSAPP", "CORREDOR", "E-MAIL", "TEAMS"].slice(0, loose).map((c, i) => <span key={i} className="loose" style={{ "--i": i }}>{c}</span>)}{!loose && <span className="calm">Nada solto por aí.</span>}</div>
-      <div className="machine">
-        <svg viewBox="0 0 120 150" aria-hidden="true">
-          <rect className="mBody" x="14" y="10" width="92" height="118" rx="12" />
-          <rect className="mScreen" x="28" y="24" width="64" height="26" rx="4" />
-          <text className="mNum" x="60" y="43" textAnchor="middle">{String(next).padStart(3, "0")}</text>
-          <rect className="mSlot" x="30" y="112" width="60" height="6" rx="3" />
-          <rect className="mFoot" x="24" y="128" width="72" height="14" rx="4" />
-        </svg>
-        <button className="mButton" onClick={take} aria-label="Pegar uma senha"><span>PEGUE<br />SUA SENHA</span></button>
-        {printing && <div className="ticket printing"><b>SENHA {String(printing.n).padStart(3, "0")}</b><span>{printing.type}</span><small>PRAZO {printing.due}</small></div>}
+  const done = fronts.filter(f => closed.includes(f.id));
+  const total = done.reduce((s, f) => s + f.total, 0), items = done.reduce((s, f) => s + f.items, 0);
+  const all = done.length === fronts.length;
+  const shown = range === "hoje" ? { total, items } : { total: 52630 + total, items: 3470 + items };
+  return <div className={`projectVisual toyVisual hubVisual ${all ? "allIn" : ""}`}>
+    <div className="toyTop"><span className="toyEyebrow">FECHAMENTO DO DIA · 01/11</span><span className="toyHint">{all ? "Quatro regras diferentes, uma leitura só." : "Cada frente fecha o seu dia do seu jeito."}</span></div>
+    <div className="hubFronts">{fronts.map(f => { const isDone = closed.includes(f.id), isFly = flying === f.id; return <div key={f.id} className={`frontCol ${isDone ? "done" : ""} ${isFly ? "fly" : ""}`} style={{ "--c": f.color }}>
+      <div className="frontCard">
+        <span className="frontName"><i />{f.name}</span>
+        <span className="frontRule">{f.rule}</span>
+        <button onClick={() => close(f)} disabled={isDone || !!flying}>{isDone ? "Fechada ✓" : isFly ? "Gerando arquivo…" : "Fechar o dia"}</button>
       </div>
-      <div className="queueBoard">
-        <svg className="gauge" viewBox="0 0 120 70" aria-hidden="true">
-          <path className="arc g" d="M12 62A48 48 0 0 1 36 20.4" /><path className="arc y" d="M36 20.4A48 48 0 0 1 84 20.4" /><path className="arc r" d="M84 20.4A48 48 0 0 1 108 62" />
-          <g className="needle" style={{ "--a": `${-90 + 180 * load}deg` }}><path d="M60 62L60 22" /><circle cx="60" cy="62" r="5" /></g>
-        </svg>
-        <div className="boardCall"><span>ATENDENDO</span><b>{serving ? String(serving.n).padStart(3, "0") : "—"}</b></div>
-        <ol className="queueList">{queue.map(t => <li key={t.n}><b>{String(t.n).padStart(3, "0")}</b>{t.type}<small>{t.due}</small></li>)}</ol>
-        <button className="callNext" onClick={call} disabled={!queue.length}>Chamar próximo</button>
-      </div>
+      <div className="frontWire"><span className="fileChip">frente-{f.id}_2026-11-01</span></div>
+    </div>; })}</div>
+    <div className="hubFolder"><span className="folderIcon" /><div><b>Pasta compartilhada</b><span>um arquivo por frente por dia · mesmo contrato de colunas</span></div><span className="folderCount">{done.length}/4</span></div>
+    <div className="hubPanel">
+      <div className="panelHead"><span>PAINEL DA GESTÃO</span><div className="rangeSwitch">{["hoje", "mês"].map(r => <button key={r} aria-pressed={range === r} onClick={() => setRange(r)}>{r === "hoje" ? "Hoje" : "Mês"}</button>)}</div></div>
+      <div className="panelKpis"><div><span>Total pago</span><b>{shown.total ? money(shown.total) : "—"}</b></div><div><span>Lançamentos</span><b>{shown.items ? shown.items.toLocaleString("pt-BR") : "—"}</b></div><div><span>Frentes fechadas</span><b>{done.length}/4</b></div></div>
+      <div className="panelBar">{fronts.map(f => <i key={f.id} style={{ "--c": f.color, flexGrow: closed.includes(f.id) ? f.total : 0 }} />)}{!done.length && <span>aguardando os arquivos do dia</span>}</div>
+      <div className="panelCal"><span>DIAS ÚTEIS</span><div>{pastDays.map(d => <i key={d} className="filled" title={`${d}/10`} />)}<i className={`today ${all ? "filled" : done.length ? "partial" : ""}`} style={{ "--p": done.length / 4 }} title="01/11" /></div></div>
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;
 }
 
-/* 08 · Switchboard: plug each old field into its CRM field, then migrate. */
-const oldFields = [{ k: "fone", label: "Fone" }, { k: "cliente", label: "Cliente" }, { k: "uf", label: "UF" }, { k: "email", label: "E-mail" }];
-const newFields = [{ k: "cliente", label: "Account.Name" }, { k: "email", label: "Email" }, { k: "fone", label: "MobilePhone" }, { k: "uf", label: "State" }];
-const cableColors = { fone: "#e5574a", cliente: "#f3c84b", uf: "#7cc4e8", email: "#8fe0c0" };
-const ly = i => 46 + i * 44;
+/* ───────── 07 · Briefing portal: arrival, organization, delivery. ───────── */
+const raw = [
+  { ch: "WHATSAPP", text: "Faz aquele flyer? Pra ontem rs", type: "Flyer", pr: "Média", due: "06/11" },
+  { ch: "E-MAIL", text: "Arte do evento, urgente!!", type: "Evento", pr: "Alta", due: "08/11" },
+  { ch: "CORREDOR", text: "Embalagem nova, detalhes depois", type: "Embalagem", pr: "Alta", due: "12/11" },
+  { ch: "TEAMS", text: "Banner pro site, tamanho padrão", type: "Banner", pr: "Baixa", due: "14/11" },
+  { ch: "E-MAIL", text: "Ajustar post de ontem", type: "Post", pr: "Média", due: "05/11" },
+  { ch: "WHATSAPP", text: "Apresentação do cliente X", type: "Apresentação", pr: "Alta", due: "07/11" },
+];
+const CAP = 5;
+const cols = ["Fila", "Execução", "Aprovação", "Entregue"];
+export function BriefingFlow() {
+  const later = useTimers();
+  const [stage, setStage] = useState(1);
+  const [arrived, setArrived] = useState(3);
+  const [tickets, setTickets] = useState([]);
+  const [toast, setToast] = useState(null);
+  const arrive = () => { if (arrived >= raw.length) return; setArrived(a => a + 1); sfx.drop(0); };
+  const organize = () => {
+    setStage(2);
+    raw.slice(0, arrived).forEach((r, i) => later(() => { setTickets(t => [...t, { ...r, id: 42 + i, col: 0 }]); sfx.key(i % 3); }, 260 * (i + 1)));
+  };
+  const advance = id => {
+    setTickets(ts => ts.map(t => {
+      if (t.id !== id || t.col >= 3) return t;
+      const col = t.col + 1;
+      if (col === 3) { sfx.ding(); setToast(`MKT-0${t.id} entregue · solicitante avisado por e-mail`); later(() => setToast(null), 2600); } else sfx.floor();
+      return { ...t, col };
+    }));
+  };
+  const reset = () => { setStage(1); setArrived(3); setTickets([]); setToast(null); };
+  const load = tickets.filter(t => t.col < 3).length;
+  const over = load > CAP;
+  const hint = stage === 1 ? `${arrived} pedidos soltos. Nenhum com briefing completo.` : stage === 2 ? (over ? "A fila passou da capacidade. Dá para renegociar com dados." : "Cada pedido virou um card com tipo, prioridade e prazo.") : "Execução, aprovação e aviso automático a quem pediu.";
+  return <div className={`projectVisual toyVisual briefVisual stage-${stage}`}>
+    <div className="toyTop"><span className="toyEyebrow">PORTAL DE BRIEFING</span><span className="toyHint">{hint}</span></div>
+    <ol className="briefSteps">{["Chegada", "Organização", "Entrega"].map((s, i) => <li key={s} className={stage === i + 1 ? "on" : stage > i + 1 ? "past" : ""}><b>0{i + 1}</b>{s}</li>)}</ol>
+    {stage === 1 && <div className="inboxStage">
+      <div className="inboxPile">{raw.slice(0, arrived).map((r, i) => <div key={i} className="looseNote" style={{ "--i": i }}><span>{r.ch}</span>{r.text}</div>)}</div>
+      <div className="inboxSide">
+        <div className="inboxStats"><div><b>{arrived}</b><span>pedidos</span></div><div><b>0</b><span>com briefing</span></div><div><b>?</b><span>prazo real</span></div></div>
+        <button className="ghostAction" onClick={arrive} disabled={arrived >= raw.length}>Chega mais um</button>
+        <button className="primaryAction" onClick={organize}>Organizar pelo portal</button>
+      </div>
+    </div>}
+    {stage >= 2 && <div className="boardStage">
+      <div className="kanban">{cols.map((c, ci) => <div key={c} className="kCol"><span className="kHead">{c} <b>{tickets.filter(t => t.col === ci).length}</b></span>
+        {tickets.filter(t => t.col === ci).map(t => <button key={t.id} className={`kCard pr-${t.pr}`} onClick={() => stage === 3 && advance(t.id)} disabled={stage !== 3 || t.col === 3}>
+          <span className="kId">MKT-0{t.id}<i>{t.pr}</i></span><strong>{t.type}</strong><span className="kMeta">prazo {t.due} · briefing ✓</span>
+        </button>)}
+      </div>)}</div>
+      <div className="boardFoot">
+        <div className={`capacity ${over ? "over" : ""}`}><span>CAPACIDADE</span><div className="capBar"><i style={{ width: `${Math.min(100, (load / CAP) * 100)}%` }} /><em style={{ left: "100%" }} /></div><b>{load}/{CAP}</b></div>
+        {stage === 2 && <button className="primaryAction" onClick={() => setStage(3)} disabled={tickets.length < arrived}>Executar</button>}
+        {stage === 3 && (toast ? <span className="toast" key={toast}><i />{toast}</span> : <span className="boardTip">Toque num card para avançar uma etapa.</span>)}
+        <button className="ghostAction" onClick={reset}>Recomeçar</button>
+      </div>
+    </div>}
+    <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
+  </div>;
+}
+
+/* ───────── 08 · Switchboard: connect legacy fields to the CRM, then load and reconcile. ───────── */
+const legacy = [{ k: "fone", label: "Fone", sample: "11 98877-6655" }, { k: "cliente", label: "Cliente", sample: "Padaria Aurora" }, { k: "uf", label: "UF", sample: "sp" }, { k: "email", label: "E-mail", sample: "contato@aurora…" }];
+const crm = [{ k: "cliente", label: "Account.Name", type: "lookup" }, { k: "email", label: "Email", type: "e-mail" }, { k: "fone", label: "MobilePhone", type: "telefone" }, { k: "uf", label: "State", type: "2 letras" }];
+const rules = { fone: "formato (11) 9xxxx-xxxx", cliente: "busca a conta pelo nome", uf: "maiúsculas, 2 letras", email: "valida o formato" };
+const wireColor = { fone: "#eebda9", cliente: "#d2e99b", uf: "#a9cdee", email: "#b8f4d1" };
+const py = i => 52 + i * 50;
 export function Switchboard() {
+  const later = useTimers();
   const [links, setLinks] = useState({});
   const [pending, setPending] = useState(null);
   const [wrong, setWrong] = useState(null);
-  const [migrated, setMigrated] = useState(false);
-  const timers = useRef([]);
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const pickOld = k => { if (links[k] !== undefined || migrated) return; setPending(k); sfx.key(1); };
-  const pickNew = j => {
+  const [load, setLoad] = useState("idle");
+  const pickL = k => { if (links[k] !== undefined || load !== "idle") return; setPending(k); sfx.key(1); };
+  const pickR = j => {
     if (!pending || Object.values(links).includes(j)) return;
-    if (newFields[j].k === pending) { setLinks(l => ({ ...l, [pending]: j })); sfx.plug(); }
-    else { setWrong({ from: pending, to: j }); sfx.buzz(); timers.current.push(setTimeout(() => setWrong(null), 900)); }
+    if (crm[j].k === pending) { setLinks(l => ({ ...l, [pending]: j })); sfx.plug(); }
+    else { setWrong({ from: pending, to: j }); sfx.buzz(); later(() => setWrong(null), 900); }
     setPending(null);
   };
-  const done = Object.keys(links).length === oldFields.length;
-  const cable = (k, j) => { const i = oldFields.findIndex(f => f.k === k); const y1 = ly(i), y2 = ly(j); return `M96 ${y1}C190 ${y1 + 46} 210 ${y2 + 46} 304 ${y2}`; };
-  const hint = migrated ? "4 registros chegaram com significado. 1 ficou na quarentena." : done ? "Tudo plugado. Puxe a alavanca para migrar." : pending ? `Agora escolha para onde vai "${oldFields.find(f => f.k === pending).label}".` : "Toque num campo antigo e depois no campo do CRM.";
-  return <div className={`projectVisual toyVisual switchboard ${migrated ? "migrated" : ""}`}>
-    <div className="toyTop"><span className="flowEyebrow">MESA DE TELEFONISTA · DATA MAPPING</span><span className="toyHint">{hint}</span></div>
-    <svg className="boardArt" viewBox="0 0 400 240" aria-hidden="true">
-      <rect className="panel" x="6" y="12" width="388" height="208" rx="14" />
-      <text className="colLabel" x="62" y="28" textAnchor="middle">SISTEMA ANTIGO</text>
-      <text className="colLabel" x="338" y="28" textAnchor="middle">CRM</text>
-      {Object.entries(links).map(([k, j]) => <path key={k} className="cable" d={cable(k, j)} style={{ stroke: cableColors[k] }} />)}
-      {wrong && <path className="cable wrong" d={cable(wrong.from, wrong.to)} />}
-      {migrated && Object.entries(links).map(([k, j], i) => <circle key={k} className="packet" r="5" style={{ fill: cableColors[k] }}><animateMotion dur="1.4s" begin={`${i * .15}s`} repeatCount="indefinite" path={cable(k, j)} /></circle>)}
-      {oldFields.map((f, i) => <g key={f.k} className={`jack old ${pending === f.k ? "pending" : ""} ${links[f.k] !== undefined ? "linked" : ""}`} onClick={() => pickOld(f.k)}>
-        <rect x="18" y={ly(i) - 15} width="66" height="30" rx="8" /><text x="51" y={ly(i) + 4} textAnchor="middle">{f.label}</text><circle className="hole" cx="96" cy={ly(i)} r="7" style={{ "--c": cableColors[f.k] }} />
+  const done = Object.keys(links).length === legacy.length;
+  const run = () => { setLoad("running"); sfx.lever(); later(() => { setLoad("done"); sfx.fix(); }, 2200); };
+  const path = (k, j) => { const i = legacy.findIndex(f => f.k === k); const y1 = py(i), y2 = py(j); return `M150 ${y1}C230 ${y1} 250 ${y2} 330 ${y2}`; };
+  const hint = load === "done" ? "4 registros chegaram limpos. 1 ficou de quarentena para revisão." : load === "running" ? "Carregando no CRM…" : done ? "Mapeamento completo. Pode executar a carga." : wrong ? "Esses campos não combinam: o tipo é diferente." : pending ? `Para onde vai “${legacy.find(f => f.k === pending).label}”?` : "Toque num campo antigo e depois no campo do CRM.";
+  return <div className={`projectVisual toyVisual switchVisual load-${load}`}>
+    <div className="toyTop"><span className="toyEyebrow">DATA MAPPING · LEGADO → CRM</span><span className="toyHint">{hint}</span></div>
+    <svg className="patch" viewBox="0 0 480 250" aria-hidden="true">
+      <defs><pattern id="grid8" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0H0V16" className="gridLine" /></pattern></defs>
+      <rect className="patchBg" x="1" y="1" width="478" height="248" rx="14" />
+      <rect x="1" y="1" width="478" height="248" rx="14" fill="url(#grid8)" />
+      <text className="colTitle" x="22" y="26">LEGADO</text><text className="colTitle" x="458" y="26" textAnchor="end">CRM</text>
+      {Object.entries(links).map(([k, j]) => <path key={k} className="wire" d={path(k, j)} style={{ stroke: wireColor[k] }} />)}
+      {wrong && <path className="wire bad" d={path(wrong.from, wrong.to)} />}
+      {load === "running" && Object.entries(links).map(([k, j], i) => <circle key={k} r="4" className="packet" style={{ fill: wireColor[k] }}><animateMotion dur="1.1s" begin={`${i * .12}s`} repeatCount="2" path={path(k, j)} /></circle>)}
+      {legacy.map((f, i) => <g key={f.k} className={`port left ${pending === f.k ? "pending" : ""} ${links[f.k] !== undefined ? "linked" : ""}`} onClick={() => pickL(f.k)} style={{ "--w": wireColor[f.k] }}>
+        <rect x="18" y={py(i) - 19} width="120" height="38" rx="9" /><text className="pLabel" x="30" y={py(i) - 3}>{f.label}</text><text className="pSample" x="30" y={py(i) + 11}>{f.sample}</text><circle cx="150" cy={py(i)} r="6" className="jack" />
       </g>)}
-      {newFields.map((f, j) => <g key={f.k} className={`jack new ${Object.values(links).includes(j) ? "linked" : ""} ${pending ? "target" : ""}`} onClick={() => pickNew(j)}>
-        <circle className="hole" cx="304" cy={ly(j)} r="7" /><rect x="316" y={ly(j) - 15} width="74" height="30" rx="8" /><text x="353" y={ly(j) + 4} textAnchor="middle">{f.label}</text>
+      {crm.map((f, j) => <g key={f.k} className={`port right ${Object.values(links).includes(j) ? "linked" : ""} ${pending ? "target" : ""}`} onClick={() => pickR(j)}>
+        <circle cx="330" cy={py(j)} r="6" className="jack" /><rect x="342" y={py(j) - 19} width="120" height="38" rx="9" /><text className="pLabel" x="354" y={py(j) - 3}>{f.label}</text><text className="pSample" x="354" y={py(j) + 11}>{f.type}</text>
       </g>)}
     </svg>
-    <div className="boardFoot">
-      <button className={`lever ${migrated ? "pulled" : ""}`} disabled={!done || migrated} onClick={() => { setMigrated(true); sfx.lever(); }}><i />{migrated ? "Migrado" : "Migrar"}</button>
-      <div className="quarantine"><span>QUARENTENA</span><b>{migrated ? "1" : "0"}</b>{migrated && <i className="dirty" title="Telefone sem número" />}</div>
-      <div className="tally"><span>ENVIADOS <b>{migrated ? 5 : 0}</b></span><span>CHEGARAM <b>{migrated ? 4 : 0}</b></span><span className={migrated ? "ok" : ""}>{migrated ? "CONFERIDO ✓" : "AGUARDANDO"}</span></div>
-      {migrated && <button className="toyReset" onClick={() => { setLinks({}); setMigrated(false); }}>Recomeçar</button>}
+    <div className="mapFoot">
+      <div className="mapTable"><span className="mapHead">MAPEAMENTO</span>{legacy.filter(f => links[f.k] !== undefined).map(f => <div key={f.k} className="mapRow"><i style={{ background: wireColor[f.k] }} /><span>{f.label} → {crm[links[f.k]].label}</span><em>{rules[f.k]}</em></div>)}{!Object.keys(links).length && <em className="mapEmpty">nenhum campo ligado ainda</em>}</div>
+      <div className="loadBox">
+        {load === "idle" && <button className="primaryAction" onClick={run} disabled={!done}>Executar carga</button>}
+        {load !== "idle" && <div className="progress"><i className={load} /></div>}
+        {load === "done" && <div className="recon"><span>ENVIADOS <b>5</b></span><span>CHEGARAM <b>4</b></span><span className="q">QUARENTENA <b>1</b> · telefone sem número</span><span className="ok">CONFERIDO ✓</span></div>}
+        {load === "done" && <button className="ghostAction" onClick={() => { setLinks({}); setLoad("idle"); }}>Recomeçar</button>}
+      </div>
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;

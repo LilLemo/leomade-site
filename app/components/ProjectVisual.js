@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import EmbateShowcase from "./EmbateShowcase";
-import { StampDesk, ShapeMold, TicketMachine, Switchboard } from "./CaseToys";
+import { StampDesk, ClosingHub, BriefingFlow, Switchboard } from "./CaseToys";
 
 // Fictional data only. Nothing here comes from a real company base.
 const queue = {
@@ -95,8 +95,8 @@ export default function ProjectVisual({ project }) {
   if (project.type === "embate") return <EmbateShowcase />;
   if (project.type === "treemap") return <TreemapDemo />;
   if (project.type === "stamp") return <StampDesk />;
-  if (project.type === "mold") return <ShapeMold />;
-  if (project.type === "ticket") return <TicketMachine />;
+  if (project.type === "mold") return <ClosingHub />;
+  if (project.type === "ticket") return <BriefingFlow />;
   if (project.type === "switchboard") return <Switchboard />;
   if (project.type === "mask") return <MaskDemo />;
   if (project.type === "komu") return <div className="projectVisual komuVisual">
