@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { sfx } from "./sound";
+import PixelHand from "./PixelHand";
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function useTimers() {
@@ -25,28 +26,6 @@ const deskRules = [
 ];
 const obsText = { cod: "1042 · boleto sem código de barras", forma: "1044 · mesmo banco pago por TED", valor: "1045 · valor diferente da NF" };
 const stampLabel = { ok: "APROVADO", no: "NEGADO" };
-const HAND = [
-  "....##..........",
-  "...#ww#.........",
-  "...#ww#.........",
-  "...#ww#.........",
-  "...#ww#########.",
-  ".###wwwwwwwwwww#",
-  "#gw#wwwwwwwwwww#",
-  "#gw#ww#########.",
-  "#gwwwwwwwww#....",
-  "#gwwww#####.....",
-  "#gwwwwwwwww#....",
-  ".#gwww#####.....",
-  "..#wwwwwww#.....",
-  "...#######......",
-];
-const handInk = { "#": "#0c1a14", g: "#c3c8bd", w: "#fbfaf4" };
-function PixelHand({ dir = "right" }) {
-  return <svg className={`pixelHand ${dir}`} viewBox="0 0 16 14" shapeRendering="crispEdges" aria-hidden="true">
-    {HAND.flatMap((row, y) => [...row].map((c, x) => (c === "." ? null : <rect key={`${x}-${y}`} x={x} y={y} width="1.02" height="1.02" fill={handInk[c]} />)))}
-  </svg>;
-}
 function StampArt({ kind }) {
   return <span className={`stampArt ${kind}`} aria-hidden="true">
     <span className="sHandle"><i className="neck" /><i className="ball" /></span>

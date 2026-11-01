@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PixelHand from "./PixelHand";
 
 const views = [
   { label: "Arena", image: "01-entrada-na-arena.png", width: 610, height: 565, title: "Dados econômicos com energia de arcade.", text: "Criei uma experiência inspirada nos jogos de luta dos anos 1990, com identidade visual, música 16-bit e efeitos sonoros opcionais.", alt: "Tela de entrada do Embate dos Governos com a identidade visual de arcade e opções de entrar com ou sem som." },
@@ -16,7 +17,10 @@ export default function EmbateShowcase() {
   const current = views[view];
   return <div className="projectVisual embateShowcase" onKeyDown={e => e.stopPropagation()}>
     <div className="embateShowcaseTop"><span>EMBATE DOS GOVERNOS</span><span>DADOS × DESIGN × INTERAÇÃO</span></div>
-    <nav className="embateViews" aria-label="Telas do Embate dos Governos">{views.map((item, i) => <button key={item.label} aria-pressed={view === i} onClick={() => { setView(i); setZoom(false); }}><span>0{i + 1}</span>{item.label}</button>)}</nav>
+    <div className="embateNavRow">
+  <nav className="embateViews" aria-label="Telas do Embate dos Governos">{views.map((item, i) => <button key={item.label} aria-pressed={view === i} onClick={() => { setView(i); setZoom(false); }}><span>0{i + 1}</span>{item.label}</button>)}</nav>
+      <a className="embatePlay" href="https://embate-dos-governos.vercel.app/" target="_blank" rel="noreferrer"><PixelHand /><span className="playBtn"><b>TESTE AQUI</b><small>abre o site ao vivo ↗</small></span></a>
+    </div>
     <figure className="embateCapture"><div className={`embateImageFrame ${zoom ? "zoomed" : ""}`} tabIndex={zoom ? 0 : undefined} aria-label={zoom ? "Imagem ampliada. Role para ver os detalhes." : undefined}><img key={current.image} src={`/projects/embate/${current.image}`} width={current.width} height={current.height} alt={current.alt} loading="lazy" draggable="false" /></div><figcaption><span>TELA REAL DO MEU PROJETO</span><button onClick={() => setZoom(!zoom)} aria-pressed={zoom}>{zoom ? "Ver tela inteira ↙" : "Ampliar detalhes ↗"}</button></figcaption></figure>
     <div className="embateViewStory" aria-live="polite"><h4>{current.title}</h4><p>{current.text}</p></div>
     <div className="embateCapabilities"><span>Python + dados tratados</span><span>Mapa + gráficos</span><span>INPC / IPCA</span><span>Cálculos transparentes</span></div>
