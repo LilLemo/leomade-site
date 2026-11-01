@@ -10,73 +10,214 @@ function useTimers() {
   return (fn, ms) => timers.current.push(setTimeout(fn, reducedMotion() ? 0 : ms));
 }
 
-/* ───────── 04 · Conference desk: scan, fix the exceptions, seal it. ───────── */
-const pile = [
-  { id: "1041", who: "Padaria Aurora", how: "Boleto", val: "1.280,00" },
-  { id: "1042", who: "Transportes Rio Claro", how: "Boleto", val: "3.215,40", issue: "Boleto sem código de barras", impact: "Travaria a remessa inteira.", fix: "Código de barras incluído" },
-  { id: "1043", who: "Gráfica Ponto Final", how: "TED", val: "860,00" },
-  { id: "1044", who: "Mercado Bom Fim", how: "TED", val: "2.004,90", issue: "Conta do mesmo banco marcada como TED", impact: "Seria rejeitado pelo banco.", fix: "Ajustado para crédito em conta", fixedHow: "Crédito em conta" },
-  { id: "1045", who: "Café Duas Pontes", how: "Crédito em conta", val: "540,00" },
+/* ───────── 04 · Inspection desk: open the clipboard, hunt with the lens, type the fixes, print, stamp. ───────── */
+const remessa = [
+  { id: "1041", who: "Padaria Aurora", det: "cód. 23793.38128 60082", how: "Boleto", val: "1.280,00" },
+  { id: "1042", who: "Transportes Rio Claro", det: "cód. barras: ausente", how: "Boleto", val: "3.215,40", err: { cell: "det", key: "cod", fix: "cód. 34191.79001 01043" } },
+  { id: "1043", who: "Gráfica Ponto Final", det: "banco 237 · ag. 0912", how: "TED", val: "860,00" },
+  { id: "1044", who: "Mercado Bom Fim", det: "banco 001 · ag. 3310", how: "TED", val: "2.004,90", err: { cell: "how", key: "forma", fix: "Créd. conta" } },
+  { id: "1045", who: "Café Duas Pontes", det: "NF 450,00", how: "Créd. conta", val: "540,00", err: { cell: "val", key: "valor", fix: "450,00" } },
 ];
-
-function Seal() {
-  return <svg className="seal" viewBox="0 0 160 160" aria-hidden="true">
-    <defs><path id="sealArc" d="M80 80m-58 0a58 58 0 1 1 116 0a58 58 0 1 1-116 0" /></defs>
-    <circle cx="80" cy="80" r="72" className="sealRing" /><circle cx="80" cy="80" r="44" className="sealRing thin" />
-    <text className="sealText"><textPath href="#sealArc" startOffset="0">CONFERIDO · APROVADO POR PESSOAS · HISTÓRICO SALVO ·</textPath></text>
-    <path className="sealCheck" d="M62 80l12 12 24-26" />
-    <text className="sealDate" x="80" y="112" textAnchor="middle">01·11</text>
-  </svg>;
-}
+const deskRules = [
+  { k: "cod", t: "Boleto só sai com código de barras." },
+  { k: "forma", t: "Conta no banco do pagador (001) recebe por crédito em conta, não TED." },
+  { k: "valor", t: "O valor tem que bater com a nota fiscal." },
+];
+const obsText = { cod: "1042 · boleto sem código de barras", forma: "1044 · mesmo banco pago por TED", valor: "1045 · valor diferente da NF" };
+const stampLabel = { ok: "APROVADO", no: "NEGADO" };
 
 export function StampDesk() {
   const later = useTimers();
-  const [phase, setPhase] = useState("idle");
-  const [scanned, setScanned] = useState(0);
+  const sheetRef = useRef(null), downAt = useRef(null), queue = useRef(Promise.resolve()), gen = useRef(0);
+  const [cover, setCover] = useState("closed");
+  const [tool, setTool] = useState(null);
+  const [pt, setPt] = useState(null);
+  const [hoverErr, setHoverErr] = useState(null);
+  const [found, setFound] = useState([]);
+  const [typed, setTyped] = useState({});
+  const [typing, setTyping] = useState(null);
   const [fixed, setFixed] = useState([]);
-  const [nope, setNope] = useState(false);
-  const found = pile.slice(0, scanned).filter(r => r.issue);
-  const open = pile.filter(r => r.issue && !fixed.includes(r.id));
-  const ready = phase === "review" && open.length === 0;
-  const scan = () => {
-    setPhase("scanning"); setScanned(0); setFixed([]);
-    pile.forEach((r, i) => later(() => { setScanned(i + 1); r.issue ? sfx.alert() : sfx.scan(); if (i === pile.length - 1) setPhase("review"); }, 380 * (i + 1)));
+  const [print, setPrint] = useState("none");
+  const [drag, setDrag] = useState(null);
+  const [note, setNote] = useState(null);
+  const [stamps, setStamps] = useState([]);
+  const [press, setPress] = useState(0);
+  const [flash, setFlash] = useState(null);
+  const allFixed = fixed.length === 3;
+  const isOpen = cover === "open";
+  const say = m => { setFlash(m); later(() => setFlash(f => (f === m ? null : f)), 2400); };
+
+  const typeOut = (key, text, done) => {
+    const g = gen.current;
+    queue.current = queue.current.then(() => new Promise(res => {
+      if (gen.current !== g) return res();
+      setTyping(key);
+      const step = i => {
+        if (gen.current !== g) return res();
+        setTyped(t => ({ ...t, [key]: i }));
+        if (text[i - 1] !== " ") sfx.type(i);
+        if (i < text.length) later(() => step(i + 1), 40);
+        else { setTyping(null); done && done(); res(); }
+      };
+      step(1);
+    }));
   };
-  const approve = () => {
-    if (!ready) { setNope(true); sfx.buzz(); later(() => setNope(false), 450); return; }
-    setPhase("sealed"); sfx.stamp(); later(() => sfx.print(10), 420);
+  const openBoard = () => { if (cover !== "closed") return; setCover("opening"); sfx.clip(); later(() => sfx.flip(), 140); later(() => setCover("open"), 640); };
+  const pickTool = k => { setTool(t => (t === k ? null : k)); setPt(null); setHoverErr(null); k === "lens" ? sfx.pop() : sfx.pick(); };
+  const markFound = k => {
+    if (found.includes(k)) return;
+    setFound(f => [...f, k]); sfx.alert();
+    typeOut("obs-" + k, obsText[k]);
   };
-  const st = (r, i) => i >= scanned ? "wait" : r.issue && !fixed.includes(r.id) ? "bad" : "ok";
-  const hint = { idle: "A remessa do dia chegou na mesa.", scanning: "Conferindo título por título…", sealed: "Aprovado, com rastro de cada ajuste." }[phase] || (open.length ? `${open.length} ${open.length > 1 ? "exceções" : "exceção"} antes da remessa sair.` : "Tudo certo. A decisão é sua.");
-  return <div className={`projectVisual toyVisual deskVisual phase-${phase}`}>
-    <div className="toyTop"><span className="toyEyebrow">MESA DE CONFERÊNCIA</span><span className="toyHint">{hint}</span></div>
-    <div className="deskGrid">
-      <div className="paper">
-        <div className="paperTitle"><span>REMESSA · 01/11 · 5 TÍTULOS</span><strong>Pagamentos do dia</strong></div>
-        <div className="paperHead"><span /><span>Nº</span><span>Fornecedor</span><span>Forma</span><span>R$</span></div>
-        {pile.map((r, i) => { const s = st(r, i); return <div key={r.id} className={`paperRow ${s} ${fixed.includes(r.id) ? "fixed" : ""}`}>
-          <i className="rowStatus" /><span>{r.id}</span><span>{r.who}</span><span>{fixed.includes(r.id) && r.fixedHow ? r.fixedHow : r.how}</span><span>{r.val}</span>
-        </div>; })}
-        <div className="paperFoot">
-          <div className="approvalBox"><span>APROVAÇÃO</span>{phase === "sealed" && <div className="sealMark"><Seal /></div>}</div>
-          <div className="paperTotal"><span>TOTAL</span><b>7.900,30</b></div>
-        </div>
-        {phase === "scanning" && <i className="scanLine" />}
+  const fix = k => {
+    if (typing || fixed.includes(k)) return;
+    const e = remessa.find(r => r.err?.key === k).err;
+    typeOut("fix-" + k, e.fix, () => { setFixed(f => [...f, k]); sfx.bell(); });
+  };
+  const doPrint = () => { setPrint("printing"); sfx.print(18); later(() => setPrint("ready"), 1650); };
+  const reset = () => {
+    gen.current++; queue.current = Promise.resolve(); sfx.flip();
+    setCover("closed"); setTool(null); setPt(null); setFound([]); setTyped({}); setTyping(null); setFixed([]); setPrint("none"); setDrag(null); setNote(null); setStamps([]); setFlash(null);
+  };
+
+  const where = e => { const r = sheetRef.current.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top, w: r.width, h: r.height }; };
+  const onSheetMove = e => {
+    if (e.type === "pointerdown") downAt.current = { x: e.clientX, y: e.clientY };
+    if (!tool) return;
+    setPt(where(e));
+    if (tool === "lens") {
+      const el = document.elementFromPoint(e.clientX, e.clientY)?.closest?.("[data-err]");
+      const k = el && !fixed.includes(el.dataset.err) ? el.dataset.err : null;
+      if (k !== hoverErr) { setHoverErr(k); if (k && !found.includes(k)) sfx.scan(); }
+    }
+  };
+  const onSheetClick = e => {
+    if (!tool) return;
+    if (tool === "lens") {
+      if (e.target.closest("button")) return;
+      const at = downAt.current || { x: e.clientX, y: e.clientY };
+      const el = document.elementFromPoint(at.x, at.y)?.closest?.("[data-err]") || e.target.closest("[data-err]");
+      if (el && !fixed.includes(el.dataset.err)) markFound(el.dataset.err);
+      else if (e.target.closest(".sRow:not(.head)")) { sfx.scan(); say("Esse campo está ok."); }
+      return;
+    }
+    const p = where(downAt.current ? { clientX: downAt.current.x, clientY: downAt.current.y } : e);
+    setStamps(s => [...s.slice(-89), { id: `${Date.now()}-${Math.random()}`, x: (p.x / p.w) * 100, y: (p.y / p.h) * 100, r: Math.round(Math.random() * 22 - 11), k: tool }]);
+    setPress(n => n + 1); sfx.stamp();
+    const n = stamps.length + 1;
+    if (tool === "ok" && !allFixed) say("Aprovar com erro? Isso voltaria do banco.");
+    else if (n === 1 && tool === "no" && allFixed) say("Negado. Fica registrado do mesmo jeito.");
+  };
+
+  const onNoteDown = e => { if (print !== "ready") return; e.currentTarget.setPointerCapture(e.pointerId); setDrag({ x0: e.clientX, y0: e.clientY, dx: 0, dy: 0, moved: false }); };
+  const onNoteMove = e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0, moved = drag.moved || Math.hypot(dx, dy) > 6;
+    if (moved && !drag.moved) sfx.tear();
+    setDrag({ ...drag, dx, dy, moved });
+  };
+  const place = (x, y, wPct = 22, hPct = 26) => { setNote({ x: Math.max(0, Math.min(x, 99 - wPct)), y: Math.max(0, Math.min(y, 99 - hPct)), r: (Math.random() * 6 - 3).toFixed(1) }); setPrint("placed"); sfx.drop(1); };
+  const onNoteUp = e => {
+    if (!drag) return;
+    const sr = sheetRef.current.getBoundingClientRect(), nr = e.currentTarget.getBoundingClientRect();
+    const cx = nr.left + nr.width / 2, cy = nr.top + nr.height / 2, wp = (nr.width / sr.width) * 100, hp = (nr.height / sr.height) * 100;
+    if (!drag.moved) { sfx.tear(); const s = sheetRef.current.querySelector(".receiptSlot").getBoundingClientRect(); place(((s.left - sr.left) / sr.width) * 100, ((s.top - sr.top) / sr.height) * 100, wp, hp); }
+    else if (cx > sr.left && cx < sr.right && cy > sr.top && cy < sr.bottom) place(((nr.left - sr.left) / sr.width) * 100, ((nr.top - sr.top) / sr.height) * 100, wp, hp);
+    else sfx.pop();
+    setDrag(null);
+  };
+
+  const receiptBody = <div className="receiptPaper">
+    <b>LEOMADE</b><span>CONFERÊNCIA 01/11</span><span>5 títulos lidos</span><span>3 corrigidos</span><span>R$ 7.810,30</span><span className="ok">pronto ✓</span>
+  </div>;
+
+  const cellOf = (r, cell, text, reveal) => {
+    const e = r.err && r.err.cell === cell ? r.err : null;
+    if (!e) return <span className={`c-${cell}`}>{text}</span>;
+    const k = e.key, isFixed = fixed.includes(k), n = typed["fix-" + k];
+    const state = isFixed ? "fixedCell" : found.includes(k) ? "flag marked" : reveal ? "flag" : "";
+    return <span className={`c-${cell} errCell ${state}`} data-err={reveal ? undefined : k}>
+      {n ? <em className="typed">{e.fix.slice(0, n)}{typing === "fix-" + k && <i className="caret" />}</em> : text}
+    </span>;
+  };
+  const renderSheet = reveal => <div className={`sheet ${reveal ? "clone" : ""} ${!reveal && tool ? "tool-" + tool : ""}`} ref={reveal ? undefined : sheetRef} aria-hidden={reveal || undefined}
+    onPointerMove={reveal ? undefined : onSheetMove} onPointerDown={reveal ? undefined : onSheetMove} onPointerLeave={reveal ? undefined : () => { setPt(null); setHoverErr(null); }} onClick={reveal ? undefined : onSheetClick}
+    style={reveal ? { width: pt?.w } : undefined}>
+    <div className="sheetHead"><div><span>REMESSA · 01/11 · 5 TÍTULOS</span><strong>Pagamentos do dia</strong></div><div className="sheetMeta">PAGADOR · BANCO 001<br />CONFERENTE · VOCÊ</div></div>
+    <div className="sRow head"><span>Nº</span><span>Fornecedor</span><span>Forma</span><span>R$</span></div>
+    {remessa.map(r => <div key={r.id} className="sRow">
+      <span className="mono">{r.id}</span>
+      <span className="who"><b>{r.who}</b>{cellOf(r, "det", r.det, reveal)}</span>
+      {cellOf(r, "how", r.how, reveal)}
+      {cellOf(r, "val", r.val, reveal)}
+    </div>)}
+    <div className="sheetFoot">
+      <div className="obs"><span className="sLabel">OBSERVAÇÕES DA CONFERÊNCIA</span>
+        <ol>{found.map(k => { const t = obsText[k], n = typed["obs-" + k] || 0, done = fixed.includes(k); return <li key={k} className={done ? "done" : ""}>
+          <em className="typed">{t.slice(0, n)}{typing === "obs-" + k && <i className="caret" />}</em>
+          {!reveal && n >= t.length && !done && <button className="fixBtn" onClick={() => fix(k)} disabled={!!typing}>corrigir</button>}
+          {done && <b className="okTick">CORRIGIDO</b>}
+        </li>; })}{!found.length && <li className="empty">Nenhuma até agora.</li>}</ol>
       </div>
-      <aside className="deskAside">
-        <span className="asideLabel">EXCEÇÕES {phase !== "idle" && <b>{open.length}/{pile.filter(r => r.issue).length}</b>}</span>
-        {phase === "idle" && <p className="asideEmpty">Nenhuma conferida ainda.</p>}
-        {phase !== "idle" && !found.length && <p className="asideEmpty">Procurando…</p>}
-        {found.map(r => <div key={r.id} className={`issueCard ${fixed.includes(r.id) ? "done" : ""}`}>
-          <span>Nº {r.id}</span>
-          <strong>{fixed.includes(r.id) ? r.fix : r.issue}</strong>
-          {!fixed.includes(r.id) && <><em>{r.impact}</em><button onClick={() => { setFixed(f => [...f, r.id]); sfx.fix(); }}>Corrigir</button></>}
-        </div>)}
-        <div className="asideAction">
-          {phase === "idle" && <button className="primaryAction" onClick={scan}>Conferir remessa</button>}
-          {(phase === "scanning" || phase === "review") && <button className={`primaryAction ${ready ? "" : "locked"} ${nope ? "nope" : ""}`} onClick={approve} disabled={phase === "scanning"}>{ready ? "Aprovar e selar" : "Aprovação travada"}</button>}
-          {phase === "sealed" && <div className="thermal"><b>LEOMADE · CONFERÊNCIA</b><span>5 títulos lidos</span><span>2 exceções corrigidas</span><span>aprovado às 14:02</span><span className="ok">histórico salvo ✓</span></div>}
-          {phase === "sealed" && <button className="ghostAction" onClick={() => { setPhase("idle"); setScanned(0); setFixed([]); }}>Nova remessa</button>}
+      <div className="sideFoot">
+        <div className="sTotal"><span>TOTAL</span><b>{fixed.includes("valor") ? <em className="typed">7.810,30</em> : "7.900,30"}</b></div>
+        <div className="receiptSlot"><span>COLE AQUI<br />O COMPROVANTE</span></div>
+      </div>
+    </div>
+    {note && <div className="receipt placed" style={{ left: `${note.x}%`, top: `${note.y}%`, "--r": `${note.r}deg` }}>{receiptBody}</div>}
+    <div className="stampLayer">{stamps.map(s => <span key={s.id} className={`stampMark ${s.k}`} style={{ left: `${s.x}%`, top: `${s.y}%`, "--r": `${s.r}deg` }}><b>{stampLabel[s.k]}</b><small>01·11 · CONFERÊNCIA</small></span>)}</div>
+    {!reveal && pt && tool === "lens" && (() => { const R = pt.w < 520 ? 50 : 64, S = 1.7, hx = R + (R + 20) * .707; return <div className="lensWrap" style={{ left: pt.x - R, top: pt.y - R, width: 2 * R, height: 2 * R }}>
+      <i className="lensHandle" style={{ left: hx - 8, top: hx - 28 }} />
+      <div className="lensGlass"><div className="lensView" style={{ width: pt.w, transform: `translate(${R - pt.x * S}px, ${R - pt.y * S}px) scale(${S})` }}>{renderSheet(true)}</div></div>
+    </div>; })()}
+    {!reveal && pt && (tool === "ok" || tool === "no") && <div className={`stampGhost ${tool}`} style={{ left: pt.x, top: pt.y }}><div key={press} className="ghostInner"><i className="knob" /><span className="ghostFace">{stampLabel[tool]}</span></div></div>}
+  </div>;
+
+  const n = stamps.length;
+  const hint = flash || (!isOpen ? "Uma prancheta nova chegou na mesa."
+    : tool === "lens" ? (hoverErr && !found.includes(hoverErr) ? "Opa. Clique para marcar." : "Passe a lupa. O que estiver errado fica vermelho.")
+    : !found.length && !n ? "Pegue a lupa e procure o que não fecha."
+    : !allFixed ? (found.length < 3 ? "Ainda tem coisa errada nessa remessa." : "Tudo marcado. Agora é corrigir.")
+    : print === "none" ? "Tudo certo. Imprima o comprovante."
+    : print === "printing" ? "Imprimindo…"
+    : print === "ready" ? "Destaque a nota e cole na folha."
+    : n >= 30 ? `${n} carimbadas. Esse papel já virou arte.`
+    : n >= 12 ? `${n} carimbadas. Ninguém vai dizer que não foi conferido.`
+    : n ? "Pode carimbar quantas vezes quiser." : "Agora escolha um carimbo.");
+
+  return <div className="projectVisual toyVisual deskVisual" data-noswipe>
+    <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true"><filter id="inkRough"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n" /><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" result="d" /><feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="1" seed="9" result="n2" /><feColorMatrix in="n2" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.4 0 0 0 1.45" result="m" /><feComposite in="d" in2="m" operator="in" /></filter></svg>
+    <div className="toyTop"><span className="toyEyebrow">MESA DE CONFERÊNCIA</span><span className="toyHint" key={hint}>{hint}</span></div>
+    <div className="inspectGrid">
+      <aside className="deskRules">
+        <div className="rulebook"><span className="rbHead">REGRAS DO DIA</span><ol>{deskRules.map((r, i) => <li key={r.k} className={fixed.includes(r.k) ? "done" : ""}><b>0{i + 1}</b>{r.t}</li>)}</ol></div>
+        <div className="rulesActions">
+          {!isOpen ? <button className="primaryAction" onClick={openBoard}>Abrir prancheta</button>
+            : <button className={`primaryAction ${tool === "lens" ? "on" : ""}`} onClick={() => pickTool("lens")}>{tool === "lens" ? "Guardar a lupa" : "Analisar"}</button>}
+          {isOpen && <span className="foundCount">ERROS ACHADOS <b>{found.length}/3</b></span>}
+        </div>
+      </aside>
+      <div className={`clipboard cover-${cover}`}>
+        <div className="clip"><i /></div>
+        {renderSheet(false)}
+        {cover !== "open" && <button className="cover" onClick={openBoard} aria-label="Abrir prancheta">
+          <span className="coverLabel"><small>REMESSA 01/11</small><strong>Pagamentos do dia</strong><small>5 títulos</small></span>
+          <span className="coverStamp">PARA CONFERÊNCIA</span>
+        </button>}
+      </div>
+      <aside className="deskTools">
+        <div className="stampRack"><span className="rackHead">CARIMBOS <b>{n}</b></span>
+          <div className="rackRow">{["ok", "no"].map(k => <button key={k} className={`stampTool ${k} ${tool === k ? "inHand" : ""}`} onClick={() => pickTool(k)} disabled={!isOpen} aria-pressed={tool === k}><i className="knob" /><span className="base">{stampLabel[k]}</span></button>)}</div>
+        </div>
+        <div className="printZone">
+          <div className={`printer p-${print}`}>
+            <div className="printerBody"><span className="pName">TERMAL</span><span className="led" /><span className="slot" /></div>
+            <div className="printMouth">{(print === "printing" || print === "ready") && <div className={`receipt ${drag?.moved ? "dragging" : ""}`} style={drag ? { transform: `translate(${drag.dx}px, ${drag.dy}px) rotate(${drag.moved ? -3 : 0}deg)` } : undefined}
+              onPointerDown={onNoteDown} onPointerMove={onNoteMove} onPointerUp={onNoteUp} onPointerCancel={() => setDrag(null)}>{receiptBody}<i className="perf" /></div>}</div>
+          </div>
+          {print === "none" && <button className="primaryAction" onClick={doPrint} disabled={!allFixed}>Imprimir comprovante</button>}
+          {print === "ready" && <span className="tearHint">Arraste a nota até a folha</span>}
+          {isOpen && <button className="ghostAction" onClick={reset}>Nova remessa</button>}
         </div>
       </aside>
     </div>
