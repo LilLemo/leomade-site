@@ -25,6 +25,28 @@ const deskRules = [
 ];
 const obsText = { cod: "1042 · boleto sem código de barras", forma: "1044 · mesmo banco pago por TED", valor: "1045 · valor diferente da NF" };
 const stampLabel = { ok: "APROVADO", no: "NEGADO" };
+const HAND = [
+  "....##..........",
+  "...#ww#.........",
+  "...#ww#.........",
+  "...#ww#.........",
+  "...#ww#########.",
+  ".###wwwwwwwwwww#",
+  "#gw#wwwwwwwwwww#",
+  "#gw#ww#########.",
+  "#gwwwwwwwww#....",
+  "#gwwww#####.....",
+  "#gwwwwwwwww#....",
+  ".#gwww#####.....",
+  "..#wwwwwww#.....",
+  "...#######......",
+];
+const handInk = { "#": "#0c1a14", g: "#c3c8bd", w: "#fbfaf4" };
+function PixelHand({ dir = "right" }) {
+  return <svg className={`pixelHand ${dir}`} viewBox="0 0 16 14" shapeRendering="crispEdges" aria-hidden="true">
+    {HAND.flatMap((row, y) => [...row].map((c, x) => (c === "." ? null : <rect key={`${x}-${y}`} x={x} y={y} width="1.02" height="1.02" fill={handInk[c]} />)))}
+  </svg>;
+}
 function StampArt({ kind }) {
   return <span className={`stampArt ${kind}`} aria-hidden="true">
     <span className="sHandle"><i className="neck" /><i className="ball" /></span>
@@ -197,16 +219,24 @@ export function StampDesk() {
     : n >= 12 ? `${n} carimbadas. Ninguém vai dizer que não foi conferido.`
     : n ? "Pode carimbar quantas vezes quiser." : "Agora escolha um carimbo.");
 
+  const lensDock = where => <div className={`lensDock ${where} ${tool === "lens" ? "out" : ""}`}>
+    <span className="rackHead">LUPA</span>
+    <div className={`dockTray ${isOpen && tool !== "lens" && found.length < 3 ? "calling" : ""}`}>
+      <button className="lensTool" onClick={() => pickTool("lens")} disabled={!isOpen} aria-pressed={tool === "lens"} aria-label={tool === "lens" ? "Devolver a lupa" : "Pegar a lupa"}><span className="lensArt"><i className="lHandle" /><i className="lGlass" /></span></button>
+      {isOpen && tool !== "lens" && found.length < 3 && <span className="guide"><PixelHand /><em>{found.length ? "ainda tem erro" : "pegue a lupa"}</em></span>}
+      {tool === "lens" && <em className="dockNote">clique aqui para devolver</em>}
+    </div>
+  </div>;
+
   return <div className="projectVisual toyVisual deskVisual" data-noswipe>
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true"><filter id="inkRough"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="4" result="n" /><feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" result="d" /><feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="1" seed="9" result="n2" /><feColorMatrix in="n2" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.4 0 0 0 1.45" result="m" /><feComposite in="d" in2="m" operator="in" /></filter></svg>
     <div className="toyTop"><span className="toyEyebrow">MESA DE CONFERÊNCIA</span><span className="toyHint" key={hint}>{hint}</span></div>
     <div className="inspectGrid">
       <aside className="deskRules">
         <div className="rulebook"><span className="rbHead">REGRAS DO DIA</span><ol>{deskRules.map((r, i) => <li key={r.k} className={fixed.includes(r.k) ? "done" : ""}><b>0{i + 1}</b>{r.t}</li>)}</ol></div>
-        <div className="rulesActions">
-          {!isOpen ? <button className="primaryAction" onClick={openBoard}>Abrir prancheta</button>
-            : <button className={`primaryAction ${tool === "lens" ? "on" : ""}`} onClick={() => pickTool("lens")}>{tool === "lens" ? "Guardar a lupa" : "Analisar"}</button>}
-          {isOpen && <span className="foundCount">ERROS ACHADOS <b>{found.length}/3</b></span>}
+        <div className="rulesSide">
+          {lensDock("inRules")}
+          {isOpen && <div className={`foundCount ${found.length === 3 ? "all" : ""}`}><span>ERROS<br />ACHADOS</span><b>{found.length}/3</b></div>}
         </div>
       </aside>
       <div className={`clipboard cover-${cover}`}>
@@ -216,10 +246,11 @@ export function StampDesk() {
           <span className="coverLabel"><small>REMESSA 01/11</small><strong>Pagamentos do dia</strong><small>5 títulos</small></span>
           <span className="coverStamp">PARA CONFERÊNCIA</span>
         </button>}
+        {cover === "closed" && <span className="guide coverGuide"><em>abra a prancheta</em><PixelHand dir="down" /></span>}
       </div>
       <aside className="deskTools">
         <div className="stampRack"><span className="rackHead">CARIMBOS <b>{n}</b></span>
-          <div className="rackRow">{["ok", "no"].map(k => <button key={k} className={`stampTool ${k} ${tool === k ? "inHand" : ""}`} onClick={() => pickTool(k)} disabled={!isOpen} aria-pressed={tool === k}><span className="rackArt"><StampArt kind={k} /></span><span>{stampLabel[k]}</span></button>)}</div>
+          <div className={`rackRow ${note && !n && tool !== "ok" && tool !== "no" ? "nudge" : ""}`}>{["ok", "no"].map(k => <button key={k} className={`stampTool ${k} ${tool === k ? "inHand" : ""}`} onClick={() => pickTool(k)} disabled={!isOpen} aria-pressed={tool === k}><span className="rackArt"><StampArt kind={k} /></span><span>{stampLabel[k]}</span></button>)}</div>
         </div>
         <div className="printZone">
           <div className={`printer p-${print}`}>
@@ -227,10 +258,11 @@ export function StampDesk() {
             <div className="printMouth">{(print === "printing" || print === "ready") && <div className={`receipt ${drag?.moved ? "dragging" : ""}`} style={drag ? { transform: `translate(${drag.dx}px, ${drag.dy}px) rotate(${drag.moved ? -3 : 0}deg)` } : undefined}
               onPointerDown={onNoteDown} onPointerMove={onNoteMove} onPointerUp={onNoteUp} onPointerCancel={() => setDrag(null)}>{receiptBody}<i className="perf" /></div>}</div>
           </div>
-          {print === "none" && <button className="primaryAction" onClick={doPrint} disabled={!allFixed}>Imprimir comprovante</button>}
+          {print === "none" && <button className={`primaryAction ${allFixed ? "nudge" : ""}`} onClick={doPrint} disabled={!allFixed}>Imprimir comprovante</button>}
           {print === "ready" && <span className="tearHint">Arraste a nota até a folha</span>}
           {isOpen && <button className="ghostAction" onClick={reset}>Nova remessa</button>}
         </div>
+        {lensDock("inTools")}
       </aside>
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
