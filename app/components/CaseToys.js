@@ -350,7 +350,7 @@ export function ClosingHub() {
         <span className="agentTag"><b>{s.name}</b><small>{s.rule}</small></span>
         {!busy && !used.length && first?.id === s.id && <span className="guide agentGuide"><em>jogue a moeda</em><PixelHand dir="down" /></span>}
       </button>; })}</div>
-      <div className="scene">
+      <div className="gumScene">
         <svg ref={svgRef} viewBox="0 0 760 430" aria-hidden="true">
           <defs>
             {sectors.map(s => <radialGradient key={s.id} id={`gb-${s.id}`} cx="35%" cy="30%" r="70%"><stop offset="0" stopColor="#fff" stopOpacity=".9" /><stop offset=".25" stopColor={s.color} /><stop offset="1" stopColor={s.deep} /></radialGradient>)}

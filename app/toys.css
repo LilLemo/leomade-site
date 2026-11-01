@@ -232,7 +232,7 @@
 .agent.cheer .agentTag small::after { content: " ✓"; color: var(--c); }
 .agentGuide { left: 50%; top: -72px; transform: translateX(-50%); }
 .agentGuide .pixelHand { width: 40px; }
-.scene svg { display: block; width: 100%; height: auto; overflow: visible; }
+.gumScene svg { display: block; width: 100%; height: auto; overflow: visible; }
 .tubeGlass { fill: none; stroke-width: 24; stroke-opacity: .75; stroke-linecap: round; }
 .tubeShine { fill: none; stroke: #0b2a20; stroke-width: 19; stroke-opacity: .88; stroke-linecap: round; }
 .dbBody { fill: rgba(184,244,209,.05); }
