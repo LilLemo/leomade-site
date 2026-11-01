@@ -2,6 +2,7 @@ import "./globals.css";
 import "./studio.css";
 import "./impact.css";
 import "./switch.css";
+import "./toys.css";
 import { LightArrival, lightArrivalScript } from "./components/ModeSwitch";
 import { RevealObserver, ScrollProgress } from "./components/Motion";
 

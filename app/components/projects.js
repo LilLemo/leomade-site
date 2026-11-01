@@ -33,7 +33,7 @@ export const projects = [
   },
   {
     id: "cpag", number: "04", title: "Central de conferência e aprovação", professional: true, short: "A exceção pede atenção.",
-    category: "Finanças · Ferramenta de rotina", status: "Em uso", type: "flow", color: "mint",
+    category: "Finanças · Ferramenta de rotina", status: "Em uso", type: "stamp", color: "mint",
     eyebrow: "DA EXTRAÇÃO À DECISÃO",
     description: "Transformei uma conferência feita rolando a tela num caminho com validações, resumo para aprovação e histórico de cada ajuste.",
     question: "E se o erro aparecesse antes da remessa, e não depois?",
@@ -47,7 +47,7 @@ export const projects = [
   },
   {
     id: "fechamento", number: "05", title: "Plataforma de fechamento", professional: true, short: "Várias frentes, uma visão.",
-    category: "Finanças · Plataforma de dados", status: "Em implantação", type: "flow", color: "lime",
+    category: "Finanças · Plataforma de dados", status: "Em implantação", type: "mold", color: "lime",
     eyebrow: "DE CADA ÁREA PARA A GESTÃO",
     description: "Depois da central de conferência, outras frentes do financeiro pediram algo parecido. Desenhei uma plataforma em que cada área fecha o seu dia e a gestão lê tudo junto.",
     question: "E se cada área fechasse o dia do seu jeito, mas todas falassem a mesma língua de dados?",
@@ -72,7 +72,7 @@ export const projects = [
   },
   {
     id: "briefing", professional: true, number: "07", title: "Portal de Briefing", short: "Um pedido, um caminho.",
-    category: "Marketing · Fluxo de trabalho", status: "Em desenvolvimento", type: "flow", color: "peach",
+    category: "Marketing · Fluxo de trabalho", status: "Em desenvolvimento", type: "ticket", color: "peach",
     eyebrow: "DO PEDIDO À APROVAÇÃO",
     description: "Estou construindo uma jornada para organizar solicitações de marketing, do pedido à aprovação.",
     question: "E se cada pedido chegasse com o contexto necessário para começar?",
@@ -86,7 +86,7 @@ export const projects = [
   },
   {
     id: "etl", number: "08", title: "Integração & migração de dados", professional: true, short: "Do legado ao confiável.",
-    category: "Comercial · Dados & CRM", status: "Em andamento", type: "flow", color: "lime",
+    category: "Comercial · Dados & CRM", status: "Em andamento", type: "switchboard", color: "lime",
     eyebrow: "DA ORIGEM AO DESTINO",
     description: "Apoio a conexão entre fontes legadas, um sistema de gestão e um CRM, cuidando do significado e da qualidade dos dados que circulam entre eles.",
     question: "E se cada campo pudesse explicar de onde veio e por que está ali?",
