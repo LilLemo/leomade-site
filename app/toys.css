@@ -102,12 +102,11 @@
 .deskVisual { --sw: 170px; --sh: 56px; --gs: 1; }
 .stampLayer { position: absolute; inset: 0; z-index: 3; pointer-events: none; mix-blend-mode: multiply; filter: url(#inkRough); }
 .stampMark { position: absolute; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: var(--sw); height: var(--sh); white-space: nowrap; opacity: .86; transform: translate(-50%, -50%) rotate(var(--r)) scale(var(--gs)); animation: stampHit .1s linear .12s both; }
-.stampMark.ok { color: #2a7a4b; border: 3px solid currentColor; border-radius: 4px; box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3.5px currentColor; }
-.stampMark.ok b { font: 800 22px/1 "Inter", sans-serif; letter-spacing: .14em; }
-.stampMark.ok small { font: 700 8px/1 ui-monospace, monospace; letter-spacing: .16em; }
-.stampMark.no { gap: 3px; color: #c03a26; border: 2.5px solid currentColor; border-radius: 12px; }
-.stampMark.no small, .stampMark.no em { font: 700 7.5px/1 ui-monospace, monospace; font-style: normal; letter-spacing: .22em; }
-.stampMark.no b { width: 84%; padding: 3px 0 2px; border-top: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; font: 900 20px/1 "Inter", sans-serif; letter-spacing: .12em; text-align: center; }
+.stampMark { --ink: #2a7a4b; }
+.stampMark.no { --ink: #c03a26; }
+.stampMark.ok, .stampMark.no { color: var(--ink); border: 3px solid currentColor; border-radius: 4px; box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3.5px currentColor; }
+.stampMark b { font: 800 22px/1 "Inter", sans-serif; letter-spacing: .14em; }
+.stampMark small { font: 700 8px/1 ui-monospace, monospace; letter-spacing: .16em; }
 
 /* Stamp objects: the base is exactly the size of the ink it leaves. */
 .stampArt { position: relative; display: block; width: var(--sw); height: calc(var(--sh) + 86px); }
@@ -115,29 +114,18 @@
 .sEdge { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; border-radius: 0 0 4px 4px; }
 .sTop b { position: absolute; left: 50%; bottom: 7px; transform: translateX(-50%); padding: 4px 9px 3px; border-radius: 2px; font: 700 10px/1 ui-monospace, monospace; letter-spacing: .12em; white-space: nowrap; }
 .sHandle { position: absolute; left: 50%; bottom: calc(12px + var(--sh) - 22px); width: 64px; height: 86px; transform: translateX(-50%); }
-.stampArt.ok .sTop { background: repeating-linear-gradient(94deg, rgba(92,52,18,.13) 0 2px, transparent 2px 9px), linear-gradient(172deg, #e0b073, #b57b40); box-shadow: inset 0 1px 0 rgba(255,240,210,.6); }
-.stampArt.ok .sEdge { background: linear-gradient(#9a6332, #74461f); box-shadow: inset 0 -4px 0 #2a7a4b; }
-.stampArt.ok .sTop b { background: #f6efdc; color: #2a7a4b; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
-.stampArt.ok .ball { position: absolute; left: 50%; top: 0; width: 46px; height: 46px; margin-left: -23px; border-radius: 50%; background: radial-gradient(circle at 34% 28%, rgba(255,246,220,.75) 0 9%, transparent 22%), radial-gradient(circle at 45% 40%, #d79d5c, #9a5f2c 75%); box-shadow: 0 4px 8px rgba(0,0,0,.25); }
-.stampArt.ok .neck { position: absolute; left: 50%; top: 38px; width: 20px; height: 42px; margin-left: -10px; border-radius: 6px 6px 3px 3px; background: linear-gradient(90deg, #8c5527, #cf9455 45%, #8c5527); }
-.stampArt.ok .neck::after { content: ""; position: absolute; left: -9px; right: -9px; bottom: -6px; height: 14px; border-radius: 50%; background: radial-gradient(ellipse at 50% 30%, #c98d4f, #8c5527 80%); }
-.stampArt.no .sTop { background: linear-gradient(#34342f, #141412); box-shadow: inset 0 1px 0 rgba(255,255,255,.15); }
-.stampArt.no .sEdge { background: linear-gradient(#1b1b19, #0a0a09); box-shadow: inset 0 -4px 0 #c03a26; }
-.stampArt.no .sTop b { background: rgba(240,236,224,.12); color: #f08a76; border: 1px solid rgba(255,255,255,.18); }
-.stampArt.no .sHandle::before, .stampArt.no .sHandle::after { content: ""; position: absolute; top: 18px; bottom: 0; width: 5px; border-radius: 2px; background: linear-gradient(90deg, #8a8e86, #e6e8e2, #8a8e86); }
-.stampArt.no .sHandle::before { left: 8px; }
-.stampArt.no .sHandle::after { right: 8px; }
-.stampArt.no .spring { position: absolute; left: 50%; top: 24px; bottom: 2px; width: 24px; margin-left: -12px; background: repeating-linear-gradient(168deg, transparent 0 3px, #dfe1db 3px 5px, #7d817a 5px 6px); transform-origin: 50% 100%; }
-.stampArt.no .cap { position: absolute; left: 0; right: 0; top: 0; z-index: 1; height: 30px; border-radius: 10px 10px 6px 6px; background: radial-gradient(ellipse at 40% 20%, rgba(255,255,255,.28), transparent 50%), linear-gradient(#2e2e2b, #0f0f0e); box-shadow: 0 4px 8px rgba(0,0,0,.35); }
-.stampArt.no .cap::after { content: ""; position: absolute; left: 50%; top: 10px; width: 18px; height: 6px; margin-left: -9px; border-radius: 3px; background: #c03a26; }
+.stampArt .sTop { background: repeating-linear-gradient(94deg, rgba(92,52,18,.13) 0 2px, transparent 2px 9px), linear-gradient(172deg, #e0b073, #b57b40); box-shadow: inset 0 1px 0 rgba(255,240,210,.6); }
+.stampArt .sEdge { background: linear-gradient(#9a6332, #74461f); box-shadow: inset 0 -4px 0 var(--ink, #2a7a4b); }
+.stampArt.no { --ink: #c03a26; }
+.stampArt .sTop b { background: #f6efdc; color: var(--ink, #2a7a4b); box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+.stampArt .ball { position: absolute; left: 50%; top: 0; width: 46px; height: 46px; margin-left: -23px; border-radius: 50%; background: radial-gradient(circle at 34% 28%, rgba(255,246,220,.75) 0 9%, transparent 22%), radial-gradient(circle at 45% 40%, #d79d5c, #9a5f2c 75%); box-shadow: 0 4px 8px rgba(0,0,0,.25); }
+.stampArt .neck { position: absolute; left: 50%; top: 38px; width: 20px; height: 42px; margin-left: -10px; border-radius: 6px 6px 3px 3px; background: linear-gradient(90deg, #8c5527, #cf9455 45%, #8c5527); }
+.stampArt .neck::after { content: ""; position: absolute; left: -9px; right: -9px; bottom: -6px; height: 14px; border-radius: 50%; background: radial-gradient(ellipse at 50% 30%, #c98d4f, #8c5527 80%); }
 
 .stampGhost { position: absolute; z-index: 8; width: 0; height: 0; pointer-events: none; transform: scale(var(--gs)) rotate(var(--r)); transform-origin: 0 0; }
 .ghostShadow { position: absolute; left: calc(var(--sw) / -2); top: calc(var(--sh) / -2); width: var(--sw); height: var(--sh); border-radius: 6px; background: rgba(23,48,42,.22); filter: blur(7px); }
 .ghostInner { position: absolute; left: calc(var(--sw) / -2); bottom: calc(-12px - var(--sh) / 2); transform: translateY(-20px); filter: drop-shadow(0 12px 14px rgba(0,0,0,.3)); }
 .ghostInner.hit { animation: stampDown .32s cubic-bezier(.3,0,.3,1); }
-.stampGhost.no .ghostInner.hit { animation-duration: .42s; }
-.stampGhost.no .hit .cap { animation: capPress .42s ease-in-out; }
-.stampGhost.no .hit .spring { animation: springPress .42s ease-in-out; }
 .stampGhost .hit ~ .ghostShadow, .stampGhost:has(.hit) .ghostShadow { animation: shadowPress .32s ease-in-out; }
 
 .stampRack { display: flex; flex-direction: column; gap: 8px; }
@@ -174,8 +162,6 @@
 @keyframes notePlace { from { transform: rotate(var(--r)) scale(1.12); } to { transform: rotate(var(--r)); } }
 @keyframes stampHit { from { opacity: 0; } to { opacity: .86; } }
 @keyframes stampDown { 0% { transform: translateY(-20px); } 38%, 62% { transform: translateY(0); } 100% { transform: translateY(-20px); } }
-@keyframes capPress { 0%, 30% { transform: none; } 55% { transform: translateY(20px); } 100% { transform: none; } }
-@keyframes springPress { 0%, 30% { transform: none; } 55% { transform: scaleY(.45); } 100% { transform: none; } }
 @keyframes shadowPress { 38%, 62% { opacity: .2; transform: scale(.96); } }
 
 @container (max-width: 980px) {

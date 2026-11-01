@@ -63,8 +63,6 @@ export const sfx = {
   clip() { noise({ dur: .012, gain: .1, filter: "highpass", freq: 3500 }); tone({ freq: 1900, dur: .03, gain: .03, type: "square" }); },
   tear() { for (let i = 0; i < 9; i++) noise({ delay: i * .018, dur: .016, gain: .05 + (i % 3) * .015, filter: "highpass", freq: 2500 + (i % 4) * 500 }); },
   thump() { tone({ freq: 92, to: 42, dur: .26, gain: .3 }); noise({ dur: .06, gain: .16, filter: "lowpass", freq: 520 }); tone({ freq: 360 + Math.random() * 40, to: 250, dur: .05, gain: .06, type: "triangle" }); },
-  springStamp() { noise({ dur: .012, gain: .09, filter: "highpass", freq: 3200 }); tone({ freq: 2300, dur: .018, gain: .025, type: "square" }); noise({ delay: .05, dur: .07, gain: .05, filter: "bandpass", freq: 1700, q: 2 }); noise({ delay: .15, dur: .03, gain: .14, filter: "lowpass", freq: 900 }); tone({ freq: 170, to: 85, delay: .15, dur: .1, gain: .12 }); tone({ freq: 480, to: 760, delay: .26, dur: .14, gain: .035, type: "triangle" }); tone({ freq: 1870, delay: .27, dur: .3, gain: .015 }); noise({ delay: .3, dur: .02, gain: .06, filter: "highpass", freq: 2800 }); },
-  springPick() { noise({ dur: .015, gain: .07, filter: "highpass", freq: 3000 }); tone({ freq: 620, to: 820, dur: .09, gain: .025, type: "triangle" }); },
   pick() { noise({ dur: .03, gain: .07, filter: "lowpass", freq: 900 }); tone({ freq: 240, to: 180, dur: .08, gain: .05, type: "triangle" }); },
   print(n = 8) { for (let i = 0; i < n; i++) noise({ delay: i * .045, dur: .025, gain: .05, filter: "bandpass", freq: 2400 + (i % 2) * 400, q: 2 }); },
   drop(i = 0) { tone({ freq: 520 - i * 60, to: 260 - i * 30, dur: .12, gain: .06, type: "triangle", delay: i * .09 }); },
