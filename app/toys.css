@@ -214,21 +214,21 @@
 
 /* 05 · Gumball closing */
 .gumVisual { container-type: inline-size; user-select: none; -webkit-user-select: none; }
-.gumGrid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 20px; align-items: end; }
-.queue { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-items: end; padding-top: 70px; }
+.gumGrid { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 20px; align-items: end; }
+.queue { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: start; padding-top: 76px; }
 .agent { position: relative; display: flex; flex-direction: column; align-items: center; padding: 0 0 6px; border: 0; background: none; color: var(--cream); }
 .gumVisual .agent:disabled { cursor: default; opacity: 1; }
-.coinSpot { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 34px; margin-bottom: -33px; }
-.coinToken, .flyCoin { display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid #0c1a14; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 10%, var(--c) 30%, var(--cd) 100%); color: #0c1a14; font: 800 12px/1 ui-monospace, monospace; font-style: normal; box-shadow: inset 0 0 0 3px rgba(255,255,255,.25), 0 0 16px color-mix(in srgb, var(--c) 60%, transparent); }
+.coinSpot { position: relative; z-index: 1; display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: -46px; }
+.coinToken, .flyCoin { display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid #0c1a14; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 10%, var(--c) 30%, var(--cd) 100%); color: #0c1a14; font: 800 15px/1 ui-monospace, monospace; font-style: normal; box-shadow: inset 0 0 0 3px rgba(255,255,255,.25), 0 0 16px color-mix(in srgb, var(--c) 60%, transparent); }
 .coinToken { animation: coinBob 1.6s ease-in-out infinite; }
 .agent:hover:not(:disabled) .coinToken { animation-play-state: paused; transform: translateY(-8px) scale(1.08); transition: transform .2s; }
 .flyCoin { position: absolute; z-index: 20; pointer-events: none; }
-.pixelSprite { display: block; width: 72px; height: auto; filter: drop-shadow(0 5px 0 rgba(0,0,0,.25)); }
+.pixelSprite { display: block; width: 100px; height: auto; filter: drop-shadow(0 5px 0 rgba(0,0,0,.25)); }
 .agent.cheer .pixelSprite { animation: hop .45s steps(2) 2; }
 .agent.used:not(.cheer) .pixelSprite { opacity: .85; }
-.agentTag { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 10px; text-align: center; }
-.agentTag b { font: 700 9px/1 ui-monospace, monospace; letter-spacing: .14em; color: var(--c); text-transform: uppercase; }
-.agentTag small { font-size: 11.5px; line-height: 1.3; color: var(--muted); }
+.agentTag { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 12px; text-align: center; }
+.agentTag b { font: 700 11px/1 ui-monospace, monospace; letter-spacing: .14em; color: var(--c); text-transform: uppercase; }
+.agentTag small { font-size: 14px; line-height: 1.3; color: rgba(238,232,213,.75); }
 .agent.cheer .agentTag small::after { content: " ✓"; color: var(--c); }
 .agentGuide { left: 50%; top: -72px; transform: translateX(-50%); }
 .agentGuide .pixelHand { width: 40px; }
@@ -282,14 +282,15 @@
 @keyframes sliceIn { from { stroke-dasharray: 0 100; } }
 @container (max-width: 900px) {
   .gumGrid { grid-template-columns: 1fr; }
-  .queue { width: min(100%, 420px); margin: 0 auto; }
+  .queue { width: min(100%, 520px); margin: 0 auto; }
 }
 @container (max-width: 520px) {
   .queue { padding-top: 62px; }
-  .pixelSprite { width: 60px; }
-  .coinSpot { margin-bottom: -27px; }
-  .coinToken, .flyCoin { width: 26px; height: 26px; font-size: 11px; }
-  .agentTag small { font-size: 10.5px; }
+  .pixelSprite { width: 78px; }
+  .coinSpot { margin-bottom: -35px; }
+  .coinToken, .flyCoin { width: 30px; height: 30px; font-size: 12px; }
+  .agentTag b { font-size: 10px; }
+  .agentTag small { font-size: 12px; }
   .gumFoot { gap: 8px 14px; }
   .gumFoot .ghostAction { margin-left: 0; }
 }
