@@ -25,6 +25,16 @@ const deskRules = [
 ];
 const obsText = { cod: "1042 · boleto sem código de barras", forma: "1044 · mesmo banco pago por TED", valor: "1045 · valor diferente da NF" };
 const stampLabel = { ok: "APROVADO", no: "NEGADO" };
+function StampArt({ kind }) {
+  return <span className={`stampArt ${kind}`} aria-hidden="true">
+    <span className="sHandle">{kind === "ok" ? <><i className="neck" /><i className="ball" /></> : <><i className="spring" /><i className="cap" /></>}</span>
+    <span className="sTop"><b>{stampLabel[kind]}</b></span>
+    <span className="sEdge" />
+  </span>;
+}
+const StampInk = ({ s }) => <span className={`stampMark ${s.k}`} style={{ left: `${s.x}%`, top: `${s.y}%`, "--r": `${s.r}deg` }}>
+  {s.k === "ok" ? <><b>APROVADO</b><small>CONFERÊNCIA · 01·11</small></> : <><small>CONFERÊNCIA</small><b>NEGADO</b><em>01 NOV 2026</em></>}
+</span>;
 
 export function StampDesk() {
   const later = useTimers();
@@ -42,6 +52,7 @@ export function StampDesk() {
   const [note, setNote] = useState(null);
   const [stamps, setStamps] = useState([]);
   const [press, setPress] = useState(0);
+  const [nextRot, setNextRot] = useState(-3);
   const [flash, setFlash] = useState(null);
   const allFixed = fixed.length === 3;
   const isOpen = cover === "open";
@@ -63,7 +74,7 @@ export function StampDesk() {
     }));
   };
   const openBoard = () => { if (cover !== "closed") return; setCover("opening"); sfx.clip(); later(() => sfx.flip(), 140); later(() => setCover("open"), 640); };
-  const pickTool = k => { setTool(t => (t === k ? null : k)); setPt(null); setHoverErr(null); k === "lens" ? sfx.pop() : sfx.pick(); };
+  const pickTool = k => { setTool(t => (t === k ? null : k)); setPt(null); setHoverErr(null); setPress(0); k === "lens" ? sfx.pop() : k === "no" ? sfx.springPick() : sfx.pick(); };
   const markFound = k => {
     if (found.includes(k)) return;
     setFound(f => [...f, k]); sfx.alert();
@@ -102,8 +113,9 @@ export function StampDesk() {
       return;
     }
     const p = where(downAt.current ? { clientX: downAt.current.x, clientY: downAt.current.y } : e);
-    setStamps(s => [...s.slice(-89), { id: `${Date.now()}-${Math.random()}`, x: (p.x / p.w) * 100, y: (p.y / p.h) * 100, r: Math.round(Math.random() * 22 - 11), k: tool }]);
-    setPress(n => n + 1); sfx.stamp();
+    setStamps(s => [...s.slice(-89), { id: `${Date.now()}-${Math.random()}`, x: (p.x / p.w) * 100, y: (p.y / p.h) * 100, r: nextRot, k: tool }]);
+    setNextRot(Math.round(Math.random() * 12 - 6));
+    setPress(n => n + 1); tool === "no" ? sfx.springStamp() : sfx.thump();
     const n = stamps.length + 1;
     if (tool === "ok" && !allFixed) say("Aprovar com erro? Isso voltaria do banco.");
     else if (n === 1 && tool === "no" && allFixed) say("Negado. Fica registrado do mesmo jeito.");
@@ -165,12 +177,12 @@ export function StampDesk() {
       </div>
     </div>
     {note && <div className="receipt placed" style={{ left: `${note.x}%`, top: `${note.y}%`, "--r": `${note.r}deg` }}>{receiptBody}</div>}
-    <div className="stampLayer">{stamps.map(s => <span key={s.id} className={`stampMark ${s.k}`} style={{ left: `${s.x}%`, top: `${s.y}%`, "--r": `${s.r}deg` }}><b>{stampLabel[s.k]}</b><small>01·11 · CONFERÊNCIA</small></span>)}</div>
+    <div className="stampLayer">{stamps.map(s => <StampInk key={s.id} s={s} />)}</div>
     {!reveal && pt && tool === "lens" && (() => { const R = pt.w < 520 ? 50 : 64, S = 1.7, hx = R + (R + 20) * .707; return <div className="lensWrap" style={{ left: pt.x - R, top: pt.y - R, width: 2 * R, height: 2 * R }}>
       <i className="lensHandle" style={{ left: hx - 8, top: hx - 28 }} />
       <div className="lensGlass"><div className="lensView" style={{ width: pt.w, transform: `translate(${R - pt.x * S}px, ${R - pt.y * S}px) scale(${S})` }}>{renderSheet(true)}</div></div>
     </div>; })()}
-    {!reveal && pt && (tool === "ok" || tool === "no") && <div className={`stampGhost ${tool}`} style={{ left: pt.x, top: pt.y }}><div key={press} className="ghostInner"><i className="knob" /><span className="ghostFace">{stampLabel[tool]}</span></div></div>}
+    {!reveal && pt && (tool === "ok" || tool === "no") && <div className={`stampGhost ${tool}`} style={{ left: pt.x, top: pt.y, "--r": `${nextRot}deg` }}><i key={"s" + press} className="ghostShadow" /><div key={press} className={`ghostInner ${press ? "hit" : ""}`}><StampArt kind={tool} /></div></div>}
   </div>;
 
   const n = stamps.length;
@@ -207,7 +219,7 @@ export function StampDesk() {
       </div>
       <aside className="deskTools">
         <div className="stampRack"><span className="rackHead">CARIMBOS <b>{n}</b></span>
-          <div className="rackRow">{["ok", "no"].map(k => <button key={k} className={`stampTool ${k} ${tool === k ? "inHand" : ""}`} onClick={() => pickTool(k)} disabled={!isOpen} aria-pressed={tool === k}><i className="knob" /><span className="base">{stampLabel[k]}</span></button>)}</div>
+          <div className="rackRow">{["ok", "no"].map(k => <button key={k} className={`stampTool ${k} ${tool === k ? "inHand" : ""}`} onClick={() => pickTool(k)} disabled={!isOpen} aria-pressed={tool === k}><span className="rackArt"><StampArt kind={k} /></span><span>{k === "ok" ? "MADEIRA" : "AUTOMÁTICO"}</span></button>)}</div>
         </div>
         <div className="printZone">
           <div className={`printer p-${print}`}>
