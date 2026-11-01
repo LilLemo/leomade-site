@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { sfx } from "./sound";
 import PixelHand from "./PixelHand";
+import PixelSprite from "./PixelSprite";
 
 const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function useTimers() {
@@ -248,46 +249,151 @@ export function StampDesk() {
   </div>;
 }
 
-/* ───────── 05 · Closing platform: each front closes its day, one standard file, one panel. ───────── */
-const fronts = [
-  { id: "a", name: "Frente A", rule: "Filtra por forma de pagamento", total: 412, items: 38, color: "#b8f4d1" },
-  { id: "b", name: "Frente B", rule: "Separa adiantamentos", total: 1240, items: 91, color: "#d2e99b" },
-  { id: "c", name: "Frente C", rule: "Soma lançamentos manuais", total: 287, items: 24, color: "#eebda9" },
-  { id: "d", name: "Frente D", rule: "Converte moeda estrangeira", total: 640, items: 17, color: "#a9cdee" },
+const money = k => (k >= 1000 ? `R$ ${(k / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} mi` : `R$ ${k} mil`);
+/* ───────── 05 · Closing platform: each front's coin releases only its own data into one shared base. ───────── */
+const sectors = [
+  { id: "a", who: "boy", name: "Frente A", rule: "Filtra por forma de pagamento", total: 412, balls: 6, color: "#8fe6b4", deep: "#3f9a6a" },
+  { id: "b", who: "girl", name: "Frente B", rule: "Separa adiantamentos", total: 1240, balls: 16, color: "#f2b49c", deep: "#b8664a" },
+  { id: "c", who: "old", name: "Frente C", rule: "Converte moeda estrangeira", total: 640, balls: 8, color: "#9cc8f2", deep: "#4a7fb8" },
 ];
-const pastDays = ["20", "21", "22", "23", "24", "27", "28", "29", "30", "31"];
-const money = k => k >= 1000 ? `R$ ${(k / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} mi` : `R$ ${k} mil`;
+const GX = 160, GY = 126, GR = 86, BR = 10.5;
+const globeSlots = (() => {
+  const out = [];
+  for (let row = 0; row < 12; row++) {
+    const y = GY + GR - BR - 2 - row * 18.2, off = row % 2 ? 10.5 : 0;
+    for (let x = GX - GR; x <= GX + GR; x += 21) { const xx = x + off; if (Math.hypot(xx - GX, y - GY) <= GR - BR - 1) out.push([xx, y]); }
+  }
+  return out.sort((a, b) => b[1] - a[1] || Math.abs(a[0] - GX) - Math.abs(b[0] - GX));
+})();
+const mixedBalls = (() => {
+  const list = sectors.flatMap(s => Array.from({ length: s.balls }, (_, i) => ({ id: `${s.id}${i}`, s: s.id })));
+  let seed = 7;
+  for (let i = list.length - 1; i > 0; i--) { seed = (seed * 9301 + 49297) % 233280; const j = Math.floor((seed / 233280) * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
+  return list;
+})();
+const baseSlot = i => { const row = Math.floor(i / 7), col = i % 7; return [424 + col * 19 + (row % 2 ? 9.5 : 0), 371 - row * 17]; };
+const tubeY = { a: 344, b: 362, c: 380 }, inletX = { a: 446, b: 481, c: 516 };
+const tubePath = id => `M236 ${tubeY[id]} C 330 ${tubeY[id]}, ${inletX[id]} 118, ${inletX[id]} 206`;
+const ease = t => (t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+
 export function ClosingHub() {
   const later = useTimers();
-  const [closed, setClosed] = useState([]);
-  const [flying, setFlying] = useState(null);
-  const [range, setRange] = useState("hoje");
-  const close = f => {
-    if (closed.includes(f.id) || flying) return;
-    setFlying(f.id); sfx.print(4);
-    later(() => { setClosed(c => [...c, f.id]); setFlying(null); sfx.block(1); }, 900);
+  const basketCount = useRef(0), rootRef = useRef(null), svgRef = useRef(null), probeRef = useRef(null), coinRefs = useRef({}), flyRefs = useRef({});
+  const [globe, setGlobe] = useState(mixedBalls);
+  const globeRef = useRef(mixedBalls); globeRef.current = globe;
+  const [basket, setBasket] = useState([]);
+  const [flying, setFlying] = useState([]);
+  const [used, setUsed] = useState([]);
+  const [busy, setBusy] = useState(null);
+  const [coin, setCoin] = useState(null);
+  const [turn, setTurn] = useState(0);
+  const done = sectors.filter(s => used.includes(s.id) && !flying.some(f => f.s === s.id) && busy !== s.id);
+  const all = done.length === 3;
+  const grand = sectors.reduce((a, s) => a + s.total, 0);
+
+  const toSvgClient = (x, y) => { const p = svgRef.current.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(svgRef.current.getScreenCTM()); };
+  const sample = d => { const p = probeRef.current; p.setAttribute("d", d); const L = p.getTotalLength(); return Array.from({ length: 61 }, (_, i) => { const q = p.getPointAtLength((L * i) / 60); return [q.x, q.y]; }); };
+
+  const release = s => {
+    const mine = globe.filter(b => b.s === s.id);
+    setTurn(t => t + 1); sfx.lever();
+    later(() => sfx.rattle(), 250);
+    mine.forEach((b, k) => later(() => {
+      const idx = Math.max(0, globeRef.current.findIndex(x => x.id === b.id)), [sx, sy] = globeSlots[idx];
+      globeRef.current = globeRef.current.filter(x => x.id !== b.id);
+      setGlobe(g => g.filter(x => x.id !== b.id));
+      const target = baseSlot(basketCount.current++);
+      const pts = sample(`M${sx} ${sy} L160 238 L206 ${tubeY[s.id]} L236 ${tubeY[s.id]} ${tubePath(s.id).replace(/^M\S+ \S+/, "")} L${target[0]} ${target[1]}`);
+      const fly = { id: b.id, s: s.id, pts, target };
+      setFlying(f => [...f, fly]);
+      const start = performance.now(), dur = reducedMotion() ? 1 : 1500;
+      const step = now => {
+        const t = Math.min(1, (now - start) / dur), el = flyRefs.current[b.id];
+        if (el) { const p = pts[Math.round(ease(t) * 60)]; el.setAttribute("cx", p[0]); el.setAttribute("cy", p[1]); }
+        if (t < 1) requestAnimationFrame(step);
+        else {
+          setFlying(f => f.filter(x => x.id !== b.id));
+          setBasket(cur => [...cur, { id: b.id, s: s.id, at: target }]);
+          sfx.drop(k % 3);
+          if (k === mine.length - 1) later(() => { setBusy(null); sfx.block(2); }, 120);
+        }
+      };
+      requestAnimationFrame(step);
+    }, 520 + k * 150));
   };
-  const done = fronts.filter(f => closed.includes(f.id));
-  const total = done.reduce((s, f) => s + f.total, 0), items = done.reduce((s, f) => s + f.items, 0);
-  const all = done.length === fronts.length;
-  const shown = range === "hoje" ? { total, items } : { total: 52630 + total, items: 3470 + items };
-  return <div className={`projectVisual toyVisual hubVisual ${all ? "allIn" : ""}`}>
-    <div className="toyTop"><span className="toyEyebrow">FECHAMENTO DO DIA · 01/11</span><span className="toyHint">{all ? "Quatro regras diferentes, uma leitura só." : "Cada frente fecha o seu dia do seu jeito."}</span></div>
-    <div className="hubFronts">{fronts.map(f => { const isDone = closed.includes(f.id), isFly = flying === f.id; return <div key={f.id} className={`frontCol ${isDone ? "done" : ""} ${isFly ? "fly" : ""}`} style={{ "--c": f.color }}>
-      <div className="frontCard">
-        <span className="frontName"><i />{f.name}</span>
-        <span className="frontRule">{f.rule}</span>
-        <button onClick={() => close(f)} disabled={isDone || !!flying}>{isDone ? "Fechada ✓" : isFly ? "Gerando arquivo…" : "Fechar o dia"}</button>
+  const throwCoin = s => {
+    if (busy || used.includes(s.id)) return;
+    setBusy(s.id); setUsed(u => [...u, s.id]); sfx.coinFlip();
+    const from = coinRefs.current[s.id]?.getBoundingClientRect(), root = rootRef.current.getBoundingClientRect(), to = toSvgClient(160, 271);
+    if (!from) return release(s);
+    const x0 = from.left - root.left, y0 = from.top - root.top, dx = to.x - root.left - from.width / 2 - x0, dy = to.y - root.top - from.height / 2 - y0;
+    setCoin({ s, x0, y0, dx, dy });
+    later(() => { setCoin(null); sfx.coinLand(); release(s); }, reducedMotion() ? 0 : 700);
+  };
+  useEffect(() => {
+    if (!coin) return;
+    const el = rootRef.current.querySelector(".flyCoin");
+    el?.animate([{ transform: "translate(0,0) rotate(0) scale(1)" }, { transform: `translate(${coin.dx / 2}px, ${Math.min(coin.dy / 2, 0) - 110}px) rotate(200deg) scale(1.15)` }, { transform: `translate(${coin.dx}px, ${coin.dy}px) rotate(400deg) scale(.55)` }], { duration: 680, easing: "cubic-bezier(.4,0,.6,1)", fill: "forwards" });
+  }, [coin]);
+  const reset = () => { setGlobe(mixedBalls); setBasket([]); setFlying([]); setUsed([]); setBusy(null); basketCount.current = 0; sfx.flip(); };
+
+  const first = sectors.find(s => !used.includes(s.id));
+  const hint = all ? "Três regras, uma base, uma leitura para a gestão." : busy ? `Só os dados da ${sectors.find(s => s.id === busy).name} saem do baleiro.` : used.length ? `Faltam ${3 - used.length} ${3 - used.length > 1 ? "frentes" : "frente"}. Cada uma com a sua moeda.` : "Tudo misturado. Cada frente tem a moeda que separa o que é dela.";
+  const C = 2 * Math.PI * 15;
+  let acc = 0;
+  return <div ref={rootRef} className={`projectVisual toyVisual gumVisual ${all ? "allIn" : ""}`} data-noswipe>
+    <div className="toyTop"><span className="toyEyebrow">FECHAMENTO DO DIA · 01/11</span><span className="toyHint" key={hint}>{hint}</span></div>
+    <div className="gumGrid">
+      <div className="queue">{sectors.map(s => { const isUsed = used.includes(s.id); return <button key={s.id} className={`agent ${isUsed ? "used" : ""} ${done.some(d => d.id === s.id) ? "cheer" : ""}`} onClick={() => throwCoin(s)} disabled={!!busy || isUsed} style={{ "--c": s.color, "--cd": s.deep }} aria-label={`Jogar a moeda da ${s.name}`}>
+        <span className="coinSpot">{!isUsed && <i className="coinToken" ref={el => (coinRefs.current[s.id] = el)}>{s.id.toUpperCase()}</i>}</span>
+        <PixelSprite who={s.who} tie={s.color} />
+        <span className="agentTag"><b>{s.name}</b><small>{s.rule}</small></span>
+        {!busy && !used.length && first?.id === s.id && <span className="guide agentGuide"><em>jogue a moeda</em><PixelHand dir="down" /></span>}
+      </button>; })}</div>
+      <div className="scene">
+        <svg ref={svgRef} viewBox="0 0 760 430" aria-hidden="true">
+          <defs>
+            {sectors.map(s => <radialGradient key={s.id} id={`gb-${s.id}`} cx="35%" cy="30%" r="70%"><stop offset="0" stopColor="#fff" stopOpacity=".9" /><stop offset=".25" stopColor={s.color} /><stop offset="1" stopColor={s.deep} /></radialGradient>)}
+            <linearGradient id="beam" x1="0" x2="1"><stop offset="0" stopColor="#d2e99b" stopOpacity=".05" /><stop offset="1" stopColor="#d2e99b" stopOpacity=".35" /></linearGradient>
+            <clipPath id="globeClip"><circle cx={GX} cy={GY} r={GR} /></clipPath>
+          </defs>
+          <path ref={probeRef} d="M0 0" fill="none" stroke="none" />
+          <g className="tubes">{sectors.map(s => <g key={s.id}><path d={tubePath(s.id)} className="tubeGlass" style={{ stroke: s.color }} /><path d={tubePath(s.id)} className="tubeShine" /></g>)}</g>
+          <g className="baseBack"><rect x="400" y="214" width="160" height="172" className="dbBody" /><ellipse cx="480" cy="386" rx="80" ry="16" className="dbBottom" /></g>
+          <g className="basket">{basket.map(b => <circle key={b.id} cx={b.at[0]} cy={b.at[1]} r="9" fill={`url(#gb-${b.s})`} className="landed" />)}</g>
+          <g className="flyingBalls">{flying.map(f => <circle key={f.id} ref={el => (flyRefs.current[f.id] = el)} cx={f.pts[0][0]} cy={f.pts[0][1]} r={BR} fill={`url(#gb-${f.s})`} />)}</g>
+          <g className="baseFront"><ellipse cx="480" cy="214" rx="80" ry="16" className="dbTop" /><path d="M400 214v172M560 214v172" className="dbEdge" /><text x="480" y="420" textAnchor="middle" className="sceneLabel">BASE ÚNICA · {basket.length}/30</text></g>
+          <g className={`machine ${busy ? "shake" : ""}`}>
+            <g clipPath="url(#globeClip)">{globe.map((b, i) => { const [x, y] = globeSlots[i]; return <circle key={b.id} r={BR} cx="0" cy="0" fill={`url(#gb-${b.s})`} className="gball" style={{ transform: `translate(${x}px, ${y}px)` }} />; })}</g>
+            <circle cx={GX} cy={GY} r={GR} className="glass" /><path d={`M${GX - 58} ${GY - 50}a70 70 0 0 1 52 -28`} className="glassShine" />
+            <rect x="104" y="28" width="112" height="20" rx="9" className="mRed" /><rect x="146" y="16" width="28" height="14" rx="5" className="mRedDark" />
+            <rect x="96" y="208" width="128" height="22" rx="6" className="mRedDark" />
+            <path d="M98 230h124l18 166H80z" className="mRed" /><path d="M98 230h124l2 18H96z" className="mRedDark" opacity=".55" />
+            <rect x="128" y="256" width="64" height="66" rx="8" className="mMetal" /><rect x="152" y="266" width="16" height="5" rx="2" className="mSlot" />
+            <g className={`crank ${turn ? "turning" : ""}`} key={turn}><circle cx="160" cy="298" r="15" className="mKnob" /><rect x="146" y="294" width="28" height="8" rx="4" className="mBar" /></g>
+            <rect x="224" y="334" width="14" height="56" rx="4" className="mSlot" />
+            {sectors.map(s => <circle key={s.id} cx="231" cy={tubeY[s.id]} r="3" fill={s.color} />)}
+            <rect x="98" y="344" width="122" height="22" rx="4" className="mLabel" /><text x="159" y="359" textAnchor="middle" className="mLabelText">1 MOEDA = 1 FRENTE</text>
+          </g>
+          {all && <polygon points="468,206 492,206 606,208 606,118" fill="url(#beam)" className="beam" />}
+          <g className="laptop">
+            <rect x="596" y="112" width="152" height="104" className="lpLid" /><rect x="606" y="122" width="132" height="84" className="lpScreen" />
+            <path d="M582 216h180l12 22H570z" className="lpBase" />
+            {Array.from({ length: 3 }, (_, r) => <rect key={r} x={598 + r * 4} y={221 + r * 5} width={148 - r * 8} height="3" className="lpKeys" />)}
+            {!all ? <g className="lpWait"><text x="672" y="152" textAnchor="middle" className="lpText">AGUARDANDO A BASE</text>{sectors.map((s, i) => <rect key={s.id} x={644 + i * 20} y="164" width="14" height="14" rx="2" fill={done.some(d => d.id === s.id) ? s.color : "none"} stroke={s.color} strokeWidth="1.5" />)}</g>
+              : <g className="lpPie"><text x="672" y="134" textAnchor="middle" className="lpText">PAINEL DA GESTÃO</text>
+                <g transform="translate(672 172) rotate(-90)">{sectors.map((s, i) => { const len = (s.total / grand) * C, off = acc; acc += len; return <circle key={s.id} r="15" fill="none" stroke={s.color} strokeWidth="30" strokeDasharray={`${len} ${C}`} strokeDashoffset={-off} className="slice" style={{ animationDelay: `${i * .25}s` }} />; })}</g></g>}
+          </g>
+        </svg>
       </div>
-      <div className="frontWire"><span className="fileChip">frente-{f.id}_2026-11-01</span></div>
-    </div>; })}</div>
-    <div className="hubFolder"><span className="folderIcon" /><div><b>Pasta compartilhada</b><span>um arquivo por frente por dia · mesmo contrato de colunas</span></div><span className="folderCount">{done.length}/4</span></div>
-    <div className="hubPanel">
-      <div className="panelHead"><span>PAINEL DA GESTÃO</span><div className="rangeSwitch">{["hoje", "mês"].map(r => <button key={r} aria-pressed={range === r} onClick={() => setRange(r)}>{r === "hoje" ? "Hoje" : "Mês"}</button>)}</div></div>
-      <div className="panelKpis"><div><span>Total pago</span><b>{shown.total ? money(shown.total) : "—"}</b></div><div><span>Lançamentos</span><b>{shown.items ? shown.items.toLocaleString("pt-BR") : "—"}</b></div><div><span>Frentes fechadas</span><b>{done.length}/4</b></div></div>
-      <div className="panelBar">{fronts.map(f => <i key={f.id} style={{ "--c": f.color, flexGrow: closed.includes(f.id) ? f.total : 0 }} />)}{!done.length && <span>aguardando os arquivos do dia</span>}</div>
-      <div className="panelCal"><span>DIAS ÚTEIS</span><div>{pastDays.map(d => <i key={d} className="filled" title={`${d}/10`} />)}<i className={`today ${all ? "filled" : done.length ? "partial" : ""}`} style={{ "--p": done.length / 4 }} title="01/11" /></div></div>
     </div>
+    <div className="gumFoot">
+      <span className="footLabel">PAINEL DA GESTÃO</span>
+      {sectors.map(s => <span key={s.id} className={`legendItem ${all ? "on" : ""}`} style={{ "--c": s.color }}><i />{s.name}<b>{all ? `${Math.round((s.total / grand) * 100)}% · ${money(s.total)}` : "—"}</b></span>)}
+      <span className={`legendTotal ${all ? "on" : ""}`}>TOTAL <b>{all ? money(grand) : "—"}</b></span>
+      {used.length > 0 && !busy && <button className="ghostAction" onClick={reset}>Recomeçar</button>}
+    </div>
+    {coin && <i className="flyCoin" style={{ left: coin.x0, top: coin.y0, "--c": coin.s.color, "--cd": coin.s.deep }}>{coin.s.id.toUpperCase()}</i>}
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;
 }

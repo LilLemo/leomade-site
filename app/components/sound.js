@@ -63,6 +63,7 @@ export const sfx = {
   clip() { noise({ dur: .012, gain: .1, filter: "highpass", freq: 3500 }); tone({ freq: 1900, dur: .03, gain: .03, type: "square" }); },
   tear() { for (let i = 0; i < 9; i++) noise({ delay: i * .018, dur: .016, gain: .05 + (i % 3) * .015, filter: "highpass", freq: 2500 + (i % 4) * 500 }); },
   thump() { tone({ freq: 92, to: 42, dur: .26, gain: .3 }); noise({ dur: .06, gain: .16, filter: "lowpass", freq: 520 }); tone({ freq: 360 + Math.random() * 40, to: 250, dur: .05, gain: .06, type: "triangle" }); },
+  rattle() { for (let i = 0; i < 7; i++) noise({ delay: i * .045 + Math.random() * .02, dur: .025, gain: .05, filter: "bandpass", freq: 2200 + Math.random() * 1400, q: 3 }); },
   pick() { noise({ dur: .03, gain: .07, filter: "lowpass", freq: 900 }); tone({ freq: 240, to: 180, dur: .08, gain: .05, type: "triangle" }); },
   print(n = 8) { for (let i = 0; i < n; i++) noise({ delay: i * .045, dur: .025, gain: .05, filter: "bandpass", freq: 2400 + (i % 2) * 400, q: 2 }); },
   drop(i = 0) { tone({ freq: 520 - i * 60, to: 260 - i * 30, dur: .12, gain: .06, type: "triangle", delay: i * .09 }); },
