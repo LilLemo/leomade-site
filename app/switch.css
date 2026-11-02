@@ -555,3 +555,7 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 @media (max-width: 1199px) { .welcomeBottom p { max-width: 640px; } }
 .curiosityCopy > p:not(.monoLabel) .noteLine + .noteLine { margin-top: 0; }
 @media (min-width: 900px) { .curiosityCopy > p:not(.monoLabel) .noteLine { white-space: nowrap; } }
+/* Ribbon sits a bit lower, under the welcome copy. */
+.studioWelcome { padding-bottom: 150px; }
+.curiosityRibbon > div { will-change: transform; }
+@media (max-width: 720px) { .studioWelcome { padding-bottom: 110px; } }

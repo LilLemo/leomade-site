@@ -6,12 +6,13 @@ import { StudioHeader, StudioFooter, linkedIn } from "./components/StudioChrome"
 import { ProjectDetailProvider } from "./components/ProjectDetail";
 import { ReuseMetro, ProjectCurriculum } from "./components/Impact";
 import CoinFlip from "./components/CoinFlip";
+import Ribbon from "./components/Ribbon";
 
 export default function Home() {
   preload("/fonts/dm-serif-display-italic.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
   return <StudioEntrance><ProjectDetailProvider><StudioHeader />
     <section className="studioWelcome" id="inicio"><p className="monoLabel">OI, SOU O LÉO · LEOMADE É MEU ESTÚDIO</p><h1 id="studio-start" tabIndex={-1}>Transformo perguntas{" "}em<br /><em>possibilidades.</em></h1><div className="welcomeBottom"><p><span className="noteLine">Sou bacharel em Ciência da Computação, estudo Inteligência Artificial e trabalho com transformação de processos.</span><span className="noteLine">Conecto processos, dados e tecnologia e, dirigindo IA, construo ferramentas para finanças, marketing, comunicação e comercial.</span></p><div className="welcomeLinks"><a className="textLink" href="#laboratorio">Experimente meus projetos <span>↓</span></a><a className="textLink" href={linkedIn} target="_blank" rel="noreferrer">Meu LinkedIn <span>↗</span></a></div></div></section>
-    <div className="curiosityRibbon" aria-hidden="true"><div>{Array.from({ length: 4 }, (_, i) => <span key={i}>CURIOSIDADE É MATÉRIA-PRIMA <i>✳</i> MADE WITH CURIOSITY <i>✳</i> IDEIAS EM MOVIMENTO <i>✳</i></span>)}</div></div>
+    <Ribbon />
     <ProcessJourney />
     <ProjectExperience personal />
     <ReuseMetro />
