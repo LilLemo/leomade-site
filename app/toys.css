@@ -551,7 +551,7 @@
 .trayRow { position: relative; display: flex; flex-wrap: wrap; gap: 10px; min-height: 40px; }
 .trayEmpty { align-self: center; font: italic 400 15px/1.2 "DM Serif Display", var(--font-display); color: var(--muted); }
 .trayGuide { position: static; flex-direction: row; align-self: center; transform: none; }
-.trayGuide .pixelHand { width: 34px; rotate: 180deg; animation-name: pointBobL; }
+.trayGuide .pixelHand { width: 34px; scale: -1 1; animation-name: pointBobL; }
 @keyframes pointBobL { 50% { translate: -6px 0; } }
 .ticket { padding: 0; border: 0; background: none; color: inherit; text-align: left; }
 .ticket.loose { width: 200px; animation: noteIn .4s cubic-bezier(.3,1.4,.4,1) both; transition: transform .2s; }

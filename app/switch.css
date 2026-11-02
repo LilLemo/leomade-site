@@ -340,7 +340,7 @@ html.lightOn body { background: #eee8d5; }
 .sparkCue i { display: grid; place-items: center; width: 2.4em; height: 2.4em; border: 1.5px solid currentColor; border-radius: 50%; font-style: normal; font-size: 1.3em; transition: transform .4s; }
 .sparkWord:hover .sparkCue i { transform: rotate(180deg); }
 .sparkCue small { font: 11px/1 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
-.sparkCue .pixelHand { width: 34px; rotate: 180deg; animation: pointBobL .9s steps(2) infinite; }
+.sparkCue .pixelHand { width: 34px; scale: -1 1; animation: pointBobL .9s steps(2) infinite; }
 .lightOn .leomadePage .sparkCue { color: #37694d; }
 @keyframes sparkIn { from { opacity: 0; transform: translateY(.15em); } }
 @keyframes sparkGlow { 50% { text-shadow: 0 0 22px rgba(184,244,209,.55); } }
@@ -437,3 +437,8 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .lightOn .leomadePage .leoProcessJourney { background: linear-gradient(#dfe6cf, #486b52 18%, #486b52 85%, #eee8d5); }
 .lightOn .leomadePage .curriculum { background: linear-gradient(#eee8d5, #e7e9d5 60%, #dce6ce); }
 .lightOn .leomadePage .vibeSection { background: linear-gradient(#eee8d5, #e4e8d3 50%, #eee8d5); }
+
+/* The station dots are clickable too, like the names. */
+.metroTracks { cursor: pointer; }
+.metroTracks .metroTrack.stops > i { transition: transform .45s cubic-bezier(.3,1.6,.4,1), box-shadow .2s; }
+.metroStop:hover .metroTrack.stops > i, .metroStop.source .metroTrack.stops > i { box-shadow: 0 0 0 4px rgba(238,232,213,.12), 0 0 12px var(--line); }

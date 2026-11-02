@@ -136,6 +136,8 @@ export function ReuseMetro() {
     // One way only: what has appeared stays; once the last station is reached, everything locks on.
     const update = () => {
       if (locked) return;
+      // While the page is still behind the entrance, there is nothing to measure yet.
+      if (!map.getBoundingClientRect().height) return;
       const head = window.innerHeight * .58;
       const last = stops.current.length - 1;
       stops.current.forEach((li, i) => {
@@ -196,7 +198,7 @@ export function ReuseMetro() {
         const role = source === null ? "" : si === source ? "source" : fed.includes(si) ? "fed" : "idle";
         const on = active ? s.lines.includes(active) : role !== "idle";
         return <li key={s.id} ref={el => { stops.current[si] = el; }} className={`metroStop ${on ? "" : "dim"} ${role} ${s.terminal ? "terminal" : ""}`}>
-          <div className="metroTracks" aria-hidden="true">{reuseLines.map(l => {
+          <div className="metroTracks" aria-hidden="true" onClick={() => choose(si)} title={s.terminal ? s.name : d.name}>{reuseLines.map(l => {
             const [first, last] = bounds[l.id];
             const passes = si >= first && si <= last;
             const carries = source !== null && feeds[source].byLine[l.id] && si >= source && si <= Math.max(...feeds[source].byLine[l.id]);
