@@ -174,17 +174,47 @@ export default function Pastelaria() {
 
   return <div className={`projectVisual toyVisual pastelVisual phase-${phase}`} data-noswipe>
     <div className="toyTop"><span className="toyEyebrow">PORTAL DE BRIEFING · PASTELARIA</span><span className="toyHint" key={hint}>{hint}</span></div>
-    <div className="shop">
-      <Shop open={phase !== "closed"} />
-      {phase === "emergency" && <span className="phoneRing" style={{ left: X(58), top: Y(60) }}>{escalated ? "LINHA 2 PAROU!" : "TRIM TRIM"}</span>}
-      {["cookA", "cookB"].map((k, i) => <span key={k} className={`cook ${cooking[i] ? "working" : ""}`} style={{ left: X(i ? 216 : 126), top: Y(80), width: X(18) }}><Px name="cook" look={k} />{cooking[i] && <span className="cookTicket">{get(cooking[i]).flavor}</span>}</span>)}
-      {cooking.length > 0 && <span className="steam" style={{ left: X(180), top: Y(84) }}><i /><i /><i /></span>}
-      {ready.map((id, i) => <span key={id} className="readyPastel" style={{ left: X(274 + i * 26), top: Y(86), width: X(16) }}><Px name="pastel" /><small>{get(id).flavor}</small></span>)}
-      {people.map(c => { const ch = channels[c.ch]; return <span key={c.id} className={`customer ${c.walking ? "walking" : ""}`} style={{ left: X(c.x - 7), top: Y(120), width: X(14) }}>
-        <span className="chBadge" style={{ "--c": ch.color }}>{ch.short}</span>
-        {c.mood && <span className={`mood ${c.mood}`}>{c.mood !== "fine" && <Px name={c.mood === "happy" ? "heart" : "storm"} />}<small>{c.mood === "happy" ? "valeu!" : c.mood === "fine" ? "tudo bem" : "atrasou!"}</small></span>}
-        <Px name={ch.sprite} look={ch.look} />
-      </span>; })}
+    <div className="shopRow">
+      <div className="shop">
+        <Shop open={phase !== "closed"} />
+        {phase === "emergency" && <span className="phoneRing" style={{ left: X(58), top: Y(60) }}>{escalated ? "LINHA 2 PAROU!" : "TRIM TRIM"}</span>}
+        {["cookA", "cookB"].map((k, i) => <span key={k} className={`cook ${cooking[i] ? "working" : ""}`} style={{ left: X(i ? 216 : 126), top: Y(80), width: X(18) }}><Px name="cook" look={k} />{cooking[i] && <span className="cookTicket">{get(cooking[i]).flavor}</span>}</span>)}
+        {cooking.length > 0 && <span className="steam" style={{ left: X(180), top: Y(84) }}><i /><i /><i /></span>}
+        {ready.map((id, i) => <span key={id} className="readyPastel" style={{ left: X(274 + i * 26), top: Y(86), width: X(16) }}><Px name="pastel" /><small>{get(id).flavor}</small></span>)}
+        {people.map(c => { const ch = channels[c.ch]; return <span key={c.id} className={`customer ${c.walking ? "walking" : ""}`} style={{ left: X(c.x - 7), top: Y(120), width: X(14) }}>
+          <span className="chBadge" style={{ "--c": ch.color }}>{ch.short}</span>
+          {c.mood && <span className={`mood ${c.mood}`}>{c.mood !== "fine" && <Px name={c.mood === "happy" ? "heart" : "storm"} />}<small>{c.mood === "happy" ? "valeu!" : c.mood === "fine" ? "tudo bem" : "atrasou!"}</small></span>}
+          <Px name={ch.sprite} look={ch.look} />
+        </span>; })}
+      </div>
+    <aside className="shopSide">
+      {(() => {
+        const act = phase === "closed" ? { label: "Abrir a loja", fn: open, on: true }
+          : phase === "arriving" ? { label: "Pode fritar!", fn: fry, on: line.length === orders.length }
+          : phase === "emergency" ? { label: "Retomar a fritura", fn: resume, on: escalated }
+          : phase === "done" ? { label: "Novo dia", fn: reset, on: true }
+          : { label: "Fritando…", fn: null, on: false };
+        return <button className={`bell ${act.on ? "ready" : ""}`} onClick={() => { if (!act.on || !act.fn) return; sfx.bell(); act.fn(); }} disabled={!act.on} aria-label={act.label}>
+          {phase === "closed" && <span className="guide bellGuide"><PixelHand /></span>}
+          <svg viewBox="0 0 120 92" aria-hidden="true">
+            <defs><radialGradient id="dome" cx="38%" cy="30%" r="75%"><stop offset="0" stopColor="#ffffff" /><stop offset=".35" stopColor="#d9dcd6" /><stop offset=".75" stopColor="#8f948c" /><stop offset="1" stopColor="#5b6058" /></radialGradient>
+              <linearGradient id="bellBase" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#3a3a37" /><stop offset="1" stopColor="#0f0f0e" /></linearGradient></defs>
+            <g className="plunger"><rect x="56" y="8" width="8" height="14" rx="2" fill="#b9bdb5" /><ellipse cx="60" cy="8" rx="9" ry="5" fill="#e6e8e2" stroke="#8f948c" /></g>
+            <path d="M18 70a42 42 0 0 1 84 0z" fill="url(#dome)" stroke="#6b7068" strokeWidth="1.5" />
+            <path d="M34 44a30 30 0 0 1 18-14" fill="none" stroke="#fff" strokeOpacity=".8" strokeWidth="4" strokeLinecap="round" />
+            <rect x="12" y="69" width="96" height="6" rx="3" fill="#b9bdb5" />
+            <path d="M6 76h108l-6 14H12z" fill="url(#bellBase)" />
+          </svg>
+          <span className="bellLabel">{act.label}</span>
+        </button>;
+      })()}
+      <div className="sideScore">
+        {clock && <span className="clock"><small>COZINHA</small>{clock}h</span>}
+        <span className="score">NO PRAZO <b>{onTime}</b></span>
+        <span className="score late">ATRASADOS <b>{late}</b></span>
+      </div>
+      {phase === "done" && <p className="verdict">{verdict}</p>}
+    </aside>
     </div>
     {(phase === "closed" || phase === "arriving") && <div className="tray">
       <span className="boardLabel">CHEGARAM <b>{inbox.length}</b></span>
@@ -200,15 +230,6 @@ export default function Pastelaria() {
         {canEdit && Array.from({ length: slots }, (_, i) => { const id = line[i], bad = id && readyAt(i) > get(id).due; return <span key={`t${i}`} className={`slotTime ${bad ? "bad" : id ? "good" : ""}`} style={{ "--i": i }}>{i + 1}º · pronto às <b>{readyAt(i)}h</b></span>; })}
       </div>
     </div>}
-    <div className="pastelFoot">
-      {clock && <span className="clock"><small>COZINHA</small>{clock}h</span>}
-      <span className="score">NO PRAZO <b>{onTime}</b></span><span className="score late">ATRASADOS <b>{late}</b></span>
-      {phase === "done" && <span className="verdict">{verdict}</span>}
-      {phase === "closed" && <><span className="guide footGuide"><PixelHand /></span><button className="primaryAction nudge" onClick={open}>Abrir a loja</button></>}
-      {phase === "arriving" && <button className={`primaryAction ${line.length === orders.length ? "nudge" : ""}`} onClick={fry} disabled={line.length < orders.length}>Pode fritar!</button>}
-      {phase === "emergency" && <button className={`primaryAction ${escalated ? "nudge" : ""}`} onClick={resume} disabled={!escalated}>Retomar a fritura</button>}
-      {phase === "done" && <button className="ghostAction" onClick={reset}>Novo dia</button>}
-    </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;
 }

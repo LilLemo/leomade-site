@@ -519,7 +519,7 @@
 
 /* 07 · Briefing pastry shop */
 .pastelVisual { container-type: inline-size; user-select: none; -webkit-user-select: none; gap: 12px; }
-.shop { position: relative; width: min(100%, 760px); margin: 0 auto; overflow: hidden; border-radius: 10px; aspect-ratio: 360 / 150; box-shadow: inset 0 0 0 1px var(--line); }
+.shop { position: relative; width: 100%; margin: 0; overflow: hidden; border-radius: 10px; aspect-ratio: 360 / 150; box-shadow: inset 0 0 0 1px var(--line); }
 .shopArt { position: absolute; inset: 0; width: 100%; height: 100%; }
 .signText { fill: #f2c46b; font: 700 7px/1 ui-monospace, monospace; letter-spacing: .5px; }
 .plaque { fill: #f4efe1; font: 700 4.6px/1 ui-monospace, monospace; letter-spacing: .4px; }
@@ -619,3 +619,38 @@
 }
 
 @keyframes escalate { 30% { transform: scale(1.06) rotate(-2deg); } 60% { transform: scale(1.03) rotate(2deg); } }
+
+.shopRow { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 16px; align-items: start; }
+.shopSide { padding-top: 14px; }
+.shopSide { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.bell { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; padding: 0; border: 0; background: none; color: var(--cream); }
+.bell svg { width: 130px; filter: drop-shadow(0 12px 14px rgba(0,0,0,.45)); transition: transform .15s; }
+.bell .plunger { transition: transform .1s; }
+.bell:active:not(:disabled) .plunger { transform: translateY(5px); }
+.bell:active:not(:disabled) svg { transform: translateY(2px) rotate(-2deg); }
+.bell:hover:not(:disabled) svg { transform: translateY(-3px); }
+.bell.ready svg { animation: bellNudge 2.2s ease-in-out infinite; }
+.bell:disabled { cursor: default; }
+.pastelVisual .bell:disabled { opacity: 1; }
+.bell:disabled svg { filter: grayscale(.6) brightness(.7) drop-shadow(0 12px 14px rgba(0,0,0,.45)); }
+.bellLabel { padding: 7px 14px; border-radius: 99px; background: var(--lime); color: #0b3b2e; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.bell:disabled .bellLabel { background: rgba(238,232,213,.12); color: var(--muted); }
+.bellGuide { position: absolute; left: -46px; top: 30px; transform: none; }
+.bellGuide .pixelHand { width: 38px; }
+.sideScore { display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #0a231b; }
+.sideScore .score { display: flex; justify-content: space-between; align-items: baseline; }
+.sideScore .clock { justify-content: space-between; }
+.shopSide .verdict { margin: 0; font: italic 400 15px/1.3 "DM Serif Display", var(--font-display); color: var(--cream); text-align: center; }
+@keyframes bellNudge { 0%, 70%, 100% { transform: none; } 76% { transform: rotate(-6deg); } 82% { transform: rotate(6deg); } 88% { transform: rotate(-3deg); } }
+@container (max-width: 760px) {
+  .shopRow { grid-template-columns: 1fr; }
+  .shopSide { padding-top: 0; }
+  .phase-closed .varal { display: none; }
+  .shopSide { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+  .bell { width: 120px; }
+  .bell svg { width: 96px; }
+  .bellLabel { font-size: 12px; padding: 6px 11px; }
+  .bellGuide { left: auto; right: -6px; top: -4px; }
+  .bellGuide .pixelHand { width: 30px; }
+  .shopSide .verdict { grid-column: 1 / -1; }
+}
