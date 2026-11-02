@@ -553,3 +553,5 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .welcomeBottom .welcomeLinks { margin-left: auto; margin-top: 0; }
 @media (min-width: 1200px) { .welcomeBottom p .noteLine { white-space: nowrap; } }
 @media (max-width: 1199px) { .welcomeBottom p { max-width: 640px; } }
+.curiosityCopy > p:not(.monoLabel) .noteLine + .noteLine { margin-top: 0; }
+@media (min-width: 900px) { .curiosityCopy > p:not(.monoLabel) .noteLine { white-space: nowrap; } }
