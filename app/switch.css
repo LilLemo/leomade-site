@@ -453,3 +453,31 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
   .cvDetail > div, .cvDetail > div:first-child { padding: 14px 6px; }
   .cvDetail > div + div { border-left: 0; border-top: 1px solid var(--line); }
 }
+
+/* Project list in the projector: scrolls on its own, no visible scrollbar. */
+.indexWrap { position: relative; min-width: 0; border-right: 1px solid var(--studio-line); }
+.indexWrap .projectIndex { position: absolute; inset: 0; overflow-y: auto; border-right: 0; scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior-y: auto; }
+.indexWrap .projectIndex::-webkit-scrollbar { display: none; }
+.indexWrap::before, .indexWrap::after { content: ""; position: absolute; left: 0; right: 0; z-index: 2; height: 64px; pointer-events: none; opacity: 0; transition: opacity .25s; }
+.indexWrap::before { top: 0; background: linear-gradient(var(--projector-bg, #0a2b22), transparent); }
+.indexWrap::after { bottom: 0; background: linear-gradient(transparent, var(--projector-bg, #0a2b22)); }
+.indexWrap.canUp::before, .indexWrap.canDown::after { opacity: 1; }
+.indexNudge { position: absolute; left: 50%; z-index: 3; display: grid; place-items: center; width: 34px; height: 34px; margin-left: -17px; border: 1px solid rgba(238,232,213,.25); border-radius: 50%; background: #0f3326; color: var(--studio-cream); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .25s, transform .2s, border-color .2s; }
+.indexNudge.up { top: 8px; }
+.indexNudge.down { bottom: 10px; animation: nudgeBob 1.6s ease-in-out infinite; }
+.indexWrap.canUp .indexNudge.up, .indexWrap.canDown .indexNudge.down { opacity: 1; pointer-events: auto; }
+.indexNudge:hover { border-color: var(--studio-lime); color: var(--studio-lime); }
+@keyframes nudgeBob { 50% { transform: translateY(3px); } }
+@media (max-width: 720px) {
+  .indexWrap { border-right: 0; }
+  .indexWrap .projectIndex { position: static; overflow-y: visible; overflow-x: auto; scrollbar-width: none; }
+  .indexWrap::before, .indexWrap::after, .indexNudge { display: none; }
+}
+
+/* In progress reads as amber, still moving, not as an alarm. */
+.curriculum { --building: #f2c46b; }
+.lightOn .leomadePage .curriculum { --building: #a07a1c; }
+/* The list keeps one steady height (it does not follow each case), sticks while the case scrolls by. */
+.indexWrap { align-self: start; position: sticky; top: 16px; height: min(700px, calc(100svh - 110px)); border-right: 0; }
+.projectorBody > .projectScreen { border-left: 1px solid var(--studio-line); }
+@media (max-width: 720px) { .indexWrap { position: static; height: auto; } .projectorBody > .projectScreen { border-left: 0; } }
