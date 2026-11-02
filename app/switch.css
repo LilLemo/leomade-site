@@ -426,3 +426,14 @@ html.lightOn body { background: #eee8d5; }
 @media (max-width: 720px) { .footerInvitation h2 button span.sparkCue { font-size: .2em; } .footerInvitation h2 button.sparkWord { flex-wrap: wrap; } }
 .footerInvitation h2 button.sparkWord { flex-wrap: wrap; row-gap: 14px; }
 .footerInvitation h2 button span.sparkText { white-space: nowrap; }
+
+/* ───────── Seamless dark chain: each section starts with the color the previous one ends on ───────── */
+html:not(.lightOn) .leomadePage .leoProcessJourney { background: linear-gradient(#0b3b2e, #030d09 18%, #030d09 86%, #0b3b2e); }
+html:not(.lightOn) .leomadePage .reuseMetro { background: linear-gradient(#08251c, rgba(8,37,28,0) 240px), linear-gradient(to top, #08251c, rgba(8,37,28,0) 240px), radial-gradient(ellipse at 20% 15%, #185442 0%, #0b3b2e 45%, #071f18 100%); }
+html:not(.lightOn) .leomadePage .leoMethod { background: linear-gradient(#08251c, #061e17); }
+html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e17, #0a2d22 45%, #071e17); }
+/* Light chain */
+.lightOn .leomadePage .studioWelcome { background: linear-gradient(#eee8d5, #dfe6cf); }
+.lightOn .leomadePage .leoProcessJourney { background: linear-gradient(#dfe6cf, #486b52 18%, #486b52 85%, #eee8d5); }
+.lightOn .leomadePage .curriculum { background: linear-gradient(#eee8d5, #e7e9d5 60%, #dce6ce); }
+.lightOn .leomadePage .vibeSection { background: linear-gradient(#eee8d5, #e4e8d3 50%, #eee8d5); }
