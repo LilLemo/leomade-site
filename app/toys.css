@@ -565,7 +565,7 @@
 .tDue { margin-top: auto; font: 12px/1.2 "Inter", sans-serif; color: #2a1d18; }
 .tDue strong { font: 400 20px/1 "DM Serif Display", var(--font-display); color: #a5362a; }
 .tDue i { font: 700 11px/1 ui-monospace, monospace; font-style: normal; color: #c03a26; }
-.ticketBody.max { background: #fde2da; box-shadow: 0 0 0 2px #d9503c, 0 0 22px rgba(217,80,60,.45); }
+.ticketBody.max { animation: escalate .5s ease; background: #fde2da; box-shadow: 0 0 0 2px #d9503c, 0 0 22px rgba(217,80,60,.45); }
 .ticketBody.willLate { background: #f7d3c8; box-shadow: 0 0 0 2px #c03a26, 0 6px 14px rgba(0,0,0,.35); }
 .varal { padding: 12px 14px 10px; border: 1px solid var(--line); border-radius: 12px; background: #0a231b; }
 .line { --axis: x; position: relative; height: 172px; }
@@ -617,3 +617,5 @@
 @container (max-width: 420px) {
   .ticket.loose { width: 100%; }
 }
+
+@keyframes escalate { 30% { transform: scale(1.06) rotate(-2deg); } 60% { transform: scale(1.03) rotate(2deg); } }

@@ -25,24 +25,22 @@ const channels = {
   fab: { label: "TELEFONE", short: "FÁBRICA", color: "#f09a86", sprite: "email", look: "factory" },
 };
 const orders = [
-  { id: 1, ch: "email", who: "Diretoria", job: "Apresentação Q3", flavor: "palmito", due: 12, shout: "URGENTE!!" },
+  { id: 1, ch: "email", who: "Fábrica", job: "Placa de segurança", flavor: "especial", due: 12 },
   { id: 2, ch: "whats", who: "Vendas", job: "Post da promo", flavor: "carne", due: 10 },
   { id: 3, ch: "teams", who: "RH", job: "Banner do RH", flavor: "frango", due: 11 },
   { id: 4, ch: "email", who: "Produto", job: "Flyer da feira", flavor: "queijo", due: 10 },
   { id: 5, ch: "whats", who: "Comercial", job: "Vídeo curto", flavor: "pizza", due: 11 },
 ];
-const EMERGENCY = { id: 6, ch: "fab", who: "Fábrica · linha 2 parada", job: "Placa de segurança", flavor: "especial", due: 11, max: true };
-const everyone = [...orders, EMERGENCY];
-const find = id => everyone.find(o => o.id === id);
+const find = id => orders.find(o => o.id === id);
 const X = x => `${x / 3.6}%`, Y = y => `${y / 1.5}%`;
 const queueX = i => 272 + i * 12;
 
 function Ticket({ o, at }) {
   const c = channels[o.ch], late = at && at > o.due;
   return <span className={`ticketBody ${o.max ? "max" : ""} ${late ? "willLate" : ""}`} style={{ "--c": c.color }}>
-    <span className="tCh">{c.label}{o.shout && <em>{o.shout}</em>}{o.max && <em className="maxTag">PRIORIDADE MÁXIMA</em>}</span>
+    <span className="tCh">{c.label}{o.shout && <em>{o.shout}</em>}{o.max && <em className="maxTag">URGENTE · LINHA 2 PARADA</em>}</span>
     <b>{o.job}</b>
-    <span className="tWho">{o.who} · pastel de {o.flavor}</span>
+    <span className="tWho">{o.who} · {o.flavor === "especial" ? "pastel especial" : `pastel de ${o.flavor}`}</span>
     <span className="tDue">entregar até <strong>{o.due}h</strong>{late && <i> · vai atrasar</i>}</span>
   </span>;
 }
@@ -101,6 +99,9 @@ export default function Pastelaria() {
   const [clock, setClock] = useState(null);
   const [base, setBase] = useState(10);
   const [fried, setFried] = useState([]);
+  const [escalated, setEscalated] = useState(false);
+  const escRef = useRef(false);
+  const get = id => { const o = find(id); return id === 1 && (escalated || escRef.current) ? { ...o, due: 11, max: true } : o; };
   const canEdit = phase === "arriving" || phase === "emergency";
   const readyAt = i => base + Math.floor(i / 2);
   const slots = phase === "closed" || phase === "arriving" ? orders.length : phase === "emergency" ? line.length + inbox.length : line.length;
@@ -129,7 +130,7 @@ export default function Pastelaria() {
   const onUp = () => { dragRef.current = null; setDrag(null); };
 
   const judge = (id, at) => {
-    const o = find(id), ok = at <= o.due;
+    const o = get(id), ok = at <= o.due;
     const why = ok ? null : o.max ? "fabWait" : (planRef.current[id] ?? 99) <= o.due ? "fab" : "order";
     setResults(r => ({ ...r, [id]: { ok, why } }));
     setPeople(p => p.map(c => (c.id === id ? { ...c, mood: ok ? "happy" : why === "fab" ? "fine" : "late" } : c)));
@@ -149,10 +150,7 @@ export default function Pastelaria() {
   };
   const emergency = () => {
     setPhase("emergency"); setBase(11); sfx.phone();
-    setPeople(p => [...p, { id: 6, ch: "fab", x: -16, walking: true, mood: null }]);
-    later(() => setPeople(p => p.map(c => (c.id === 6 ? { ...c, x: 64 } : c))), 40);
-    later(() => { setInbox([6]); sfx.alert(); setPeople(p => p.map(c => (c.id === 6 ? { ...c, x: 256 } : c))); }, 1150);
-    later(() => setPeople(p => p.map(c => (c.id === 6 ? { ...c, walking: false } : c))), 2500);
+    later(() => { escRef.current = true; setEscalated(true); sfx.alert(); }, 900);
   };
   const fry = () => {
     if (line.length < orders.length) return;
@@ -160,18 +158,17 @@ export default function Pastelaria() {
     setFried([...line]); setPhase("frying"); cookRound([...line], 10);
   };
   const resume = () => { if (inbox.length) return; setPhase("frying"); cookRound([...line], 11); };
-  const reset = () => { timers.current.forEach(clearTimeout); timers.current = []; firedRef.current = false; planRef.current = {}; setPhase("closed"); setPeople([]); setInbox([]); setLine([]); setCooking([]); setReady([]); setResults({}); setClock(null); setBase(10); setFried([]); sfx.flip(); };
+  const reset = () => { timers.current.forEach(clearTimeout); timers.current = []; firedRef.current = false; planRef.current = {}; escRef.current = false; setEscalated(false); setPhase("closed"); setPeople([]); setInbox([]); setLine([]); setCooking([]); setReady([]); setResults({}); setClock(null); setBase(10); setFried([]); sfx.flip(); };
 
   const res = Object.values(results), onTime = res.filter(r => r.ok).length, late = res.length - onTime;
   const byOrder = res.filter(r => r.why === "order").length, byFab = res.filter(r => r.why === "fab").length, fabWait = res.some(r => r.why === "fabWait");
-  const shoutFirst = fried.indexOf(1) > -1 && fried.indexOf(1) < 2;
-  const willLate = line.some((id, i) => readyAt(i) > find(id).due);
-  const verdict = fabWait ? "A fábrica parada esperou na fila. Urgência real passa na frente de tudo."
+  const willLate = line.some((id, i) => readyAt(i) > get(id).due);
+  const verdict = fabWait ? "A placa da fábrica esperou na fila. Quando a linha para, ela passa na frente de tudo."
     : byOrder === 0 && byFab === 0 ? "Tudo no prazo, até com a fábrica parada. Varal impecável."
-    : [byFab ? `${byFab} ${byFab > 1 ? "pedidos atrasaram" : "pedido atrasou"} por causa da fábrica parada. Esse dá para renegociar com dados.` : "", byOrder ? `${byOrder} ${byOrder > 1 ? "atrasaram" : "atrasou"} pela ordem do varal${shoutFirst ? ": o grito no assunto furou a fila" : ""}.` : ""].filter(Boolean).join(" ");
+    : [byFab ? `${byFab} ${byFab > 1 ? "pedidos atrasaram" : "pedido atrasou"} por causa da fábrica parada. Esse dá para renegociar com dados.` : "", byOrder ? `${byOrder} ${byOrder > 1 ? "atrasaram" : "atrasou"} pela ordem do varal.` : ""].filter(Boolean).join(" ");
   const hint = phase === "closed" ? "Hora de abrir. Os pedidos chegam por todo canal."
     : phase === "arriving" ? (inbox.length && !line.length ? "Toque num pedido para pendurar no varal." : people.length < orders.length ? "Mais gente chegando. Vai pendurando." : line.length < orders.length ? "Pendure todos no varal." : willLate ? "Embaixo de cada vaga está a hora que fica pronto. Vermelho vai atrasar." : "Tudo dentro do prazo. Pode fritar!")
-    : phase === "emergency" ? (inbox.length ? "Telefone! Fábrica parada. Pendure o pedido vermelho." : "Encaixe a prioridade máxima e veja quem passa a atrasar.")
+    : phase === "emergency" ? (escalated ? "A linha 2 parou: a placa virou urgente. Passe ela para frente." : "Telefone tocando…")
     : phase === "frying" ? "Cozinha a mil. Dois pastéis por vez."
     : "Fim do expediente.";
 
@@ -179,28 +176,28 @@ export default function Pastelaria() {
     <div className="toyTop"><span className="toyEyebrow">PORTAL DE BRIEFING · PASTELARIA</span><span className="toyHint" key={hint}>{hint}</span></div>
     <div className="shop">
       <Shop open={phase !== "closed"} />
-      {phase === "emergency" && <span className="phoneRing" style={{ left: X(58), top: Y(60) }}>TRIM TRIM</span>}
-      {["cookA", "cookB"].map((k, i) => <span key={k} className={`cook ${cooking[i] ? "working" : ""}`} style={{ left: X(i ? 216 : 126), top: Y(80), width: X(18) }}><Px name="cook" look={k} />{cooking[i] && <span className="cookTicket">{find(cooking[i]).flavor}</span>}</span>)}
+      {phase === "emergency" && <span className="phoneRing" style={{ left: X(58), top: Y(60) }}>{escalated ? "LINHA 2 PAROU!" : "TRIM TRIM"}</span>}
+      {["cookA", "cookB"].map((k, i) => <span key={k} className={`cook ${cooking[i] ? "working" : ""}`} style={{ left: X(i ? 216 : 126), top: Y(80), width: X(18) }}><Px name="cook" look={k} />{cooking[i] && <span className="cookTicket">{get(cooking[i]).flavor}</span>}</span>)}
       {cooking.length > 0 && <span className="steam" style={{ left: X(180), top: Y(84) }}><i /><i /><i /></span>}
-      {ready.map((id, i) => <span key={id} className="readyPastel" style={{ left: X(274 + i * 26), top: Y(86), width: X(16) }}><Px name="pastel" /><small>{find(id).flavor}</small></span>)}
+      {ready.map((id, i) => <span key={id} className="readyPastel" style={{ left: X(274 + i * 26), top: Y(86), width: X(16) }}><Px name="pastel" /><small>{get(id).flavor}</small></span>)}
       {people.map(c => { const ch = channels[c.ch]; return <span key={c.id} className={`customer ${c.walking ? "walking" : ""}`} style={{ left: X(c.x - 7), top: Y(120), width: X(14) }}>
         <span className="chBadge" style={{ "--c": ch.color }}>{ch.short}</span>
         {c.mood && <span className={`mood ${c.mood}`}>{c.mood !== "fine" && <Px name={c.mood === "happy" ? "heart" : "storm"} />}<small>{c.mood === "happy" ? "valeu!" : c.mood === "fine" ? "tudo bem" : "atrasou!"}</small></span>}
         <Px name={ch.sprite} look={ch.look} />
       </span>; })}
     </div>
-    {(phase === "closed" || canEdit) && <div className="tray">
+    {(phase === "closed" || phase === "arriving") && <div className="tray">
       <span className="boardLabel">CHEGARAM <b>{inbox.length}</b></span>
-      <div className="trayRow">{inbox.map((id, i) => <button key={id} className="ticket loose" style={{ "--i": i }} onClick={() => hang(id)}><Ticket o={find(id)} /></button>)}
+      <div className="trayRow">{inbox.map((id, i) => <button key={id} className="ticket loose" style={{ "--i": i }} onClick={() => hang(id)}><Ticket o={get(id)} /></button>)}
         {!inbox.length && <span className="trayEmpty">{phase === "closed" ? "Os pedidos chegam aqui quando a loja abrir." : phase === "arriving" ? "Tudo pendurado." : "Bandeja vazia."}</span>}
-        {canEdit && inbox.length > 0 && (!line.length || phase === "emergency") && <span className="guide trayGuide"><PixelHand /><em>toque para pendurar</em></span>}</div>
+        {canEdit && inbox.length > 0 && !line.length && <span className="guide trayGuide"><PixelHand /><em>toque para pendurar</em></span>}</div>
     </div>}
     {phase !== "done" && <div className="varal">
       <span className="boardLabel">VARAL · <b className="dirX">A ESQUERDA FRITA PRIMEIRO</b><b className="dirY">O DE CIMA FRITA PRIMEIRO</b></span>
       <div className="line" ref={lineRef} style={{ "--n": Math.max(slots, 1) }}>
-        {line.map((id, i) => { const dragging = drag?.id === id; return <button key={id} className={`ticket hung ${dragging ? "dragging" : ""}`} style={{ "--i": i, "--d": dragging ? `${drag.d}px` : "0px" }} onPointerDown={e => onDown(e, id)} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}><i className="pin" /><Ticket o={find(id)} at={canEdit ? readyAt(i) : null} /></button>; })}
+        {line.map((id, i) => { const dragging = drag?.id === id; return <button key={id} className={`ticket hung ${dragging ? "dragging" : ""}`} style={{ "--i": i, "--d": dragging ? `${drag.d}px` : "0px" }} onPointerDown={e => onDown(e, id)} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}><i className="pin" /><Ticket o={get(id)} at={canEdit ? readyAt(i) : null} /></button>; })}
         {Array.from({ length: Math.max(0, slots - line.length) }, (_, k) => <span key={`e${k}`} className="slotEmpty" style={{ "--i": line.length + k }} />)}
-        {canEdit && Array.from({ length: slots }, (_, i) => { const id = line[i], bad = id && readyAt(i) > find(id).due; return <span key={`t${i}`} className={`slotTime ${bad ? "bad" : id ? "good" : ""}`} style={{ "--i": i }}>{i + 1}º · pronto às <b>{readyAt(i)}h</b></span>; })}
+        {canEdit && Array.from({ length: slots }, (_, i) => { const id = line[i], bad = id && readyAt(i) > get(id).due; return <span key={`t${i}`} className={`slotTime ${bad ? "bad" : id ? "good" : ""}`} style={{ "--i": i }}>{i + 1}º · pronto às <b>{readyAt(i)}h</b></span>; })}
       </div>
     </div>}
     <div className="pastelFoot">
@@ -209,7 +206,7 @@ export default function Pastelaria() {
       {phase === "done" && <span className="verdict">{verdict}</span>}
       {phase === "closed" && <><span className="guide footGuide"><PixelHand /></span><button className="primaryAction nudge" onClick={open}>Abrir a loja</button></>}
       {phase === "arriving" && <button className={`primaryAction ${line.length === orders.length ? "nudge" : ""}`} onClick={fry} disabled={line.length < orders.length}>Pode fritar!</button>}
-      {phase === "emergency" && <button className={`primaryAction ${inbox.length ? "" : "nudge"}`} onClick={resume} disabled={inbox.length > 0}>Retomar a fritura</button>}
+      {phase === "emergency" && <button className={`primaryAction ${escalated ? "nudge" : ""}`} onClick={resume} disabled={!escalated}>Retomar a fritura</button>}
       {phase === "done" && <button className="ghostAction" onClick={reset}>Novo dia</button>}
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
