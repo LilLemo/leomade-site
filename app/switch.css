@@ -535,3 +535,11 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .methodColumns p { font-size: 16px; line-height: 1.7; color: rgba(238,232,213,.74); }
 .lightOn .leomadePage .methodColumns p { color: #3a5a44; }
 @media (max-width: 720px) { .methodColumns p { font-size: 15px; } .methodColumns h3 { font-size: 23px; } }
+
+/* Paragraphs with intentional line breaks get room to breathe. */
+.noteLine { display: block; }
+.metroIntro > p:not(.monoLabel) { max-width: 600px; }
+.metroIntro blockquote { max-width: 560px; }
+.curiosityCopy > p:not(.monoLabel) { max-width: 640px; }
+.welcomeBottom p { max-width: 900px; }
+.curiosityCopy > p:not(.monoLabel), .metroHint, .noteLine { text-wrap: balance; }
