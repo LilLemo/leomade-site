@@ -542,4 +542,14 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .metroIntro blockquote { max-width: 560px; }
 .curiosityCopy > p:not(.monoLabel) { max-width: 640px; }
 .welcomeBottom p { max-width: 900px; }
-.curiosityCopy > p:not(.monoLabel), .metroHint, .noteLine { text-wrap: balance; }
+.curiosityCopy > p:not(.monoLabel), .metroHint { text-wrap: balance; }
+.noteLine { text-wrap: pretty; }
+.noteLine + .noteLine { margin-top: .35em; }
+.metroIntro > p:not(.monoLabel) { max-width: 520px; }
+.labIntro > p { text-wrap: pretty; }
+/* Welcome: one sentence per line on wide screens, links move below when they do not fit beside it. */
+.welcomeBottom { flex-wrap: wrap; row-gap: 26px; }
+.welcomeBottom p { font-size: 17.5px; max-width: none; }
+.welcomeBottom .welcomeLinks { margin-left: auto; margin-top: 0; }
+@media (min-width: 1200px) { .welcomeBottom p .noteLine { white-space: nowrap; } }
+@media (max-width: 1199px) { .welcomeBottom p { max-width: 640px; } }

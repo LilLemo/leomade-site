@@ -98,7 +98,7 @@ const terminal = {
   id: "terminal", terminal: true, lines: reuseLines.map(l => l.id),
   label: "00 · TERMINAL · EM TODO PROJETO",
   name: "Ouvir e entender a necessidade",
-  note: ["Todo projeto começa escutando e entendendo qual é a dor.", "Antes de reaproveitar qualquer peça,", "converso com quem vive a rotina para entender a regra,", "as exceções e o que significa pronto."],
+  note: ["Todo projeto começa escutando e entendendo qual é a dor.", "Antes de reaproveitar qualquer peça, converso com quem vive a rotina para entender a regra, as exceções e o que significa pronto."],
 };
 const metroStations = [terminal, ...reuseStations];
 
@@ -187,7 +187,7 @@ export function ReuseMetro() {
     <div className="metroIntro" data-reveal>
       <p className="monoLabel">UMA FERRAMENTA PUXA A OUTRA</p>
       <h2 id="metro-title">Não começo<br /><em>do zero.</em></h2>
-      <p><span className="noteLine">Não começar do zero não é só reaproveitar peças.</span><span className="noteLine">Todo projeto começa do mesmo jeito: ouvindo e entendendo a dor de quem pede.</span><span className="noteLine">Depois, cada ferramenta deixa peças prontas para a próxima.</span></p>
+      <p>Todo projeto começa do mesmo jeito: ouvindo e entendendo a dor de quem pede. Depois, cada ferramenta deixa peças prontas para a próxima.</p>
       <div className="metroLegend" role="group" aria-label="Destacar uma peça reaproveitada">{reuseLines.map(l => <button key={l.id} style={{ "--line": l.color }} aria-pressed={active === l.id} onClick={() => { setActive(active === l.id ? null : l.id); setSource(null); }}><i />{l.label}<small>{bounds[l.id][2] - 1}×</small></button>)}</div>
       <p className="metroHint"><i />TOQUE NUMA ESTAÇÃO PARA VER O QUE ELA ALIMENTOU</p>
       <blockquote><span className="noteLine">Quando alguém de outra frente viu uma ferramenta pronta, pediu uma igual.</span><span className="noteLine">É o indicador de que eu mais gosto.</span></blockquote>
