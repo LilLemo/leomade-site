@@ -560,3 +560,29 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .curiosityRibbon > div { will-change: transform; }
 @media (max-width: 720px) { .studioWelcome { padding-bottom: 110px; } }
 .footerInvitation h2 button span.sparkCue .pixelHand { width: 46px; }
+
+/* Before / after result lines */
+.resultLine { display: grid; gap: 6px; max-width: 560px; margin: 14px 0 0; padding: 12px 14px; border-left: 2px solid var(--studio-lime); border-radius: 0 8px 8px 0; background: rgba(238,232,213,.05); font-size: 15px; line-height: 1.55; color: rgba(238,232,213,.82); }
+.resultLine b { display: inline-block; min-width: 62px; margin-right: 8px; font: 700 10.5px/1 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: rgba(238,232,213,.5); }
+.resultLine span + span b { color: var(--studio-lime); }
+.metroInfo .resultLine + p { margin-top: 12px; }
+.lightOn .leomadePage .resultLine { background: rgba(23,63,48,.05); color: #2c4a3a; border-left-color: #497549; }
+.lightOn .leomadePage .resultLine b { color: #6a8a68; }
+.lightOn .leomadePage .resultLine span + span b { color: #37694d; }
+.cvResult { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 18px; margin: 0; padding: 14px 6px 16px; background: var(--card); border-bottom: 1px dashed var(--line); animation: hintIn .3s ease; }
+.cvResult span { display: block; margin-bottom: 6px; font: 10px/1.4 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.cvResult div:last-child span { color: var(--accent); }
+.cvResult p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--sub); }
+.cvResult div:last-child p { color: var(--ink); }
+.cvResult > i { font-style: normal; font-size: 20px; color: var(--accent); }
+@media (max-width: 720px) {
+  .resultLine { font-size: 14px; padding: 10px 12px; }
+  .resultLine b { display: block; margin: 0 0 4px; }
+  .cvResult { grid-template-columns: 1fr; gap: 10px; }
+  .cvResult > i { display: none; }
+}
+.curiosityBottom:empty { min-height: 22px; }
+.contactLinks { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+.contactEmail { display: inline-block; margin-top: 18px; font: 13px/1.4 ui-monospace, monospace; letter-spacing: .04em; color: rgba(238,232,213,.6); border-bottom: 1px solid rgba(238,232,213,.25); }
+.contactEmail:hover { color: var(--studio-lime); }
+.lightOn .leomadePage .contactEmail { color: #46634d; border-color: rgba(23,63,48,.3); }

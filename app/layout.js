@@ -15,8 +15,11 @@ export const metadata = {
     description: "Na LEOMADE, meu estúdio independente, transformo curiosidade em software e experimento ideias com IA.",
     type: "website",
     locale: "pt_BR",
+    url: "https://leomade.com.br/",
+    siteName: "LEOMADE",
+    images: [{ url: "https://leomade.com.br/og-image.jpg", width: 1200, height: 630, alt: "leomade✳ · Made with curiosity" }],
   },
-  twitter: { card: "summary", title: "LEOMADE | Made with curiosity", description: "Meu estúdio de software, IA e experimentação. Conheça as ideias que estou tirando do papel." },
+  twitter: { card: "summary_large_image", title: "LEOMADE | Made with curiosity", description: "Meu estúdio de software, IA e experimentação. Conheça as ideias que estou tirando do papel.", images: ["https://leomade.com.br/og-image.jpg"] },
 };
 
 export default function RootLayout({ children }) {

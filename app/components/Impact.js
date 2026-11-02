@@ -165,6 +165,7 @@ export function ReuseMetro() {
             <span>{s.terminal ? s.label : `${String(si).padStart(2, "0")} · ${areaById[d.area].label} · ${d.status}`}</span>
             <h3><button className="metroStation" aria-pressed={source === si} onClick={() => choose(si)}>{s.terminal ? s.name : d.name}</button></h3>
             <p>{Array.isArray(s.note) ? s.note.map((line, k) => <span className="noteLine" key={k}>{line}</span>) : s.note}</p>
+            {d?.result && <p className="resultLine"><span><b>Antes</b>{" "}{d.result.before}</span><span><b>Depois</b>{" "}{d.result.after}</span></p>}
             <div className="metroPieces">{s.lines.map(id => <i key={id} style={{ "--line": reuseLines.find(l => l.id === id).color }} title={reuseLines.find(l => l.id === id).label} />)}</div>
             {source === si && <p className="metroFed" aria-live="polite">{s.terminal ? <><b>Todo projeto começa aqui.</b> As {fed.length} ferramentas nasceram de alguém me contando onde doía.</> : fed.length ? <><b>Alimentou {fed.length} {fed.length > 1 ? "ferramentas" : "ferramenta"}:</b> {fed.map(nameOf).join(", ")}.</> : <b>Ponta da linha, por enquanto. A próxima ferramenta sai daqui.</b>}</p>}
             {d?.caseId && <button className="metroCase" onClick={() => open(d.caseId)}>Ver o case ↗</button>}
@@ -217,6 +218,7 @@ export function ProjectCurriculum() {
           <span className="cvState">{d.status}</span>
           <i aria-hidden="true">{isOpen ? "−" : "+"}</i>
         </button>
+        {isOpen && d.result && <div className="cvResult"><div><span>Antes</span><p>{d.result.before}</p></div><i aria-hidden="true">→</i><div><span>Depois</span><p>{d.result.after}</p></div></div>}
         {isOpen && <div className="cvDetail">
           <div><span>A pergunta</span><p>{d.question}</p></div>
           <div><span>O que construí</span><p>{d.built}</p></div>

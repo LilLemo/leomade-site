@@ -29,5 +29,5 @@ export default function Ribbon() {
     frame = requestAnimationFrame(tick);
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); };
   }, []);
-  return <div className="curiosityRibbon" aria-hidden="true"><div ref={track}>{Array.from({ length: 4 }, (_, i) => <span key={i}>CURIOSIDADE É MATÉRIA-PRIMA <i>✳</i> MADE WITH CURIOSITY <i>✳</i> IDEIAS EM MOVIMENTO <i>✳</i></span>)}</div></div>;
+  return <div className="curiosityRibbon" aria-hidden="true"><div ref={track}>{Array.from({ length: 4 }, (_, i) => <span key={i}>MADE WITH CURIOSITY <i>✳</i> MADE WITH CURIOSITY <i>✳</i> MADE WITH CURIOSITY <i>✳</i></span>)}</div></div>;
 }

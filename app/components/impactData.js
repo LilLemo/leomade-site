@@ -26,11 +26,12 @@ export const inUseStatuses = ["Em uso"];
 
 export const deliveries = [
   {
-    id: "conferencia", area: "financas", type: "rotina", status: "Em uso", caseId: "cpag",
+    id: "conferencia", area: "financas", type: "rotina", status: "Em teste", caseId: "cpag",
     name: "Central de conferência e aprovação de pagamentos",
     question: "Como achar o erro antes da remessa, e não depois?",
     built: "Validações em linguagem de negócio, resumo para aprovação montado a partir dos relatórios, ajustes registrados e pacote de envio em dois idiomas.",
     reuse: "Qualquer rotina que cruza relatórios do ERP antes de uma decisão.",
+    result: { before: "Conferência no olho, planilha e aprovação por e-mail. O erro só aparecia no retorno do banco.", after: "O que travaria a remessa aparece antes, e a aprovação sai com o histórico salvo. Pronta, entra agora em dois meses de teste com a área." },
   },
   {
     id: "fechamento", area: "financas", type: "plataforma", status: "Em implantação", caseId: "fechamento",
@@ -40,11 +41,12 @@ export const deliveries = [
     reuse: "Times que repetem o mesmo fechamento com regras um pouco diferentes.",
   },
   {
-    id: "fornecedores", area: "financas", type: "relatorio", status: "Em uso", caseId: "relatorios",
+    id: "fornecedores", area: "financas", type: "relatorio", status: "Incorporado à central", caseId: "relatorios",
     name: "Relatório de concentração de fornecedores",
     question: "Onde está concentrado o volume de pagamentos?",
     built: "Arquivo que abre no navegador, organiza a extração em treemap e exporta em PDF para a gestão.",
     reuse: "Qualquer leitura de concentração: clientes, produtos, centros de custo.",
+    result: { before: "A concentração saía de uma extração tratada à mão no Excel.", after: "A extração entra e sai a leitura pronta para a gestão. Concluído, hoje faz parte da central de conferência." },
   },
   {
     id: "adiantamentos", area: "financas", type: "relatorio", status: "Em desenvolvimento", caseId: "relatorios",
@@ -54,11 +56,12 @@ export const deliveries = [
     reuse: "Acompanhamento de pendências que hoje vive em planilha.",
   },
   {
-    id: "credito", area: "credito", type: "relatorio", status: "Concluído", caseId: "relatorios",
+    id: "credito", area: "credito", type: "relatorio", status: "Em uso", caseId: "relatorios",
     name: "Recorte diário de pedidos travados em crédito",
     question: "Quanto do que está travado pesa no total, e há quanto tempo está parado?",
     built: "Treemaps por motivo de bloqueio, tempo parado como primeiro indicador, mergulho até o pedido e exportação em Excel e HTML interativo.",
     reuse: "Filas de exceção em qualquer etapa do pedido ao recebimento.",
+    result: { before: "O recorte era montado à mão todos os dias e enviado como print.", after: "Roda sozinho dentro do sistema da empresa e se atualiza junto com a base de análise de processos." },
   },
   {
     id: "entregas", area: "marketing", type: "relatorio", status: "Primeira versão entregue", caseId: "relatorios",
@@ -80,6 +83,7 @@ export const deliveries = [
     question: "Como o time acompanha o próprio trabalho num lugar só?",
     built: "Ferramenta no navegador conectada ao ambiente de arquivos da empresa, usada pelo time no dia a dia.",
     reuse: "Times pequenos que precisam de visibilidade sem um sistema novo.",
+    result: { before: "O acompanhamento do trabalho do time não tinha um lugar só.", after: "O time usa para compartilhar informações e guardar o histórico que vai estruturar os próximos projetos." },
   },
   {
     id: "crm", area: "comercial", type: "dados", status: "Em andamento", caseId: "etl",
