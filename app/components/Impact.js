@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { areas, toolTypes, deliveries, reuseLines, reuseStations, impactNumbers, inUseStatuses } from "./impactData";
 import { useProjectDetail } from "./ProjectDetail";
 import { sfx } from "./sound";
@@ -42,55 +42,10 @@ export function CountUp({ value }) {
   return <strong ref={ref} aria-label={String(value)}>{String(shown).padStart(2, "0")}</strong>;
 }
 
-const statusTone = status => inUseStatuses.includes(status) ? "live" : status.startsWith("Em ") ? "building" : "done";
 
 function NumbersRow({ className = "impactNumbers" }) {
   const n = impactNumbers();
   return <div className={className}>{[[n.deliveries, "entregas e projetos"], [n.areas, "áreas atendidas"], [n.types, "tipos de ferramenta"], [n.inUse, "em uso hoje"]].map(([value, label]) => <div key={label}><CountUp value={value} /><span>{label}</span></div>)}</div>;
-}
-
-export function ImpactAtlas() {
-  const { open } = useProjectDetail();
-  const [filter, setFilter] = useState({ area: null, type: null });
-  const [expanded, setExpanded] = useState(false);
-  const list = useMemo(() => deliveries.filter(d => (!filter.area || d.area === filter.area) && (!filter.type || d.type === filter.type)), [filter]);
-  const count = (area, type) => deliveries.filter(d => d.area === area && d.type === type).length;
-  const pick = next => {
-    setFilter(current => (current.area === next.area && current.type === next.type) ? { area: null, type: null } : next);
-  };
-  const usedAreas = areas.filter(a => deliveries.some(d => d.area === a.id));
-  const usedTypes = toolTypes.filter(t => deliveries.some(d => d.type === t.id));
-  const filtered = Boolean(filter.area || filter.type);
-  const PREVIEW = 6;
-  const visible = filtered || expanded ? list : list.slice(0, PREVIEW);
-  const filterText = filter.area && filter.type ? `${areaById[filter.area].label} × ${typeById[filter.type].label}` : filter.area ? areaById[filter.area].label : filter.type ? typeById[filter.type].label : "Todas as áreas e tipos";
-  return <section className="impactAtlas" id="impacto" aria-labelledby="impact-title">
-    <div className="impactIntro" data-reveal><div><p className="monoLabel">02 / IMPACTO NAS ÁREAS</p><h2 id="impact-title">Um jeito de pensar,<br /><em>muitas áreas.</em></h2></div><p>Trabalho com transformação de processos e atendo equipes bem diferentes. Este é o mapa do que já construí, em versão white label: sem nomes, valores ou dados internos. Só o tipo de problema, o tipo de ferramenta e o que ela pode fazer por outras equipes.</p></div>
-    <NumbersRow />
-    <div className="impactBoard" data-reveal>
-      <div className="boardHead"><span><i /> ÁREA × TIPO DE FERRAMENTA</span><span className="boardHint">TOQUE NUMA ÁREA, NUM TIPO OU NUM PONTO</span></div>
-      <div className="boardBody">
-        <div className="matrixWrap"><table className="impactMatrix">
-          <caption className="srOnly">Quantidade de entregas por área e tipo de ferramenta</caption>
-          <thead><tr><th scope="col"><span className="srOnly">Área</span></th>{usedTypes.map(t => <th scope="col" key={t.id}><button className={filter.type === t.id && !filter.area ? "active" : ""} aria-pressed={filter.type === t.id && !filter.area} onClick={() => pick({ area: null, type: t.id })} title={t.label}><TypeIcon type={t.id} /><span className="srOnly">{t.label}</span></button></th>)}</tr></thead>
-          <tbody>{usedAreas.map(a => <tr key={a.id} className={filter.area === a.id ? "rowActive" : ""}><th scope="row"><button className={filter.area === a.id && !filter.type ? "active" : ""} aria-pressed={filter.area === a.id && !filter.type} onClick={() => pick({ area: a.id, type: null })}>{a.label}<small>{deliveries.filter(d => d.area === a.id).length}</small></button></th>{usedTypes.map(t => { const c = count(a.id, t.id); const on = (!filter.area || filter.area === a.id) && (!filter.type || filter.type === t.id); return <td key={t.id} className={on ? "" : "muted"}>{c ? <button className={`dot n${Math.min(c, 3)} ${filter.area === a.id && filter.type === t.id ? "active" : ""}`} aria-label={`${a.label}, ${t.label}: ${c} ${c > 1 ? "entregas" : "entrega"}`} aria-pressed={filter.area === a.id && filter.type === t.id} onClick={() => pick({ area: a.id, type: t.id })}><i /></button> : <span className="dot empty" aria-hidden="true" />}</td>; })}</tr>)}</tbody>
-        </table></div>
-        <ul className="typeLegend">{usedTypes.map(t => <li key={t.id}><button className={filter.type === t.id ? "active" : ""} onClick={() => pick({ area: null, type: t.id })} aria-pressed={filter.type === t.id && !filter.area}><TypeIcon type={t.id} /><span><b>{t.label}</b>{t.text}</span></button></li>)}</ul>
-      </div>
-    </div>
-    <div className="impactStatusBar" aria-live="polite"><span><b>{String(visible.length).padStart(2, "0")}</b> de {deliveries.length} · {filterText}</span>{(filter.area || filter.type) && <button onClick={() => setFilter({ area: null, type: null })}>Ver tudo ×</button>}</div>
-    <div className="impactCards" id="impact-cards" key={`${filter.area}-${filter.type}`}>
-      {visible.map((d, i) => <article className="impactCard" key={d.id} style={{ "--i": i }}>
-        <div className="impactCardMeta"><span>{areaById[d.area].label}</span><span className="impactType"><TypeIcon type={d.type} />{typeById[d.type].short}</span></div>
-        <h3>{d.name}</h3>
-        <span className={`impactStatus ${statusTone(d.status)}`}><i />{d.status}</span>
-        <dl><dt>A pergunta</dt><dd>{d.question}</dd><dt>O que construí</dt><dd>{d.built}</dd></dl>
-        <p className="impactReuse"><span>Serve também para</span>{d.reuse}</p>
-        {d.caseId && <button className="impactCase" onClick={() => open(d.caseId)}>Ver o case <i>↗</i></button>}
-      </article>)}
-    </div>
-    {!filtered && <button className="impactMore" aria-expanded={expanded} aria-controls="impact-cards" onClick={() => { if (expanded) document.getElementById("impacto")?.scrollIntoView({ block: "start" }); setExpanded(!expanded); }}>{expanded ? "Mostrar menos ↑" : `Ver todas as ${list.length} entregas ↓`}<span>{expanded ? "" : `+${list.length - PREVIEW}`}</span></button>}
-  </section>;
 }
 
 // Every line departs from the same terminal: listening before building.
@@ -222,22 +177,6 @@ export function ReuseMetro() {
         return [0, 1].map(car => <span key={`${lineId}${car}`} className="metroTrain" style={{ left: geo.x[lineId], top: y0, "--run": `${y1 - y0}px`, "--line": color, animationDuration: `${Math.max(1.6, (y1 - y0) / 260)}s`, animationDelay: `${k * .18 + car * Math.max(.8, (y1 - y0) / 520)}s` }} />);
       })}</li>}
     </ol>
-  </section>;
-}
-
-export function ImpactTeaser() {
-  const used = areas.filter(a => deliveries.some(d => d.area === a.id));
-  return <section className="impactTeaser" id="no-trabalho" aria-labelledby="teaser-title">
-    <div className="teaserCopy" data-reveal>
-      <p className="monoLabel">FORA DO ESTÚDIO / NO DIA A DIA DAS EMPRESAS</p>
-      <h2 id="teaser-title">A mesma curiosidade,<br /><em>a serviço de outras áreas.</em></h2>
-      <p>Na transformação de processos, levo esse jeito de construir para finanças, marketing, comunicação, comercial e dados. São ferramentas de verdade, várias delas em uso, contadas sem nomes nem números internos.</p>
-      <a className="studioButton cream" href="/leo#impacto">Ver o mapa de impacto <span>↗</span></a>
-    </div>
-    <div className="teaserBoard" data-reveal>
-      <NumbersRow className="teaserNumbers" />
-      <ul className="teaserAreas">{used.map(a => { const items = deliveries.filter(d => d.area === a.id); const types = [...new Set(items.map(d => d.type))]; return <li key={a.id}><span>{a.label}<small>{a.detail}</small></span><span className="teaserIcons">{types.map(t => <TypeIcon key={t} type={t} />)}</span></li>; })}</ul>
-    </div>
   </section>;
 }
 

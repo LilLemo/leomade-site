@@ -20,6 +20,5 @@ npm run dev
 Para gerar a versão de produção: `npm run build`. Este projeto usa React e Vinext/Vite com estrutura de rotas app. Preserve package.json, package-lock.json, vite.config.ts e wrangler.jsonc; não migre de stack sem necessidade.
 
 URL existente: https://leonardo-processos-dados.lillemo.chatgpt.site/
-Portfólio: https://leonardo-processos-dados.lillemo.chatgpt.site/leo
 
 O pacote contém código-fonte e recursos públicos, sem dependências instaladas, histórico Git, uploads de conversa ou credenciais. O manifesto de hospedagem preserva a identidade do site existente; não é uma credencial.

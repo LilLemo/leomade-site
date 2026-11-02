@@ -1,9 +1,9 @@
 # LEOMADE
 
-Site do meu estúdio independente e portfólio pessoal.
+Site do meu estúdio independente, em uma página só.
 
-- `/` Estúdio LEOMADE: produtos próprios, laboratório e um resumo do trabalho aplicado.
-- `/leo` Portfólio: trajetória, mapa de impacto (white label) e cases em detalhe.
+- `/` LEOMADE: abertura, cases interativos, trilha de reaproveitamento, currículo de projetos, trajetória, método e contato. Tema claro e escuro pelo interruptor.
+- `/leo` não existe mais como página; links antigos são redirecionados para `/`.
 
 ## Rodar localmente
 

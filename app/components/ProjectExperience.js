@@ -58,6 +58,5 @@ export default function ProjectExperience({ personal = false }) {
       </div>
       <div className="projectorBottom"><span>{seen.length}/{collection.length} IDEIAS EXPLORADAS</span><span className="swipeHint">DESLIZE PARA EXPLORAR ↔</span><div><button aria-label="Projeto anterior" onClick={() => choose(index - 1)}>←</button><button aria-label="Próximo projeto" onClick={() => choose(index + 1)}>→</button></div></div>
     </div>
-    {!personal && <a className="allProjectsLink" href="/leo#laboratorio">Conheça também meus trabalhos com processos, dados e IA <span>↗</span></a>}
   </section>;
 }

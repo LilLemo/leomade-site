@@ -55,6 +55,5 @@ export default function StudioEntrance({ children }) {
     {!revealed && <StudioHero onEnter={enter} opening={phase === "opening"} />}
     <div className="studioContent" hidden={!revealed}>{children}</div>
     {circle && phase !== "entered" && <div className={`entranceWash ${phase === "revealing" ? "revealing" : ""}`} aria-hidden="true" style={{ left: circle.x, top: circle.y, width: circle.diameter, height: circle.diameter }} onAnimationEnd={e => { if (e.animationName === "entranceExpand") setPhase("revealing"); }} />}
-    <noscript><div className="entranceFallback"><p>Conheça meus projetos e minha trajetória.</p><a href="/leo">Ir para meu portfólio ↗</a></div></noscript>
   </main>;
 }

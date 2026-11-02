@@ -171,9 +171,6 @@ section[id], footer[id] { scroll-margin-top: 110px; }
 .projectorBottom button { width: 40px; height: 34px; border: 1px solid var(--studio-line); background: none; color: var(--studio-cream); border-radius: 4px; font-size: 17px; }
 .projectorBottom button:hover { color: var(--studio-dark); background: var(--scene-accent); }
 .swipeHint { display: none; }
-.allProjectsLink { display: flex; justify-content: space-between; gap: 20px; margin-top: 30px; font-size: 13px; color: rgba(238,232,213,.55); }
-.allProjectsLink span { color: var(--mint); }
-.allProjectsLink:hover { color: var(--mint); }
 .motionPaused *, .motionPaused *::before, .motionPaused *::after { animation-play-state: paused !important; }
 .projectDialog { width: min(1040px, calc(100vw - 36px)); max-height: calc(100dvh - 36px); padding: 0; border: 1px solid rgba(238,232,213,.25); border-radius: 10px; background: var(--studio-dark); color: var(--studio-cream); overscroll-behavior: contain; }
 .projectDialog::backdrop { background: rgba(0,15,10,.86); backdrop-filter: blur(12px); }
@@ -391,7 +388,6 @@ section[id], footer[id] { scroll-margin-top: 110px; }
   .projectorBottom { padding: 14px; gap: 10px; font-size: 7px; }
   .projectorBottom button { width: 42px; height: 42px; }
   .swipeHint { display: block; max-width: 80px; line-height: 1.5; text-align: center; font-size: 6px; }
-  .allProjectsLink { font-size: 12px; line-height: 1.6; }
   .projectDialog { width: calc(100vw - 20px); max-height: calc(100dvh - 20px); }
   .dialogInner { padding: 22px 17px 30px; }
   .dialogTop .monoLabel { font-size: 7px; max-width: 160px; }
@@ -520,9 +516,6 @@ section[id], footer[id] { scroll-margin-top: 110px; }
 .curiosityHome.opening .curiosityCopy, .curiosityHome.opening .curiosityLens { opacity: 0; transform: translateY(-8px); transition: opacity .4s, transform .5s; }
 .entranceWash { position: fixed; z-index: 100; pointer-events: none; border-radius: 50%; background: var(--studio-green); transform: translate(-50%, -50%) scale(1); animation: entranceExpand 1.05s cubic-bezier(.65,0,.18,1) both; will-change: transform; }
 .entranceWash.revealing { animation: none; opacity: 0; transition: opacity .28s; }
-.entranceFallback { position: fixed; z-index: 120; bottom: 12px; left: 12px; right: 12px; padding: 14px; background: var(--studio-cream); color: var(--studio-green); }
-.entranceFallback p { margin-top: 0; }
-.entranceFallback a { text-decoration: underline; }
 .studioWelcome { background: var(--studio-green); padding: 170px 4.5vw 95px; }
 .studioWelcome h1 { margin: 45px 0; font-size: clamp(70px, 9.3vw, 160px); line-height: .96; letter-spacing: -.045em; padding-bottom: .1em; }
 .studioWelcome h1 em { color: var(--mint); }

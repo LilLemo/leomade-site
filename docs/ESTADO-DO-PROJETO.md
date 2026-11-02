@@ -80,3 +80,8 @@ Pacote atualizado em outro chat (Claude). Ainda NÃO publicado na hospedagem exi
 - Este pacote não é confirmação de criação de um repositório privado na conta GitHub do usuário.
 
 Commit do código incluído: `deacd3d5323eed7ab05437f5309176e1c554c9e5`.
+
+
+## Atualização (nov/2026)
+
+- O antigo portfólio em /leo foi unificado na página principal. A rota /leo só redireciona para / (app/leo/page.js e vercel.json). As notas acima sobre /leo são históricas.

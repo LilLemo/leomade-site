@@ -9,11 +9,6 @@ html.lightOn .scrollProgress { background: #497549; box-shadow: none; }
 [data-reveal] { transition: opacity .8s ease, transform .9s cubic-bezier(.2,.75,.25,1); }
 .revealReady [data-reveal]:not(.revealed) { opacity: 0; transform: translateY(28px); }
 
-/* Hero facts on /leo */
-.heroImpact { display: flex; gap: 34px; margin-top: 46px; padding-top: 22px; border-top: 1px solid var(--studio-line); width: fit-content; transition: color .25s; }
-.heroImpact span { display: flex; flex-direction: column; gap: 6px; font: 10px/1.4 ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; color: #46634d; }
-.heroImpact b { font: 400 54px/0.9 var(--font-display); letter-spacing: -.03em; color: #173f30; text-transform: none; }
-.heroImpact:hover b { color: #497549; }
 
 /* Impact atlas */
 .impactAtlas { padding: 120px 5vw 110px; background: linear-gradient(#eee8d5, #e7e9d5 60%, #e1e7cf); color: #173f30; scroll-margin-top: 30px; }
@@ -129,22 +124,6 @@ html.lightOn .scrollProgress { background: #497549; box-shadow: none; }
 .metroInfo button:hover { color: var(--studio-lime); }
 .metroStop.dim .metroInfo { opacity: .3; }
 
-/* Studio teaser */
-.impactTeaser { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6vw; align-items: center; padding: 120px 4.5vw 110px; background: linear-gradient(#08251c, #0b3b2e 55%, #08251c); }
-.teaserCopy h2 { margin: 0 0 30px; font-size: clamp(54px, 5.6vw, 96px); line-height: .98; letter-spacing: -.045em; }
-.teaserCopy h2 em { color: var(--mint); }
-.teaserCopy > p:not(.monoLabel) { max-width: 500px; margin: 0 0 36px; font-size: 16px; line-height: 1.8; color: rgba(238,232,213,.68); }
-.teaserBoard { padding: 30px; border: 1px solid var(--studio-line); border-radius: 10px; background: rgba(3,13,9,.28); }
-.teaserNumbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding-bottom: 26px; border-bottom: 1px solid var(--studio-line); }
-.teaserNumbers > div { display: flex; flex-direction: column; gap: 8px; }
-.teaserNumbers strong { font: 400 clamp(46px, 4.4vw, 72px)/.9 var(--font-display); color: var(--studio-lime); font-variant-numeric: tabular-nums; }
-.teaserNumbers span { font: 9px/1.4 ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; color: rgba(238,232,213,.55); }
-.teaserAreas { list-style: none; margin: 10px 0 0; padding: 0; }
-.teaserAreas li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 13px 0; border-bottom: 1px solid rgba(238,232,213,.08); font-size: 15px; }
-.teaserAreas li:last-child { border-bottom: 0; }
-.teaserAreas small { display: block; margin-top: 3px; font: 9px/1.4 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: rgba(238,232,213,.45); }
-.teaserIcons { display: flex; gap: 8px; color: var(--mint); }
-.teaserIcons .typeIcon { width: 18px; height: 18px; }
 
 /* Dialog: hop between cases */
 .dialogNext { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--studio-line); }
@@ -205,12 +184,8 @@ html.lightOn .scrollProgress { background: #497549; box-shadow: none; }
   .impactCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reuseMetro { grid-template-columns: 1fr; gap: 50px; }
   .metroIntro { position: static; }
-  .impactTeaser { grid-template-columns: 1fr; gap: 50px; }
 }
 @media (max-width: 720px) {
-  .heroImpact { gap: 22px; margin-top: 36px; width: 100%; justify-content: space-between; }
-  .heroImpact b { font-size: 44px; }
-  .heroImpact span { font-size: 8.5px; }
   .impactAtlas { padding: 70px 18px 70px; }
   .impactIntro { display: block; margin-bottom: 36px; }
   .impactIntro h2 { font-size: clamp(48px, 11.8vw, 72px); }
@@ -252,13 +227,6 @@ html.lightOn .scrollProgress { background: #497549; box-shadow: none; }
   .metroInfo { padding: 22px 0 26px; }
   .metroInfo h3 { font-size: 24px; }
   .metroInfo p { font-size: 13px; }
-  .impactTeaser { padding: 70px 24px; }
-  .teaserCopy h2 { font-size: clamp(46px, 11vw, 72px); }
-  .teaserCopy > p:not(.monoLabel) { font-size: 14px; }
-  .teaserBoard { padding: 20px 16px; }
-  .teaserNumbers { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
-  .teaserNumbers strong { font-size: 54px; }
-  .teaserAreas li { font-size: 14px; }
   .treemapVisual { padding: 20px 14px 16px; }
   .treemapBlock { padding: 7px; border-width: 2px; border-radius: 6px; }
   .treemapBlock strong { font-size: 19px; }
