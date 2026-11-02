@@ -76,6 +76,16 @@ export default function KomuDemo() {
   };
   const restart = () => { setItems(startItems); setCart([]); setExtra(0); setStartedAt(null); setElapsed(0); setScreen("lista"); };
   const stepIndex = steps.findIndex(s => s.id === screen);
+  const planned = items.reduce((sum, item) => sum + lineTotal(item), 0);
+  const house = people.map(p => {
+    const mine = items.filter(i => i.owner === p.id);
+    const mineIn = mine.filter(i => cart.includes(i.id));
+    const listed = mine.reduce((s, i) => s + lineTotal(i), 0), spent = mineIn.reduce((s, i) => s + lineTotal(i), 0);
+    const share = screen === "lista" ? listed / (planned || 1) : spent / (total || 1);
+    const main = screen === "lista" ? `${mine.length} ${mine.length === 1 ? "item" : "itens"}` : screen === "mercado" ? brl(spent) : `paga ${brl(spent)}`;
+    const sub = screen === "lista" ? `cerca de ${brl(listed)}` : screen === "mercado" ? `${mineIn.length} de ${mine.length} no carrinho` : `${Math.round(share * 100)}% da compra`;
+    return { ...p, main, sub, share };
+  });
 
   return <div className="projectVisual komuVisual kmVisual" data-noswipe>
     <div className="kmStage">
@@ -133,6 +143,20 @@ export default function KomuDemo() {
         <button className="kmPrimary" onClick={restart}>Nova compra ↻</button>
       </div>}
     </div>
+    <aside className="kmHouseBoard" aria-label="Resumo da casa em tempo real">
+      <div className="kmCart" key={`${screen}-${bump}-${items.length}`} aria-hidden="true">
+        <svg viewBox="0 0 48 40"><path d="M3 5h6l5 21h22l5-15H12" /><circle cx="17" cy="33" r="3" /><circle cx="33" cy="33" r="3" /></svg>
+        <b>{screen === "lista" ? items.length : cart.length}</b>
+      </div>
+      <span className="kmEyebrow">A CASA AGORA</span>
+      <ul>{house.map(p => <li key={p.id}>
+        <Avatar id={p.id} size={30} />
+        <span><strong>{p.name}</strong><small>{p.sub}</small></span>
+        <em>{p.main}</em>
+        <i style={{ "--w": `${Math.min(100, p.share * 100)}%`, "--c": p.color }} aria-hidden="true" />
+      </li>)}</ul>
+      <div className="kmHouseTotal"><span>{screen === "lista" ? "Previsto para a compra" : screen === "mercado" ? "No carrinho até agora" : "Total pago"}</span><strong>{brl(screen === "lista" ? planned : total)}</strong></div>
+    </aside>
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;

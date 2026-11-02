@@ -18,7 +18,33 @@ const startOrders = [
   { n: 44, kind: "pc", defect: "Não liga", client: "Marina Souza", stage: 3 },
   { n: 43, kind: "cel", defect: "Conector de carga", client: "Carlos Lima", stage: 2 },
 ];
-const week = [{ d: "Seg", v: 3 }, { d: "Ter", v: 5 }, { d: "Qua", v: 2 }, { d: "Qui", v: 4 }, { d: "Hoje", v: 1 }];
+const days = ["Seg", "Ter", "Qua", "Qui", "Hoje"];
+const baseIn = [3, 5, 2, 4, 1];
+const baseOut = [2, 3, 4, 2, 0];
+
+/* Curva suave (Catmull-Rom) entre os pontos, para a linha não ficar quebrada. */
+function smooth(points) {
+  return points.reduce((d, [x, y], i, a) => {
+    if (!i) return `M${x},${y}`;
+    const [x0, y0] = a[i - 2] || a[i - 1], [x1, y1] = a[i - 1], [x3, y3] = a[i + 1] || [x, y];
+    return `${d} C${x1 + (x - x0) / 6},${y1 + (y - y0) / 6} ${x - (x3 - x1) / 6},${y - (y3 - y1) / 6} ${x},${y}`;
+  }, "");
+}
+
+function WeekChart({ series }) {
+  const W = 600, H = 150, top = 16, bottom = 12, max = Math.max(...series.flatMap(s => s.values), 1);
+  const pts = values => values.map((v, i) => [(i / (values.length - 1)) * W, top + (1 - v / max) * (H - top - bottom)]);
+  return <div className="ofLine"><div className="ofChartArea">
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="ofArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2f7a4f" stopOpacity=".22" /><stop offset="1" stopColor="#2f7a4f" stopOpacity="0" /></linearGradient></defs>
+      {[0, 0.5, 1].map(g => <line key={g} x1="0" x2={W} y1={top + g * (H - top - bottom)} y2={top + g * (H - top - bottom)} className="ofGrid" />)}
+      <path d={`${smooth(pts(series[0].values))} L${W},${H} L0,${H} Z`} fill="url(#ofArea)" />
+      {series.map(s => <path key={s.name} d={smooth(pts(s.values))} className={`ofStroke ${s.cls}`} />)}
+    </svg>
+    <div className="ofPlot">{series.map(s => pts(s.values).map(([x, y], i) => <span key={s.name + i} className={`ofDot ${s.cls} ${i === s.values.length - 1 ? "last" : ""}`} style={{ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%` }}>{i === s.values.length - 1 && <b>{s.values[i]}</b>}</span>))}</div></div>
+    <div className="ofDays">{days.map(d => <span key={d}>{d}</span>)}</div>
+  </div>;
+}
 
 function KindIcon({ kind }) {
   if (kind === "cel") return <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="4.5" y="1.5" width="7" height="13" rx="1.6" /><path d="M7 12.4h2" /></svg>;
@@ -37,6 +63,7 @@ export default function OsFacilDemo() {
   const [creating, setCreating] = useState(false);
   const [draft, setDraft] = useState({ kind: "cel", defect: null, client: null });
   const [fresh, setFresh] = useState(null);
+  const [delivered, setDelivered] = useState(0);
   const created = orders.length - startOrders.length;
 
   const counts = stages.map((_, i) => orders.filter(o => o.stage === i).length);
@@ -44,7 +71,12 @@ export default function OsFacilDemo() {
   const current = orders.find(o => o.n === open);
   const nextNumber = Math.max(...orders.map(o => o.n)) + 1;
 
-  const advance = n => setOrders(list => list.map(o => o.n === n && o.stage < 3 ? { ...o, stage: o.stage + 1 } : o));
+  const advance = n => {
+    const target = orders.find(o => o.n === n);
+    if (!target || target.stage >= 3) return;
+    if (target.stage === 2) setDelivered(d => d + 1);
+    setOrders(list => list.map(o => o.n === n ? { ...o, stage: o.stage + 1 } : o));
+  };
   const startNew = () => { setCreating(true); setOpen(null); setView("os"); setDraft({ kind: "cel", defect: null, client: null }); };
   const createOrder = () => {
     if (!draft.defect || !draft.client) return;
@@ -55,8 +87,10 @@ export default function OsFacilDemo() {
   const kindTotals = Object.keys(kinds).map(k => ({ k, v: orders.filter(o => o.kind === k).length }));
   let acc = 0;
   const donut = kindTotals.map(({ k, v }) => { const from = acc; acc += (v / orders.length) * 100; return `${kinds[k].color} ${from}% ${acc}%`; }).join(", ");
-  const weekData = week.map((w, i) => i === week.length - 1 ? { ...w, v: w.v + created } : w);
-  const weekMax = Math.max(...weekData.map(w => w.v));
+  const series = [
+    { name: "Entradas", cls: "in", values: baseIn.map((v, i) => i === baseIn.length - 1 ? v + created : v) },
+    { name: "Entregas", cls: "out", values: baseOut.map((v, i) => i === baseOut.length - 1 ? v + delivered : v) },
+  ];
 
   return <div className="projectVisual osVisual ofVisual" data-noswipe>
     <div className="ofApp">
@@ -107,7 +141,7 @@ export default function OsFacilDemo() {
 
           {view === "clientes" && <>
             <div className="ofHeading"><h4>Clientes</h4><span className="ofMuted">{clients.length} cadastrados</span></div>
-            <ul className="ofRows">{clients.map(c => {
+            <ul className="ofRows ofClients">{clients.map(c => {
               const mine = orders.filter(o => o.client === c);
               const openOnes = mine.filter(o => o.stage < 3).length;
               return <li key={c}><button onClick={() => { setClientFilter(c); setFilter(null); setView("os"); }}>
@@ -132,11 +166,11 @@ export default function OsFacilDemo() {
                   <ul className="ofLegend">{kindTotals.map(({ k, v }) => <li key={k}><i style={{ background: kinds[k].color }} />{kinds[k].label}<b>{v}</b></li>)}</ul></div>
               </figure>
               <figure className="ofCard wide">
-                <figcaption>Entradas na semana</figcaption>
-                <div className="ofCols">{weekData.map(w => <div key={w.d}><b>{w.v}</b><i style={{ "--h": (w.v / weekMax) * 100 }} className={w.d === "Hoje" ? "today" : ""} /><span>{w.d}</span></div>)}</div>
+                <figcaption>Entradas e entregas na semana<span className="ofKey"><i className="in" />Entradas<i className="out" />Entregas</span></figcaption>
+                <WeekChart series={series} />
               </figure>
             </div>
-            <p className="ofHint">{created ? "As OS que você abriu já entraram nos gráficos." : "Abra uma OS ou avance uma etapa e volte aqui: os gráficos acompanham."}</p>
+            <p className="ofHint">{created || delivered ? "O que você fez no exemplo já entrou nos gráficos." : "Abra uma OS ou entregue um atendimento e volte aqui: os gráficos acompanham."}</p>
           </>}
         </div>
       </div>
