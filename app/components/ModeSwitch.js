@@ -17,56 +17,50 @@ function clearCurtain() {
   delete document.documentElement.dataset.lightLeaving;
 }
 
-// A wall switch: the studio is the room at night, "Sobre mim" is the same room with the light on.
-export default function ModeSwitch({ personal = false }) {
+const THEME = "leomade-theme";
+// Runs in <head> so the saved theme is applied before the first paint.
+export const themeScript = `(function(){try{if(localStorage.getItem("${THEME}")==="light")document.documentElement.classList.add("lightOn");}catch(e){}})();`;
+
+// A wall switch: same page, the light on or off.
+export default function ModeSwitch() {
+  const [light, setLight] = useState(false);
   const [state, setState] = useState("idle");
   const timers = useRef([]);
-  const prefetched = useRef(false);
-  const href = personal ? "/#inicio" : "/leo";
-  const to = personal ? "dark" : "light";
-  useEffect(() => {
-    const restore = e => { if (e.persisted) { clearCurtain(); setState("idle"); } };
-    window.addEventListener("pageshow", restore);
-    return () => { timers.current.forEach(clearTimeout); window.removeEventListener("pageshow", restore); };
-  }, []);
-  const prefetch = () => {
-    if (prefetched.current) return;
-    prefetched.current = true;
-    try { fetch(href.split("#")[0], { credentials: "same-origin" }).catch(() => {}); } catch {}
-  };
+  useEffect(() => { setLight(document.documentElement.classList.contains("lightOn")); return () => timers.current.forEach(clearTimeout); }, []);
   const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
-  return <a
-    className={`lightSwitch ${personal ? "isOn" : "isOff"} ${state === "flipping" ? "flipping" : ""}`}
-    href={href}
-    aria-label={personal ? "Apagar a luz: ir para o estúdio LEOMADE" : "Acender a luz: conhecer quem é o Léo"}
-    aria-busy={state === "flipping"}
-    onPointerEnter={prefetch}
-    onFocus={prefetch}
-    onTouchStart={prefetch}
+  const apply = next => {
+    document.documentElement.classList.toggle("lightOn", next);
+    try { localStorage.setItem(THEME, next ? "light" : "dark"); } catch {}
+    setLight(next);
+  };
+  return <button
+    type="button"
+    className={`lightSwitch ${light ? "isOn" : "isOff"} ${state === "flipping" ? "flipping" : ""}`}
+    aria-label={light ? "Apagar a luz: tema escuro" : "Acender a luz: tema claro"}
+    aria-pressed={light}
     onClick={e => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0 || reduced()) return;
-      e.preventDefault();
       if (state !== "idle") return;
-      prefetch();
+      const next = !light;
       sfx.lightSwitch();
+      if (reduced()) { apply(next); return; }
       setState("flipping");
       const plate = e.currentTarget.querySelector(".switchPlate").getBoundingClientRect();
       const x = plate.left + plate.width / 2, y = plate.top + plate.height / 2;
-      try { sessionStorage.setItem(KEY, JSON.stringify({ to, at: Date.now() })); } catch {}
+      const to = next ? "light" : "dark";
       later(() => {
         const curtain = document.createElement("div");
         curtain.className = `lightCurtain to-${to}`;
         curtain.setAttribute("aria-hidden", "true");
         curtain.style.setProperty("--x", `${x}px`);
         curtain.style.setProperty("--y", `${y}px`);
-        curtain.innerHTML = `<div class="curtainCopy"><span class="curtainFilament"></span><strong>${curtainCopy[to][0]}</strong><small>${curtainCopy[to][1]}</small></div>`;
+        curtain.innerHTML = `<div class="curtainCopy"><span class="curtainFilament"></span><strong>${next ? "Acendendo a luz." : "Apagando a luz."}</strong><small>${next ? "TEMA CLARO" : "TEMA ESCURO"}</small></div>`;
         document.body.appendChild(curtain);
-        later(() => window.location.assign(href), 640);
-      }, 190);
+        later(() => { apply(next); later(() => { curtain.classList.add("lifting"); later(() => { curtain.remove(); setState("idle"); }, 650); }, 280); }, 660);
+      }, 170);
     }}>
-    <span className="switchText"><small>{personal ? "APAGUE A LUZ" : "ACENDA A LUZ"}</small><strong>{personal ? "Estúdio" : "Sobre mim"}<em>→</em></strong></span>
+    <span className="switchText"><small>{light ? "APAGUE A LUZ" : "ACENDA A LUZ"}</small><strong>{light ? "Tema escuro" : "Tema claro"}</strong></span>
     <span className="switchPlate" aria-hidden="true"><span className="switchRocker"><i /></span><span className="switchPilot" /></span>
-  </a>;
+  </button>;
 }
 
 // The arriving page starts under the curtain (set in <head>) and lifts it once React is ready.

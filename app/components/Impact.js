@@ -238,3 +238,50 @@ export function ImpactTeaser() {
     </div>
   </section>;
 }
+
+// A transparent résumé of projects: what runs today first, then what was delivered, then what is still being built.
+const cvGroups = [
+  { id: "live", label: "Em uso", text: "Tem gente usando no dia a dia.", match: s => inUseStatuses.includes(s) },
+  { id: "done", label: "Concluídos", text: "Entregues e fechados. Alguns viraram base para outros.", match: s => !inUseStatuses.includes(s) && !s.startsWith("Em ") },
+  { id: "building", label: "Em construção e pesquisa", text: "Andando agora. O status é o real, sem enfeite.", match: s => !inUseStatuses.includes(s) && s.startsWith("Em ") },
+];
+export function ProjectCurriculum() {
+  const { open } = useProjectDetail();
+  const [area, setArea] = useState(null);
+  const [openId, setOpenId] = useState(null);
+  const used = areas.filter(a => deliveries.some(d => d.area === a.id));
+  const list = deliveries.filter(d => !area || d.area === area);
+  const counts = cvGroups.map(g => deliveries.filter(d => g.match(d.status)).length);
+  return <section className="curriculum" id="projetos" aria-labelledby="cv-title">
+    <div className="cvIntro" data-reveal>
+      <div><p className="monoLabel">03 / CURRÍCULO DE PROJETOS</p><h2 id="cv-title">Onde meu trabalho<br /><em>já está rodando.</em></h2></div>
+      <p>Trabalho com transformação de processos e atendo equipes bem diferentes. Aqui está tudo o que já construí, contado sem nomes nem números internos: primeiro o que está em uso, depois o que foi entregue e, por fim, o que ainda está em construção.</p>
+    </div>
+    <NumbersRow className="impactNumbers cvNumbers" />
+    <div className="cvStatus" data-reveal>
+      <div className="cvBar" aria-hidden="true">{cvGroups.map((g, i) => <i key={g.id} className={g.id} style={{ flexGrow: counts[i] }} />)}</div>
+      <div className="cvBarLegend">{cvGroups.map((g, i) => <span key={g.id} className={g.id}><i />{counts[i]} {g.label.toLowerCase()}</span>)}</div>
+    </div>
+    <div className="cvAreas" role="group" aria-label="Filtrar por área">
+      <button aria-pressed={!area} onClick={() => setArea(null)}>Todas as áreas <b>{deliveries.length}</b></button>
+      {used.map(a => { const items = deliveries.filter(d => d.area === a.id), live = items.filter(d => inUseStatuses.includes(d.status)).length; return <button key={a.id} aria-pressed={area === a.id} onClick={() => setArea(area === a.id ? null : a.id)}>{a.label} <b>{items.length}</b>{live > 0 && <small><i />{live} em uso</small>}</button>; })}
+    </div>
+    <div className="cvGroups">{cvGroups.map(g => { const items = list.filter(d => g.match(d.status)); if (!items.length) return null; return <div key={g.id} className={`cvGroup ${g.id}`}>
+      <div className="cvGroupHead"><span className="cvDot" /><h3>{g.label}</h3><b>{String(items.length).padStart(2, "0")}</b><p>{g.text}</p></div>
+      <ol>{items.map(d => { const isOpen = openId === d.id; return <li key={d.id} className={isOpen ? "open" : ""}>
+        <button className="cvRow" aria-expanded={isOpen} onClick={() => setOpenId(isOpen ? null : d.id)}>
+          <span className="cvName">{d.name}</span>
+          <span className="cvArea">{areaById[d.area].label}</span>
+          <span className="cvType"><TypeIcon type={d.type} />{typeById[d.type].short}</span>
+          <span className="cvState">{d.status}</span>
+          <i aria-hidden="true">{isOpen ? "−" : "+"}</i>
+        </button>
+        {isOpen && <div className="cvDetail">
+          <div><span>A pergunta</span><p>{d.question}</p></div>
+          <div><span>O que construí</span><p>{d.built}</p></div>
+          <div><span>Serve também para</span><p className="cvReuse">{d.reuse}</p>{d.caseId && <button className="cvCase" onClick={() => open(d.caseId)}>Ver o case ↗</button>}</div>
+        </div>}
+      </li>; })}</ol>
+    </div>; })}</div>
+  </section>;
+}

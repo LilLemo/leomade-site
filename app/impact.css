@@ -3,7 +3,7 @@
 
 /* Reading progress */
 .scrollProgress { position: fixed; z-index: 95; top: 0; left: 0; right: 0; height: 2px; pointer-events: none; background: var(--studio-lime); transform: scaleX(var(--read, 0)); transform-origin: left; box-shadow: 0 0 12px rgba(210,233,155,.5); }
-html:has(.leoPage) .scrollProgress { background: #497549; box-shadow: none; }
+html.lightOn .scrollProgress { background: #497549; box-shadow: none; }
 
 /* Reveal on scroll, only when JS is ready and motion is welcome */
 [data-reveal] { transition: opacity .8s ease, transform .9s cubic-bezier(.2,.75,.25,1); }

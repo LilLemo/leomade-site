@@ -3,13 +3,13 @@
 body { background: var(--studio-dark); }
 button, input, select { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
-.leomadePage, .leoPage { color: var(--studio-cream); background: var(--studio-dark); overflow: clip; }
-.leomadePage *, .leoPage * { box-sizing: border-box; }
-.leomadePage button, .leoPage button { cursor: pointer; }
-.leomadePage :focus-visible, .leoPage :focus-visible { outline: 2px solid var(--studio-lime); outline-offset: 5px; }
-.leomadePage button:disabled, .leoPage button:disabled { cursor: default; opacity: .35; }
-.leomadePage h1, .leomadePage h2, .leomadePage h3, .leoPage h1, .leoPage h2 { font-family: var(--font-display); font-weight: 400; }
-.leomadePage em, .leoPage em { font-weight: 400; }
+.leomadePage, .lightOn .leomadePage { color: var(--studio-cream); background: var(--studio-dark); overflow: clip; }
+.leomadePage *, .lightOn .leomadePage * { box-sizing: border-box; }
+.leomadePage button, .lightOn .leomadePage button { cursor: pointer; }
+.leomadePage :focus-visible, .lightOn .leomadePage :focus-visible { outline: 2px solid var(--studio-lime); outline-offset: 5px; }
+.leomadePage button:disabled, .lightOn .leomadePage button:disabled { cursor: default; opacity: .35; }
+.leomadePage h1, .leomadePage h2, .leomadePage h3, .lightOn .leomadePage h1, .lightOn .leomadePage h2 { font-family: var(--font-display); font-weight: 400; }
+.leomadePage em, .lightOn .leomadePage em { font-weight: 400; }
 .monoLabel { margin: 0 0 25px; font: 11px/1.5 ui-monospace, monospace; letter-spacing: .13em; color: var(--mint); }
 .skipLink { position: fixed; top: 10px; left: 10px; z-index: 200; padding: 14px; background: var(--studio-cream); color: var(--studio-dark); transform: translateY(-150%); }
 .skipLink:focus { transform: none; }
@@ -484,7 +484,7 @@ section[id], footer[id] { scroll-margin-top: 110px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .leomadePage *, .leomadePage *::before, .leomadePage *::after, .leoPage *, .leoPage *::before, .leoPage *::after { animation: none !important; transition-duration: .01ms !important; }
+  .leomadePage *, .leomadePage *::before, .leomadePage *::after, .lightOn .leomadePage *, .lightOn .leomadePage *::before, .lightOn .leomadePage *::after { animation: none !important; transition-duration: .01ms !important; }
   .leoProcessJourney { min-height: auto; }
   .leoProcessSticky { position: static; height: auto; min-height: 70svh; }
 }
@@ -645,47 +645,47 @@ section[id], footer[id] { scroll-margin-top: 110px; }
 /* One switch, two places: the studio at night and the person in daylight. */
 /* The wall switch and the light curtain live in switch.css. */
 
-.leoPage { --studio-line: rgba(23,63,48,.23); background: #dce6ce; color: #173f30; }
-.leoPage .studioNav { color: #173f30; }
-.leoPage .studioBrand span, .leoPage .monoLabel, .leoPage .studioNav nav a:hover { color: #37694d; }
-.leoPage .menuToggle { color: #173f30; }
-.leoPage .studioNav.menuOpen nav { background: #eee8d5; }
-.leoPage .studioNav .navContact { border-color: #8ba38a; }
-.leoPage :focus-visible { outline-color: #387450; }
-.leoPage .leoHero { background: linear-gradient(#eee8d5, #dce6ce); }
-.leoPage .leoHero h1 em, .leoPage .leoKinetic > em, .leoPage .leoTrajectory h2 em, .leoPage .leoMethod h2 em, .leoPage .labIntro h2 em { color: #497549; }
-.leoPage .leoLead, .leoPage .labIntro > p, .leoPage .leoTrajectory > div > p:not(.monoLabel), .leoPage .trajectoryRows p, .leoPage .methodColumns p { color: #46634d; }
-.leoPage .leoKinetic > span { color: #7b9672; }
-.leoPage .leoKinetic > div { color: #46634d; }
-.leoPage .leoKinetic > div > i { background: #497549; }
-.leoPage .studioButton.cream { background: #173f30; color: #eee8d5; }
-.leoPage .studioButton.cream:hover { background: #37694d; }
-.leoPage .textLink { border-color: #789575; }
-.leoPage .leoProcessJourney { color: #f2efdf; background: linear-gradient(#dce6ce, #486b52 18%, #486b52 85%, #eee8d5); }
-.leoPage .leoProcessJourney .monoLabel { color: #e0edcf; }
-.leoPage .leoProcessBody h2 em { color: #d2efaf; }
-.leoPage .leoProcessTrack > div { color: rgba(242,239,223,.34); }
-.leoPage .processNode { background: #486b52; color: rgba(242,239,223,.4); border-color: rgba(242,239,223,.24); }
-.leoPage .leoProcessTrack::before, .leoPage .leoProcessTrack::after { top: 28px; height: 3px; border-radius: 3px; }
-.leoPage .leoProcessTrack::before { background: rgba(242,239,223,.18); }
-.leoPage .leoProcessTrack::after { background: #d2efaf; box-shadow: 0 0 16px rgba(210,239,175,.45); }
-.leoPage .leoProcessTrack .illuminated { color: #f2efdf; }
-.leoPage .illuminated .processNode { background: #d2efaf; color: #173f30; border-color: #d2efaf; box-shadow: 0 0 24px rgba(210,239,175,.3); }
-.leoPage .illuminated p { color: #e0edcf; }
-.leoPage .processScrollNote { color: #e0edcf; }
-.leoPage .projectLab { background: linear-gradient(#eee8d5, #e4e8d3 85%, #dce6ce); }
-.leoPage .projector, .leoPage .projectDialog { --studio-line: rgba(238,232,213,.2); color: #eee8d5; }
-.leoPage .projector .monoLabel { color: var(--scene-accent); }
-.leoPage .projectDialog .monoLabel { color: #b8f4d1; }
-.leoPage .projectDialog .studioButton.cream { background: #eee8d5; color: #173f30; }
-.leoPage .leoTrajectory { background: linear-gradient(#dce6ce, #d1dfbf 55%, #e1e7cf); }
-.leoPage .trajectoryRows strong, .leoPage .trajectoryRows article > span, .leoPage .methodColumns article > span { color: #37694d; }
-.leoPage .leoMethod { background: linear-gradient(#e1e7cf, #eee8d5); }
-.leoPage .leoTools span { color: #37694d; }
-.leoPage .studioFooter { background: #eee8d5; }
-.leoPage .footerInvitation h2 button { color: #497549; }
-.leoPage .footerInvitation > div > p, .leoPage .footerBaseline { color: #46634d; }
-.leoPage .footerBaseline p, .leoPage .footerBaseline > a { color: #46634d; }
+.lightOn .leomadePage { --studio-line: rgba(23,63,48,.23); background: #dce6ce; color: #173f30; }
+.lightOn .leomadePage .studioNav { color: #173f30; }
+.lightOn .leomadePage .studioBrand span, .lightOn .leomadePage .monoLabel, .lightOn .leomadePage .studioNav nav a:hover { color: #37694d; }
+.lightOn .leomadePage .menuToggle { color: #173f30; }
+.lightOn .leomadePage .studioNav.menuOpen nav { background: #eee8d5; }
+.lightOn .leomadePage .studioNav .navContact { border-color: #8ba38a; }
+.lightOn .leomadePage :focus-visible { outline-color: #387450; }
+.lightOn .leomadePage .leoHero { background: linear-gradient(#eee8d5, #dce6ce); }
+.lightOn .leomadePage .leoHero h1 em, .lightOn .leomadePage .leoKinetic > em, .lightOn .leomadePage .leoTrajectory h2 em, .lightOn .leomadePage .leoMethod h2 em, .lightOn .leomadePage .labIntro h2 em { color: #497549; }
+.lightOn .leomadePage .leoLead, .lightOn .leomadePage .labIntro > p, .lightOn .leomadePage .leoTrajectory > div > p:not(.monoLabel), .lightOn .leomadePage .trajectoryRows p, .lightOn .leomadePage .methodColumns p { color: #46634d; }
+.lightOn .leomadePage .leoKinetic > span { color: #7b9672; }
+.lightOn .leomadePage .leoKinetic > div { color: #46634d; }
+.lightOn .leomadePage .leoKinetic > div > i { background: #497549; }
+.lightOn .leomadePage .studioButton.cream { background: #173f30; color: #eee8d5; }
+.lightOn .leomadePage .studioButton.cream:hover { background: #37694d; }
+.lightOn .leomadePage .textLink { border-color: #789575; }
+.lightOn .leomadePage .leoProcessJourney { color: #f2efdf; background: linear-gradient(#dce6ce, #486b52 18%, #486b52 85%, #eee8d5); }
+.lightOn .leomadePage .leoProcessJourney .monoLabel { color: #e0edcf; }
+.lightOn .leomadePage .leoProcessBody h2 em { color: #d2efaf; }
+.lightOn .leomadePage .leoProcessTrack > div { color: rgba(242,239,223,.34); }
+.lightOn .leomadePage .processNode { background: #486b52; color: rgba(242,239,223,.4); border-color: rgba(242,239,223,.24); }
+.lightOn .leomadePage .leoProcessTrack::before, .lightOn .leomadePage .leoProcessTrack::after { top: 28px; height: 3px; border-radius: 3px; }
+.lightOn .leomadePage .leoProcessTrack::before { background: rgba(242,239,223,.18); }
+.lightOn .leomadePage .leoProcessTrack::after { background: #d2efaf; box-shadow: 0 0 16px rgba(210,239,175,.45); }
+.lightOn .leomadePage .leoProcessTrack .illuminated { color: #f2efdf; }
+.lightOn .leomadePage .illuminated .processNode { background: #d2efaf; color: #173f30; border-color: #d2efaf; box-shadow: 0 0 24px rgba(210,239,175,.3); }
+.lightOn .leomadePage .illuminated p { color: #e0edcf; }
+.lightOn .leomadePage .processScrollNote { color: #e0edcf; }
+.lightOn .leomadePage .projectLab { background: linear-gradient(#eee8d5, #e4e8d3 85%, #dce6ce); }
+.lightOn .leomadePage .projector, .lightOn .leomadePage .projectDialog { --studio-line: rgba(238,232,213,.2); color: #eee8d5; }
+.lightOn .leomadePage .projector .monoLabel { color: var(--scene-accent); }
+.lightOn .leomadePage .projectDialog .monoLabel { color: #b8f4d1; }
+.lightOn .leomadePage .projectDialog .studioButton.cream { background: #eee8d5; color: #173f30; }
+.lightOn .leomadePage .leoTrajectory { background: linear-gradient(#dce6ce, #d1dfbf 55%, #e1e7cf); }
+.lightOn .leomadePage .trajectoryRows strong, .lightOn .leomadePage .trajectoryRows article > span, .lightOn .leomadePage .methodColumns article > span { color: #37694d; }
+.lightOn .leomadePage .leoMethod { background: linear-gradient(#e1e7cf, #eee8d5); }
+.lightOn .leomadePage .leoTools span { color: #37694d; }
+.lightOn .leomadePage .studioFooter { background: #eee8d5; }
+.lightOn .leomadePage .footerInvitation h2 button { color: #497549; }
+.lightOn .leomadePage .footerInvitation > div > p, .lightOn .leomadePage .footerBaseline { color: #46634d; }
+.lightOn .leomadePage .footerBaseline p, .lightOn .leomadePage .footerBaseline > a { color: #46634d; }
 .professionalCases { padding-top: 100px; scroll-margin-top: 30px; }
 .professionalCases > h2 { font-size: clamp(44px,5.5vw,84px); font-weight: 400; line-height: 1.04; margin: 0 0 24px; letter-spacing: -.035em; }
 .professionalCases > h2 em { color: #497549; }

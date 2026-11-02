@@ -28,8 +28,8 @@
 .studioNav nav a.lightSwitch { padding: 4px 2px !important; }
 .studioNav nav a.lightSwitch:hover { color: inherit; }
 .studioNav nav a.lightSwitch:hover strong { color: var(--studio-lime); }
-.leoPage .studioNav nav a.lightSwitch:hover strong { color: #37694d; }
-.curiosityHome .lightSwitch, .leoPage .lightSwitch { --plate-shadow: 0 0 0 1px rgba(11,59,46,.12), 0 1px 1px rgba(11,59,46,.12), 0 6px 14px rgba(11,59,46,.16); }
+.lightOn .leomadePage .studioNav nav a.lightSwitch:hover strong { color: #37694d; }
+.curiosityHome .lightSwitch, .lightOn .leomadePage .lightSwitch { --plate-shadow: 0 0 0 1px rgba(11,59,46,.12), 0 1px 1px rgba(11,59,46,.12), 0 6px 14px rgba(11,59,46,.16); }
 .curiosityHeader > a.lightSwitch { margin-left: auto; font-size: inherit; padding: 4px 2px !important; }
 
 /* The curtain that covers the trip between pages. */
@@ -134,8 +134,8 @@ html[data-light-leaving] body::after { opacity: 0; }
 
 /* Soft seams between layers. */
 .leomadePage .studioFooter { background: linear-gradient(#071e17 0, rgba(7,30,23,0) 220px), radial-gradient(ellipse at 60% 80%, #18513c 0%, #0a2c21 45%, #071e17 100%); }
-.leoPage .reuseMetro { padding-top: 200px; padding-bottom: 210px; background: linear-gradient(#e1e7cf 0, rgba(225,231,207,.85) 40px, rgba(14,68,52,.6) 120px, rgba(11,59,46,0) 190px), linear-gradient(to top, #eee8d5 0, rgba(238,232,213,.85) 40px, rgba(10,40,31,.6) 120px, rgba(7,31,24,0) 190px), radial-gradient(ellipse at 20% 30%, #185442 0%, #0b3b2e 45%, #071f18 100%); }
-@media (max-width: 720px) { .leoPage .reuseMetro { padding-top: 150px; padding-bottom: 160px; } }
+.lightOn .leomadePage .reuseMetro { padding-top: 200px; padding-bottom: 210px; background: linear-gradient(#e1e7cf 0, rgba(225,231,207,.85) 40px, rgba(14,68,52,.6) 120px, rgba(11,59,46,0) 190px), linear-gradient(to top, #eee8d5 0, rgba(238,232,213,.85) 40px, rgba(10,40,31,.6) 120px, rgba(7,31,24,0) 190px), radial-gradient(ellipse at 20% 30%, #185442 0%, #0b3b2e 45%, #071f18 100%); }
+@media (max-width: 720px) { .lightOn .leomadePage .reuseMetro { padding-top: 150px; padding-bottom: 160px; } }
 
 /* The living eye on the opening screen. */
 .lensEye { cursor: pointer; -webkit-tap-highlight-color: transparent; transform: translate(calc(var(--px) * .6), calc(var(--py) * .6)); transition: transform .9s cubic-bezier(.2,.7,.2,1); }
@@ -298,3 +298,131 @@ html[data-light-leaving] body::after { opacity: 0; }
 .metroStop.terminal.source .metroTracks::before { animation: terminalGlow 1.6s ease-in-out infinite; }
 @keyframes terminalGlow { 50% { box-shadow: 0 0 0 7px rgba(210,233,155,.14), 0 0 30px rgba(210,233,155,.45); } }
 @media (max-width: 720px) { .metroStop.terminal .metroTracks::before { top: calc(var(--stop-y) - 9px); height: 18px; } .metroStop.terminal .metroTracks::after { left: 6px; right: 6px; } }
+
+/* ───────── One page, two lights ───────── */
+button.lightSwitch { border: 0; background: none; font: inherit; cursor: pointer; }
+.lightCurtain.lifting { animation: none; clip-path: none; opacity: 0; transition: opacity .6s ease; }
+html.lightOn body { background: #eee8d5; }
+.leomadePage, .leomadePage section, .curiosityRibbon, .studioFooter { transition: background-color .4s ease, color .4s ease; }
+
+/* Every highlighted word uses the same italic as "possibilidades". */
+.leomadePage :is(h1, h2) em, .footerInvitation h2 button .sparkText, .metroIntro blockquote { font-family: "DM Serif Display", var(--font-display); font-style: italic; letter-spacing: -.035em; padding-right: .06em; }
+
+/* Welcome */
+.welcomeLinks { display: flex; flex-wrap: wrap; gap: 14px 30px; margin-top: 26px; }
+.lightOn .leomadePage .studioWelcome { background: linear-gradient(#eee8d5, #e4e8d3); color: #173f30; }
+.lightOn .leomadePage .studioWelcome h1 em { color: #497549; }
+.lightOn .leomadePage .welcomeBottom p { color: #46634d; }
+.lightOn .leomadePage .curiosityRibbon { background: #dfe6cf; border-color: rgba(23,63,48,.12); }
+.lightOn .leomadePage .curiosityRibbon span { color: #46634d; }
+.lightOn .leomadePage .curiosityRibbon i { color: #497549; }
+.lightOn .leomadePage .vibeSection { background: linear-gradient(#eee8d5, #e4e8d3); color: #173f30; }
+.lightOn .leomadePage .vibeSection h2 em { color: #497549; }
+.lightOn .leomadePage .vibeSection p:not(.monoLabel) { color: #46634d; }
+.lightOn .leomadePage .vibeSection p.vibeSecond { color: #6a8a68; }
+.lightOn .leomadePage .leoProcessJourney { background: linear-gradient(#e4e8d3, #486b52 18%, #486b52 85%, #eee8d5); }
+.lightOn .leomadePage .studioNav { color: #173f30; }
+
+/* Trajectory: larger, readable copy on the right */
+.trajectoryRows h3 { font-size: 38px; }
+.trajectoryRows strong { font-size: 14px; }
+.trajectoryRows p { font-size: 16px; line-height: 1.75; color: rgba(238,232,213,.74); }
+.trajectoryRows article > span { font-size: 10.5px; letter-spacing: .12em; }
+.leoTrajectory > div > p:not(.monoLabel) { font-size: 17px; color: rgba(238,232,213,.7); }
+.lightOn .leomadePage .trajectoryRows p { color: #3a5a44; }
+
+/* Footer: the word that changes needs to look clickable */
+.footerInvitation h2 button.sparkWord { position: relative; gap: 18px; cursor: pointer; }
+.sparkText { display: inline-block; padding-bottom: .04em; background: linear-gradient(currentColor, currentColor) 0 100% / 100% 2px no-repeat; background-image: repeating-linear-gradient(90deg, currentColor 0 12px, transparent 12px 20px); background-size: 100% 3px; animation: sparkIn .45s cubic-bezier(.3,1.4,.4,1); }
+.sparkWord:not(.tried) .sparkText { animation: sparkIn .45s cubic-bezier(.3,1.4,.4,1), sparkGlow 2.2s ease-in-out 1s infinite; }
+.sparkWord:hover .sparkText { background-size: 100% 4px; }
+.footerInvitation h2 button .sparkCue { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-body); font-style: normal; font-size: .16em; letter-spacing: .08em; color: var(--studio-lime); }
+.sparkCue i { display: grid; place-items: center; width: 2.4em; height: 2.4em; border: 1.5px solid currentColor; border-radius: 50%; font-style: normal; font-size: 1.3em; transition: transform .4s; }
+.sparkWord:hover .sparkCue i { transform: rotate(180deg); }
+.sparkCue small { font: 11px/1 ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
+.sparkCue .pixelHand { width: 34px; rotate: 180deg; animation: pointBobL .9s steps(2) infinite; }
+.lightOn .leomadePage .sparkCue { color: #37694d; }
+@keyframes sparkIn { from { opacity: 0; transform: translateY(.15em); } }
+@keyframes sparkGlow { 50% { text-shadow: 0 0 22px rgba(184,244,209,.55); } }
+@keyframes pointBobL { 50% { translate: -6px 0; } }
+
+/* ───────── Project résumé ───────── */
+.curriculum { --ink: #eee8d5; --sub: rgba(238,232,213,.66); --faint: rgba(238,232,213,.42); --line: rgba(238,232,213,.14); --card: rgba(238,232,213,.035); --accent: var(--mint); --live: #b8f4d1; --done: #d2e99b; --building: #eebda9;
+  padding: 120px 5vw 110px; color: var(--ink); background: linear-gradient(#08251c, #0b3024 55%, #08251c); scroll-margin-top: 30px; }
+.lightOn .leomadePage .curriculum { --ink: #173f30; --sub: #46634d; --faint: #6a8a68; --line: rgba(23,63,48,.18); --card: rgba(247,244,232,.66); --accent: #37694d; --live: #2f8a55; --done: #7a9a3a; --building: #b0703f; background: linear-gradient(#eee8d5, #e7e9d5 60%, #e1e7cf); }
+.cvIntro { display: grid; grid-template-columns: 1.1fr 1fr; align-items: end; gap: 70px; margin-bottom: 56px; }
+.cvIntro h2 { margin: 0; font-size: clamp(54px, 5.6vw, 96px); line-height: .98; letter-spacing: -.045em; }
+.cvIntro h2 em { color: var(--accent); }
+.cvIntro > p { margin: 0 0 8px; max-width: 520px; justify-self: end; font-size: 16px; line-height: 1.8; color: var(--sub); }
+.curriculum .monoLabel { color: var(--accent); }
+.cvNumbers > div { border-top-color: var(--line) !important; }
+.cvNumbers span { color: var(--sub) !important; }
+.cvStatus { margin-bottom: 26px; }
+.cvBar { display: flex; gap: 4px; height: 12px; }
+.cvBar i { flex-basis: 0; border-radius: 3px; }
+.cvBar .live, .cvBarLegend .live i, .cvGroup.live .cvDot { background: var(--live); }
+.cvBar .done, .cvBarLegend .done i, .cvGroup.done .cvDot { background: var(--done); }
+.cvBar .building, .cvBarLegend .building i { background: repeating-linear-gradient(135deg, var(--building) 0 6px, transparent 6px 10px); }
+.cvGroup.building .cvDot { background: none; border: 2px dashed var(--building); }
+.cvBarLegend { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 12px; font: 12px/1 ui-monospace, monospace; letter-spacing: .06em; color: var(--sub); }
+.cvBarLegend span { display: inline-flex; align-items: center; gap: 8px; }
+.cvBarLegend i { width: 10px; height: 10px; border-radius: 2px; }
+.cvAreas { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 44px; }
+.cvAreas button { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 15px; border: 1px solid var(--line); border-radius: 99px; background: none; color: var(--ink); font-size: 13.5px; transition: background .2s, border-color .2s, color .2s; }
+.cvAreas button b { font: 400 12px ui-monospace, monospace; color: var(--faint); }
+.cvAreas button small { display: inline-flex; align-items: center; gap: 5px; font: 10.5px ui-monospace, monospace; color: var(--live); }
+.cvAreas button small i { width: 6px; height: 6px; border-radius: 50%; background: var(--live); }
+.cvAreas button:hover { border-color: var(--accent); }
+.cvAreas button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--studio-dark); }
+.lightOn .leomadePage .cvAreas button[aria-pressed="true"] { color: #eee8d5; }
+.cvAreas button[aria-pressed="true"] b, .cvAreas button[aria-pressed="true"] small { color: inherit; opacity: .7; }
+.cvGroups { display: flex; flex-direction: column; gap: 54px; }
+.cvGroupHead { display: grid; grid-template-columns: 14px auto auto minmax(0, 1fr); align-items: baseline; gap: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--ink); }
+.cvDot { width: 12px; height: 12px; border-radius: 50%; align-self: center; }
+.cvGroup.live .cvDot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--live) 25%, transparent); animation: livePulse 2.4s ease-in-out infinite; }
+.cvGroupHead h3 { margin: 0; font: 400 clamp(30px, 3vw, 44px)/1 var(--font-display); letter-spacing: -.02em; }
+.cvGroupHead b { font: 400 13px ui-monospace, monospace; color: var(--faint); }
+.cvGroupHead p { margin: 0; justify-self: end; font: italic 400 17px/1.3 "DM Serif Display", var(--font-display); color: var(--sub); text-align: right; }
+.cvGroup ol { margin: 0; padding: 0; list-style: none; }
+.cvGroup li { border-bottom: 1px solid var(--line); }
+.cvRow { display: grid; grid-template-columns: minmax(0, 1fr) 190px 130px 190px 24px; align-items: center; gap: 18px; width: 100%; min-height: 66px; padding: 14px 6px; border: 0; background: none; color: var(--ink); text-align: left; transition: background .2s; }
+.cvRow:hover, li.open .cvRow { background: var(--card); }
+.cvName { font-size: 17px; font-weight: 500; line-height: 1.3; }
+.cvArea { font-size: 14px; color: var(--sub); }
+.cvType { display: inline-flex; align-items: center; gap: 7px; font: 12px ui-monospace, monospace; letter-spacing: .04em; color: var(--sub); }
+.cvType .typeIcon { width: 17px; height: 17px; color: var(--accent); }
+.cvState { justify-self: start; padding: 5px 11px; border: 1px solid var(--line); border-radius: 99px; font: 11.5px/1.2 ui-monospace, monospace; color: var(--ink); }
+.cvGroup.live .cvState { border-color: var(--live); color: var(--live); }
+.cvGroup.building .cvState { border-style: dashed; border-color: var(--building); color: var(--building); }
+.cvRow > i { font: 400 22px/1 var(--font-body); font-style: normal; color: var(--accent); text-align: center; }
+.cvDetail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; padding: 8px 6px 28px; background: var(--card); animation: hintIn .3s ease; }
+.cvDetail span { display: block; margin-bottom: 7px; font: 10px/1.4 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.cvDetail p { margin: 0; font-size: 15px; line-height: 1.65; color: var(--sub); }
+.cvDetail .cvReuse { font: italic 400 19px/1.3 "DM Serif Display", var(--font-display); color: var(--ink); }
+.cvCase { margin-top: 14px; padding: 8px 15px; border: 1px solid var(--accent); border-radius: 99px; background: none; color: var(--accent); font-size: 13px; }
+.cvCase:hover { background: var(--accent); color: var(--studio-dark); }
+.lightOn .leomadePage .cvCase:hover { color: #eee8d5; }
+@media (max-width: 1050px) {
+  .cvRow { grid-template-columns: minmax(0, 1fr) 150px 160px 24px; }
+  .cvType { display: none; }
+}
+@media (max-width: 720px) {
+  .curriculum { padding: 90px 5vw 80px; }
+  .cvIntro { grid-template-columns: 1fr; gap: 24px; margin-bottom: 36px; }
+  .cvIntro > p { justify-self: start; }
+  .cvGroupHead { grid-template-columns: 14px auto auto; }
+  .cvGroupHead p { grid-column: 1 / -1; justify-self: start; text-align: left; font-size: 15px; }
+  .cvRow { grid-template-columns: minmax(0, 1fr) 24px; gap: 6px 12px; }
+  .cvArea, .cvState { grid-column: 1; }
+  .cvRow > i { grid-row: 1; grid-column: 2; }
+  .cvArea { font-size: 13px; }
+  .cvDetail { grid-template-columns: 1fr; gap: 18px; }
+  .trajectoryRows p { font-size: 15px; }
+  .footerInvitation h2 button .sparkCue { font-size: .22em; }
+}
+.footerInvitation h2 button span.sparkText { font-family: "DM Serif Display", var(--font-display); font-style: italic; font-size: 1em; color: inherit; }
+.footerInvitation h2 button span.sparkCue { font-size: .16em; color: var(--studio-lime); }
+.lightOn .leomadePage .footerInvitation h2 button span.sparkCue { color: #37694d; }
+@media (max-width: 720px) { .footerInvitation h2 button span.sparkCue { font-size: .2em; } .footerInvitation h2 button.sparkWord { flex-wrap: wrap; } }
+.footerInvitation h2 button.sparkWord { flex-wrap: wrap; row-gap: 14px; }
+.footerInvitation h2 button span.sparkText { white-space: nowrap; }
