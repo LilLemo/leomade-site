@@ -29,7 +29,7 @@
 .kmHouse { display: flex; }
 .kmHouse .kmAvatar + .kmAvatar { margin-left: -5px; }
 .kmKicker { display: block; font: 9px ui-monospace, monospace; letter-spacing: .1em; opacity: .62; }
-.kmAvatar { display: inline-grid; place-items: center; flex: none; width: var(--s); height: var(--s); border-radius: 50%; background: var(--c); color: #fff; font: 500 calc(var(--s) * .52)/1 var(--font-body); box-shadow: 0 0 0 1.5px #fbefe5; }
+.kmAvatar { display: inline-flex !important; flex-direction: row !important; align-items: center; justify-content: center; line-height: 1; flex: none; width: var(--s); height: var(--s); border-radius: 50%; background: var(--c); color: #fff; font: 500 calc(var(--s) * .52)/1 var(--font-body); box-shadow: 0 0 0 1.5px #fbefe5; }
 .kmList { flex: 1; min-height: 0; margin: 0; padding: 0 2px 0 0; list-style: none; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 .kmList > li { display: grid; grid-template-columns: 7px 1fr auto; gap: 9px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(113,61,48,.1); animation: kmIn .25s ease both; }
 .kmCat { width: 7px; height: 26px; border-radius: 4px; }
@@ -54,7 +54,7 @@
 .kmMarket button.on .kmCheck { background: #3f7d4c; border-color: #3f7d4c; }
 .kmMarket button.on .kmLabel { text-decoration: line-through; text-decoration-color: rgba(92,48,36,.45); }
 .kmProgress { display: grid; gap: 5px; font-size: 10px; opacity: .75; }
-.kmProgress i { height: 4px; border-radius: 3px; background: linear-gradient(90deg, #3f7d4c var(--w), rgba(113,61,48,.12) var(--w)); transition: background .3s; }
+
 .kmPrice { font-size: 11px; font-variant-numeric: tabular-nums; opacity: .45; }
 .kmMarket button.on .kmPrice { opacity: 1; font-weight: 500; }
 
@@ -65,18 +65,20 @@
 .kmSplit { margin: 0; padding: 0; list-style: none; display: grid; gap: 9px; }
 .kmSplit li { display: grid; grid-template-columns: 1fr auto; gap: 5px 8px; align-items: center; font-size: 12.5px; animation: kmIn .3s ease both; }
 .kmSplit li > span { display: inline-flex; align-items: center; gap: 7px; }
-.kmSplit li > i { grid-column: 1 / -1; height: 5px; border-radius: 4px; background: linear-gradient(90deg, var(--c) var(--w), rgba(113,61,48,.1) var(--w)); }
+.kmSplit li > i { grid-column: 1 / -1; }
 .kmNote { margin: 2px 0 0; font-size: 10.5px; opacity: .65; }
 .kmScreen .kmPrimary { margin-top: auto; }
 
 .kmHouseBoard { position: relative; align-self: center; display: flex; flex-direction: column; gap: 12px; padding: 18px 16px 16px; background: rgba(255,247,240,.42); border: 1px solid rgba(113,61,48,.14); border-radius: 16px; }
 .kmHouseBoard ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .kmHouseBoard li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
-.kmHouseBoard li > span { min-width: 0; display: flex; flex-direction: column; }
+.kmHouseBoard li > span:not(.kmAvatar) { min-width: 0; display: flex; flex-direction: column; }
 .kmHouseBoard strong { font-weight: 500; font-size: 13.5px; }
 .kmHouseBoard small { font-size: 11px; opacity: .65; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kmHouseBoard em { font: 500 12.5px var(--font-body); font-style: normal; font-variant-numeric: tabular-nums; white-space: nowrap; animation: kmIn .3s ease both; }
-.kmHouseBoard li > i { grid-column: 2 / -1; height: 5px; border-radius: 4px; background: linear-gradient(90deg, var(--c) var(--w), rgba(113,61,48,.1) var(--w)); }
+.kmHouseBoard li > i { grid-column: 2 / -1; }
+.kmSplit li > i, .kmHouseBoard li > i, .kmProgress i { position: relative; display: block; height: 5px; border-radius: 4px; background: rgba(113,61,48,.1); overflow: hidden; }
+.kmSplit li > i::after, .kmHouseBoard li > i::after, .kmProgress i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: inherit; background: var(--c, #3f7d4c); transition: width .6s cubic-bezier(.3,.8,.3,1); animation: kmGrow .8s cubic-bezier(.3,.8,.3,1) both; }
 .kmHouseTotal { display: flex; flex-direction: column; gap: 2px; padding-top: 12px; border-top: 1px dashed rgba(113,61,48,.25); }
 .kmHouseTotal span { font-size: 11px; opacity: .7; }
 .kmHouseTotal strong { font: 500 24px/1.1 var(--font-body); letter-spacing: -.03em; }
@@ -84,6 +86,8 @@
 .kmCart svg { width: 28px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 .kmCart b { position: absolute; top: -3px; right: -3px; display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #3f7d4c; color: #fff; font: 500 11px var(--font-body); box-shadow: 0 0 0 2px #eebda9; }
 @keyframes kmCartHop { 0% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-9px) rotate(-8deg); } 70% { transform: translateY(0) rotate(4deg); } }
+@keyframes kmGrow { from { width: 0; } }
+@keyframes ofGrow { from { width: 0; } }
 @keyframes kmIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @keyframes kmBump { 40% { transform: scale(1.06); } }
 
@@ -185,7 +189,7 @@
 .ofCard figcaption { margin-bottom: 10px; font-size: 11px; font-weight: 500; color: #405548; }
 .ofHBars { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
 .ofHBars li { display: grid; grid-template-columns: 70px 1fr 16px; gap: 8px; align-items: center; font-size: 10.5px; color: #4d6656; }
-.ofHBars i { height: 9px; width: var(--w); min-width: 3px; border-radius: 3px; transition: width .4s cubic-bezier(.3,.8,.3,1); }
+.ofHBars i { height: 9px; width: var(--w); min-width: 3px; border-radius: 3px; transition: width .5s cubic-bezier(.3,.8,.3,1); animation: ofGrow .8s cubic-bezier(.3,.8,.3,1) both; }
 .ofHBars i.s0 { background: #d4b84f; } .ofHBars i.s1 { background: #8a73bf; } .ofHBars i.s2 { background: #2f7a4f; } .ofHBars i.s3 { background: #a9b0a6; }
 .ofHBars b { font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
 .ofDonutWrap { display: flex; align-items: center; gap: 14px; }
@@ -248,5 +252,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kmCart, .kmHouseBoard em, .kmScreen, .kmList > li, .kmSplit li, .kmTotal, .ofMain > *, .ofDetail, .ofForm, .ofRows button.fresh { animation: none; }
+  .kmSplit li > i::after, .kmHouseBoard li > i::after, .kmProgress i::after, .ofHBars i, .kmCart, .kmHouseBoard em, .kmScreen, .kmList > li, .kmSplit li, .kmTotal, .ofMain > *, .ofDetail, .ofForm, .ofRows button.fresh { animation: none; }
 }
