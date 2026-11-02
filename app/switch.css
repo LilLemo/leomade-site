@@ -559,3 +559,4 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .studioWelcome { padding-bottom: 150px; }
 .curiosityRibbon > div { will-change: transform; }
 @media (max-width: 720px) { .studioWelcome { padding-bottom: 110px; } }
+.footerInvitation h2 button span.sparkCue .pixelHand { width: 46px; }

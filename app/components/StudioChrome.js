@@ -26,7 +26,7 @@ export function StudioFooter({ personal = false }) {
   return <footer className="studioFooter" id="conversa">
     <div className="footerTop"><span className="monoLabel">PRÓXIMO EXPERIMENTO</span><span className="monoLabel">SÃO PAULO · BRASIL</span></div>
     <div className="footerInvitation">
-      <h2>Começa com<br /><button className={`sparkWord ${tried ? "tried" : ""}`} onClick={() => { setSpark((spark + 1) % words.length); setTried(true); }} aria-label="Trocar a palavra"><span className="sparkText" key={spark}>{words[spark]}</span><span className="sparkCue" aria-hidden="true">{!tried && <PixelHand />}<i>↻</i><small>{tried ? "de novo" : "toque na palavra"}</small></span></button></h2>
+      <h2>Começa com<br /><button className={`sparkWord ${tried ? "tried" : ""}`} onClick={() => { setSpark((spark + 1) % words.length); setTried(true); }} aria-label="Trocar a palavra"><span className="sparkText" key={spark}>{words[spark]}</span>{!tried && <span className="sparkCue" aria-hidden="true"><PixelHand /></span>}</button></h2>
       <div><p>Tem um problema interessante?<br />Uma ideia ainda sem forma?<br />Me conta. Vamos ver o que ela pode virar.</p><a className="studioButton cream" href={linkedIn} target="_blank" rel="noreferrer">Fale comigo <span>↗</span></a></div>
     </div>
     <div className="footerBaseline"><a href="/" className="studioBrand">leomade<span>✳</span></a><p>Sou o Léo. A LEOMADE é meu estúdio.</p><a href={linkedIn} target="_blank" rel="noreferrer">Meu LinkedIn ↗</a><a href="https://github.com/LilLemo" target="_blank" rel="noreferrer">Meu GitHub ↗</a></div>
