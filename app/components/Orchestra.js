@@ -32,6 +32,8 @@ const stages = [
 const stageColor = { aprovacao: "#eebda9", separacao: "#e3a58c", transporte: "#d79179", faturamento: "#c67f68", outros: "#b06d59" };
 const week = [["25/10", 92], ["26/10", 88], ["27/10", 95], ["28/10", 84], ["29/10", 79], ["30/10", 76], ["31/10", 74], ["01/11", 71]];
 const charts = [["treemap", "Treemap"], ["bars", "Barras"], ["pie", "Pizza"], ["line", "Linha"]];
+const META = .15;
+const solo = { xlsx: "7 clientes esperando, o mais antigo há 12 dias.", img: "Meta da área: até 15% parado por etapa.", json: "+3 pedidos entraram na última hora.", pdf: "Histórico de oito dias pronto para a tendência." };
 const MIN_SHARE = .07;
 function splitTreemap(items, x, y, w, h, out) {
   if (items.length === 1) { out.push({ ...items[0], x, y, w, h }); return out; }
@@ -56,6 +58,9 @@ export default function Orchestra() {
   const [metric, setMetric] = useState("valor");
   const [focus, setFocus] = useState("aprovacao");
   const [ratio, setRatio] = useState(2.4);
+  const [lock, setLock] = useState(null);
+  const has = id => picked.includes(id);
+  const hasBase = has("csv") || has("db");
   useEffect(() => {
     if (phase !== "report" || !boxRef.current) return;
     const measure = () => { const r = boxRef.current?.getBoundingClientRect(); if (r?.height) setRatio(r.width / r.height); };
@@ -63,8 +68,10 @@ export default function Orchestra() {
   }, [phase]);
 
   const toggle = id => { if (phase !== "pick") return; setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id])); picked.includes(id) ? sfx.pop() : sfx.drop(files.findIndex(f => f.id === id) % 3); };
-  const play = () => { if (picked.length < 2) return; setPhase("tuning"); sfx.tap?.(); later(() => sfx.concert(picked.length), 350); later(() => { setPhase("report"); sfx.ding(); }, 3400); };
-  const reset = () => { setPhase("pick"); setPicked([]); setChart("treemap"); setFocus("aprovacao"); sfx.flip(); };
+  const play = () => { if (picked.length < 2) return; setMetric(has("db") ? "valor" : "pedidos"); setChart(hasBase ? "treemap" : has("pdf") ? "line" : "none"); setPhase("tuning"); sfx.tap?.(); later(() => sfx.concert(picked.length), 350); later(() => { setPhase("report"); sfx.ding(); }, 3400); };
+  const reset = () => { setPhase("pick"); setPicked([]); setChart("treemap"); setFocus("aprovacao"); setLock(null); sfx.flip(); };
+  const need = { treemap: hasBase ? null : ["CSV ou o DB", "o quadro das etapas"], bars: hasBase ? null : ["CSV ou o DB", "as barras"], pie: hasBase ? null : ["CSV ou o DB", "a pizza"], line: has("pdf") ? null : ["PDF", "a tendência"], valor: has("db") ? null : ["DB", "quanto dinheiro está parado"], pedidos: has("csv") ? null : ["CSV", "quantos pedidos são"] };
+  const tryOpen = (id, apply) => { if (need[id]) { setLock(`Chame o ${need[id][0]} para ver ${need[id][1]}.`); sfx.buzz(); later(() => setLock(null), 2600); return; } setLock(null); apply(); };
 
   const total = stages.reduce((s, x) => s + x[metric], 0);
   const blocks = useMemo(() => {
@@ -74,9 +81,15 @@ export default function Orchestra() {
   const cur = stages.find(s => s.id === focus);
   const other = metric === "valor" ? "pedidos" : "valor";
   const leaderOther = [...stages].sort((a, b) => b[other] - a[other])[0];
-  const reading = chart === "line"
-    ? [`Os pedidos parados caíram ${Math.round((1 - week[7][1] / week[0][1]) * 100)}% em oito dias.`, "O pico foi em 27/10, depois de um feriado regional.", "A queda vem quase toda da etapa de separação."]
-    : [`${cur.label} concentra ${pct(cur[metric] / total)} ${metric === "valor" ? "do valor parado" : "dos pedidos parados"}.`, leaderOther.id !== cur.id ? `Em ${other === "valor" ? "valor" : "quantidade"}, quem lidera é ${leaderOther.label.toLowerCase()}.` : `Também lidera em ${other === "valor" ? "valor" : "quantidade"}.`];
+  const above = stages.filter(s => s[metric] / total > META).length;
+  const reading = chart === "none" ? ["Sem a base dos pedidos não dá para montar o quadro.", "Chame o CSV ou o DB para a melodia principal."]
+    : chart === "line"
+    ? [`Os pedidos parados caíram ${Math.round((1 - week[7][1] / week[0][1]) * 100)}% em oito dias.`, "O pico foi em 27/10, depois de um feriado regional.", hasBase ? "A queda vem quase toda da etapa de separação." : "Sem o CSV ou o DB, eu vejo a curva mas não sei de qual etapa ela vem."]
+    : [`${cur.label} concentra ${pct(cur[metric] / total)} ${metric === "valor" ? "do valor parado" : "dos pedidos parados"}.`,
+      !has("db") ? "Sem o DB, eu conto os pedidos mas não sei quanto dinheiro está parado." : !has("csv") ? "Sem o CSV, eu vejo o valor mas não quantos pedidos são." : leaderOther.id !== cur.id ? `Em ${other === "valor" ? "valor" : "quantidade"}, quem lidera é ${leaderOther.label.toLowerCase()}.` : `Também lidera em ${other === "valor" ? "valor" : "quantidade"}.`,
+      ...(has("img") ? [`${above} ${above > 1 ? "etapas estão" : "etapa está"} acima da meta de 15% que veio do print do painel.`] : [])];
+  const lit = chart === "none" ? picked : chart === "line" ? ["pdf", "json"] : [metric === "valor" ? "db" : "csv", "xlsx", "json", ...(chart === "bars" ? ["img"] : [])];
+  const missing = files.filter(f => !has(f.id)).map(f => f.ext);
   const pickFocus = id => { setFocus(id); sfx.key(1); };
 
   const C = 2 * Math.PI * 34;
@@ -84,13 +97,14 @@ export default function Orchestra() {
   const chartView = chart === "treemap"
     ? <div className="tmap">{blocks.map((b, i) => <button key={b.id} className={`tBlock ${focus === b.id ? "on" : ""}`} style={{ left: `${b.x / ratio}%`, top: `${b.y}%`, width: `${b.w / ratio}%`, height: `${b.h}%`, background: stageColor[b.id], "--i": i }} onClick={() => pickFocus(b.id)}><strong>{pct(b.share)}</strong><span>{b.label}</span></button>)}</div>
     : chart === "bars"
-      ? <div className="hbars">{[...stages].sort((a, b) => b[metric] - a[metric]).map((s, i) => <button key={s.id} className={`hbar ${focus === s.id ? "on" : ""}`} onClick={() => pickFocus(s.id)} style={{ "--i": i }}><span>{s.label}</span><i style={{ width: `${(s[metric] / Math.max(...stages.map(x => x[metric]))) * 100}%`, background: stageColor[s.id] }} /><b>{pct(s[metric] / total)}</b></button>)}</div>
+      ? <div className="hbars">{has("img") && <span className="metaLine" style={{ "--m": (META * total) / Math.max(...stages.map(x => x[metric])) }}><em>META 15%</em></span>}{[...stages].sort((a, b) => b[metric] - a[metric]).map((s, i) => <button key={s.id} className={`hbar ${focus === s.id ? "on" : ""}`} onClick={() => pickFocus(s.id)} style={{ "--i": i }}><span>{s.label}</span><i style={{ width: `${(s[metric] / Math.max(...stages.map(x => x[metric]))) * 100}%`, background: stageColor[s.id] }} /><b className={has("img") && s[metric] / total > META ? "over" : ""}>{pct(s[metric] / total)}</b></button>)}</div>
       : chart === "pie"
         ? <div className="pieWrap"><svg viewBox="0 0 100 100" className="pie">{stages.map(s => { const len = (s[metric] / total) * C, off = acc; acc += len; return <circle key={s.id} cx="50" cy="50" r="34" fill="none" stroke={stageColor[s.id]} strokeWidth={focus === s.id ? 22 : 16} strokeDasharray={`${len} ${C}`} strokeDashoffset={-off} transform="rotate(-90 50 50)" onClick={() => pickFocus(s.id)} className="pieSlice" />; })}<text x="50" y="49" textAnchor="middle" className="pieBig">{pct(cur[metric] / total)}</text><text x="50" y="60" textAnchor="middle" className="pieSmall">{cur.label.split(" ")[0]}</text></svg></div>
+        : chart === "none" ? <div className="noBase"><b>Faltou quem toca a melodia principal.</b><span>O que deu para tocar com quem veio:</span><ul>{picked.filter(id => solo[id]).map(id => <li key={id} style={{ "--c": files.find(f => f.id === id).color }}><i />{solo[id]}</li>)}</ul></div>
         : <svg viewBox="0 0 320 120" className="lineChart" preserveAspectRatio="none">{[0, 1, 2, 3].map(g => <line key={g} x1="0" x2="320" y1={15 + g * 30} y2={15 + g * 30} className="grid" />)}<polyline points={week.map(([, v], i) => `${10 + i * 43},${110 - (v - 60) * 2.6}`).join(" ")} className="line" />{week.map(([d, v], i) => <line key={d} x1={10 + i * 43} x2={10 + i * 43} y1={110 - (v - 60) * 2.6} y2={110 - (v - 60) * 2.6} className="dot" />)}</svg>;
 
   const n = picked.length;
-  const hint = phase === "tuning" ? "Cada fonte no seu tempo, uma leitura só." : phase === "report" ? "Arrastou, entendeu. Toque nos blocos para mergulhar." : n === 0 ? "As cadeiras estão vazias. Escolha quem toca hoje." : n < 2 ? "Mais um arquivo e a orquestra já pode começar." : `${n} no palco. É só dar o sinal ao maestro.`;
+  const hint = phase === "tuning" ? "Cada fonte no seu tempo, uma leitura só." : phase === "report" ? (chart === "none" ? "A orquestra tocou, mas faltou a base." : "Cada aba acende quem tocou aquela parte.") : n === 0 ? "As cadeiras estão vazias. Escolha quem toca hoje." : n < 2 ? "Mais um arquivo e a orquestra já pode começar." : `${n} no palco. É só dar o sinal ao maestro.`;
   return <div className={`projectVisual toyVisual orchVisual phase-${phase}`} data-noswipe>
     <div className="toyTop"><span className="toyEyebrow">RELATÓRIOS QUE SE EXPLICAM</span><span className="toyHint" key={hint}>{hint}</span></div>
     <div className="theater">
@@ -103,18 +117,19 @@ export default function Orchestra() {
         </div>}
         {phase === "tuning" && <div className="scrTuning"><div className="eq">{Array.from({ length: 14 }, (_, i) => <i key={i} style={{ "--i": i }} />)}</div><b>Afinando os dados…</b><small>{picked.map(id => files.find(f => f.id === id).ext).join(" · ")}</small></div>}
         {phase === "report" && <div className="scrReport">
-          <div className="repTop"><nav className="repTabs">{charts.map(([id, label]) => <button key={id} aria-pressed={chart === id} onClick={() => { setChart(id); sfx.key(2); }}>{label}</button>)}</nav>
-            {chart !== "line" ? <div className="repMetric">{[["valor", "Valor"], ["pedidos", "Pedidos"]].map(([id, l]) => <button key={id} aria-pressed={metric === id} onClick={() => setMetric(id)}>{l}</button>)}</div> : <span className="repNote">PEDIDOS PARADOS · 8 DIAS</span>}</div>
+          <div className="repTop"><nav className="repTabs">{charts.map(([id, label]) => <button key={id} aria-pressed={chart === id} className={need[id] ? "locked" : ""} onClick={() => tryOpen(id, () => { setChart(id); sfx.key(2); })}>{label}</button>)}</nav>
+            {has("json") && <span className="liveBadge"><i />AO VIVO · +3 NA ÚLTIMA HORA</span>}
+            {chart === "line" ? <span className="repNote">PEDIDOS PARADOS · 8 DIAS</span> : chart !== "none" && <div className="repMetric">{[["valor", "Valor"], ["pedidos", "Pedidos"]].map(([id, l]) => <button key={id} aria-pressed={metric === id} className={need[id] ? "locked" : ""} onClick={() => tryOpen(id, () => setMetric(id))}>{l}</button>)}</div>}</div>
           <div className="repBody"><div className="chartBox" ref={boxRef}>{chartView}</div>
-            <aside className="reading"><span>LEITURA AUTOMÁTICA</span>{reading.map((r, i) => <p key={r} style={{ "--i": i }}>{r}</p>)}
-              {chart !== "line" && <ul>{cur.rows.map(r => <li key={r[0]}><b>{r[0]}</b>{r[1]}<i>{r[2]}</i></li>)}</ul>}</aside></div>
-          <div className="repFoot"><span>FONTES · {picked.map(id => files.find(f => f.id === id).ext).join(" · ")}</span><button className="ghostAction" onClick={reset}>Nova apresentação</button></div>
+            <aside className="reading"><span>LEITURA AUTOMÁTICA</span>{lock && <p className="lockNote" key={lock}>{lock}</p>}{reading.map((r, i) => <p key={r} style={{ "--i": i }}>{r}</p>)}
+              {chart !== "line" && chart !== "none" && (has("xlsx") ? <ul>{cur.rows.map(r => <li key={r[0]}><b>{r[0]}</b>{r[1]}<i>{r[2]}</i></li>)}</ul> : <p className="gapNote">Sem o XLSX, eu sei quanto está parado, mas não quem está esperando.</p>)}</aside></div>
+          <div className="repFoot"><span>TOCARAM · {picked.map(id => files.find(f => f.id === id).ext).join(" · ")}{missing.length > 0 && <em> · FALTARAM · {missing.join(" · ")}</em>}</span><button className="ghostAction" onClick={reset}>Nova apresentação</button></div>
         </div>}
       </div>
       <div className="stage">
-        <svg className="arcs" viewBox="0 0 100 100" preserveAspectRatio="none">{seats.map((s, i) => { const f = files[i]; return picked.includes(f.id) && <path key={f.id} d={`M${s.x} ${s.y + 14}Q${(s.x + 50) / 2} ${s.y - 22} 50 20`} style={{ stroke: f.color }} />; })}</svg>
+        <svg className="arcs" viewBox="0 0 100 100" preserveAspectRatio="none">{seats.map((s, i) => { const f = files[i]; return picked.includes(f.id) && <path key={f.id} className={phase === "report" && !lit.includes(f.id) ? "rest" : ""} d={`M${s.x} ${s.y + 14}Q${(s.x + 50) / 2} ${s.y - 22} 50 20`} style={{ stroke: f.color }} />; })}</svg>
         <div className="console"><i /><i /><i /><i /></div>
-        {seats.map((s, i) => { const f = files[i], on = picked.includes(f.id); return <div key={f.id} className={`seat ${on ? "taken" : ""}`} style={{ left: `${s.x}%`, top: `${s.y}%`, "--c": f.color, "--d": `${i * .13}s` }}>
+        {seats.map((s, i) => { const f = files[i], on = picked.includes(f.id); return <div key={f.id} className={`seat ${on ? "taken" : ""} ${on && phase === "report" ? (lit.includes(f.id) ? "lit" : "rest") : ""}`} style={{ left: `${s.x}%`, top: `${s.y}%`, "--c": f.color, "--d": `${i * .13}s` }}>
           <PixelArt name="stand" className="stand" />
           <PixelArt name="chair" className="chair" />
           {on && <span className="musician"><PixelArt name="docIdle" className="idle" tint={f.color} /><PixelArt name="docHappy" className="happy" tint={f.color} /><b>{f.ext}</b></span>}
