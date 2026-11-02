@@ -3,7 +3,8 @@
 import { useState } from "react";
 import EmbateShowcase from "./EmbateShowcase";
 import Orchestra from "./Orchestra";
-import { StampDesk, ClosingHub, BriefingFlow, Switchboard } from "./CaseToys";
+import Pastelaria from "./Pastelaria";
+import { StampDesk, ClosingHub, Switchboard } from "./CaseToys";
 
 const ledger = [
   { name: "Padaria Aurora Ltda", alias: "Fornecedor A", doc: "4500129873", value: 12480 },
@@ -53,7 +54,7 @@ export default function ProjectVisual({ project }) {
   if (project.type === "treemap") return <Orchestra />;
   if (project.type === "stamp") return <StampDesk />;
   if (project.type === "mold") return <ClosingHub />;
-  if (project.type === "ticket") return <BriefingFlow />;
+  if (project.type === "ticket") return <Pastelaria />;
   if (project.type === "switchboard") return <Switchboard />;
   if (project.type === "mask") return <MaskDemo />;
   if (project.type === "komu") return <div className="projectVisual komuVisual">

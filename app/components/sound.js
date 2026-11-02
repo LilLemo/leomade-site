@@ -72,6 +72,7 @@ export const sfx = {
     if (n > 4) [0, .66, 1.32, 1.98].forEach(d => noise({ delay: d, dur: .05, gain: .05, filter: "lowpass", freq: 300 }));
     tone({ freq: 523.3, delay: 2.64, dur: .9, gain: .04, type: "triangle" }); tone({ freq: 659.3, delay: 2.64, dur: .9, gain: .03, type: "triangle" }); tone({ freq: 784, delay: 2.64, dur: .9, gain: .03, type: "triangle" });
   },
+  sizzle() { for (let i = 0; i < 16; i++) noise({ delay: i * .08 + Math.random() * .04, dur: .07, gain: .035, filter: "highpass", freq: 3500 + Math.random() * 2500 }); },
   pick() { noise({ dur: .03, gain: .07, filter: "lowpass", freq: 900 }); tone({ freq: 240, to: 180, dur: .08, gain: .05, type: "triangle" }); },
   print(n = 8) { for (let i = 0; i < n; i++) noise({ delay: i * .045, dur: .025, gain: .05, filter: "bandpass", freq: 2400 + (i % 2) * 400, q: 2 }); },
   drop(i = 0) { tone({ freq: 520 - i * 60, to: 260 - i * 30, dur: .12, gain: .06, type: "triangle", delay: i * .09 }); },

@@ -398,68 +398,6 @@ export function ClosingHub() {
   </div>;
 }
 
-/* ───────── 07 · Briefing portal: arrival, organization, delivery. ───────── */
-const raw = [
-  { ch: "WHATSAPP", text: "Faz aquele flyer? Pra ontem rs", type: "Flyer", pr: "Média", due: "06/11" },
-  { ch: "E-MAIL", text: "Arte do evento, urgente!!", type: "Evento", pr: "Alta", due: "08/11" },
-  { ch: "CORREDOR", text: "Embalagem nova, detalhes depois", type: "Embalagem", pr: "Alta", due: "12/11" },
-  { ch: "TEAMS", text: "Banner pro site, tamanho padrão", type: "Banner", pr: "Baixa", due: "14/11" },
-  { ch: "E-MAIL", text: "Ajustar post de ontem", type: "Post", pr: "Média", due: "05/11" },
-  { ch: "WHATSAPP", text: "Apresentação do cliente X", type: "Apresentação", pr: "Alta", due: "07/11" },
-];
-const CAP = 5;
-const cols = ["Fila", "Execução", "Aprovação", "Entregue"];
-export function BriefingFlow() {
-  const later = useTimers();
-  const [stage, setStage] = useState(1);
-  const [arrived, setArrived] = useState(3);
-  const [tickets, setTickets] = useState([]);
-  const [toast, setToast] = useState(null);
-  const arrive = () => { if (arrived >= raw.length) return; setArrived(a => a + 1); sfx.drop(0); };
-  const organize = () => {
-    setStage(2);
-    raw.slice(0, arrived).forEach((r, i) => later(() => { setTickets(t => [...t, { ...r, id: 42 + i, col: 0 }]); sfx.key(i % 3); }, 260 * (i + 1)));
-  };
-  const advance = id => {
-    setTickets(ts => ts.map(t => {
-      if (t.id !== id || t.col >= 3) return t;
-      const col = t.col + 1;
-      if (col === 3) { sfx.ding(); setToast(`MKT-0${t.id} entregue · solicitante avisado por e-mail`); later(() => setToast(null), 2600); } else sfx.floor();
-      return { ...t, col };
-    }));
-  };
-  const reset = () => { setStage(1); setArrived(3); setTickets([]); setToast(null); };
-  const load = tickets.filter(t => t.col < 3).length;
-  const over = load > CAP;
-  const hint = stage === 1 ? `${arrived} pedidos soltos. Nenhum com briefing completo.` : stage === 2 ? (over ? "A fila passou da capacidade. Dá para renegociar com dados." : "Cada pedido virou um card com tipo, prioridade e prazo.") : "Execução, aprovação e aviso automático a quem pediu.";
-  return <div className={`projectVisual toyVisual briefVisual stage-${stage}`}>
-    <div className="toyTop"><span className="toyEyebrow">PORTAL DE BRIEFING</span><span className="toyHint">{hint}</span></div>
-    <ol className="briefSteps">{["Chegada", "Organização", "Entrega"].map((s, i) => <li key={s} className={stage === i + 1 ? "on" : stage > i + 1 ? "past" : ""}><b>0{i + 1}</b>{s}</li>)}</ol>
-    {stage === 1 && <div className="inboxStage">
-      <div className="inboxPile">{raw.slice(0, arrived).map((r, i) => <div key={i} className="looseNote" style={{ "--i": i }}><span>{r.ch}</span>{r.text}</div>)}</div>
-      <div className="inboxSide">
-        <div className="inboxStats"><div><b>{arrived}</b><span>pedidos</span></div><div><b>0</b><span>com briefing</span></div><div><b>?</b><span>prazo real</span></div></div>
-        <button className="ghostAction" onClick={arrive} disabled={arrived >= raw.length}>Chega mais um</button>
-        <button className="primaryAction" onClick={organize}>Organizar pelo portal</button>
-      </div>
-    </div>}
-    {stage >= 2 && <div className="boardStage">
-      <div className="kanban">{cols.map((c, ci) => <div key={c} className="kCol"><span className="kHead">{c} <b>{tickets.filter(t => t.col === ci).length}</b></span>
-        {tickets.filter(t => t.col === ci).map(t => <button key={t.id} className={`kCard pr-${t.pr}`} onClick={() => stage === 3 && advance(t.id)} disabled={stage !== 3 || t.col === 3}>
-          <span className="kId">MKT-0{t.id}<i>{t.pr}</i></span><strong>{t.type}</strong><span className="kMeta">prazo {t.due} · briefing ✓</span>
-        </button>)}
-      </div>)}</div>
-      <div className="boardFoot">
-        <div className={`capacity ${over ? "over" : ""}`}><span>CAPACIDADE</span><div className="capBar"><i style={{ width: `${Math.min(100, (load / CAP) * 100)}%` }} /><em style={{ left: "100%" }} /></div><b>{load}/{CAP}</b></div>
-        {stage === 2 && <button className="primaryAction" onClick={() => setStage(3)} disabled={tickets.length < arrived}>Executar</button>}
-        {stage === 3 && (toast ? <span className="toast" key={toast}><i />{toast}</span> : <span className="boardTip">Toque num card para avançar uma etapa.</span>)}
-        <button className="ghostAction" onClick={reset}>Recomeçar</button>
-      </div>
-    </div>}
-    <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
-  </div>;
-}
-
 /* ───────── 08 · Switchboard: connect legacy fields to the CRM, then load and reconcile. ───────── */
 const legacy = [{ k: "fone", label: "Fone", sample: "11 98877-6655" }, { k: "cliente", label: "Cliente", sample: "Padaria Aurora" }, { k: "uf", label: "UF", sample: "sp" }, { k: "email", label: "E-mail", sample: "contato@aurora…" }];
 const crm = [{ k: "cliente", label: "Account.Name", type: "lookup" }, { k: "email", label: "Email", type: "e-mail" }, { k: "fone", label: "MobilePhone", type: "telefone" }, { k: "uf", label: "State", type: "2 letras" }];
