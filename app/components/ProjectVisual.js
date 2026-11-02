@@ -5,6 +5,8 @@ import EmbateShowcase from "./EmbateShowcase";
 import Orchestra from "./Orchestra";
 import Pastelaria from "./Pastelaria";
 import { StampDesk, ClosingHub, Switchboard } from "./CaseToys";
+import KomuDemo from "./KomuDemo";
+import OsFacilDemo from "./OsFacilDemo";
 
 const ledger = [
   { name: "Padaria Aurora Ltda", alias: "Fornecedor A", doc: "4500129873", value: 12480 },
@@ -33,23 +35,10 @@ function MaskDemo() {
 
 export default function ProjectVisual({ project }) {
   const [step, setStep] = useState(0);
-  const [people, setPeople] = useState(2);
   const [cleaned, setCleaned] = useState(false);
   const phases = project.phases || ["Importar", "Conferir", "Aprovar", "Registrar"];
   const messages = project.messages || ["O relatório entra.", "A exceção aparece.", "A decisão tem contexto.", "O histórico fica."];
-  if (project.type === "os") return <div className="projectVisual osVisual">
-    <div className="appWindow">
-      <div className="appToolbar"><span className="appTraffic"><i /><i /><i /></span><span>OS Fácil</span><span>OFFLINE ●</span></div>
-      <div className="osWorkspace"><aside><strong>os<span>fácil.</span></strong><span className="selected">Ordens de serviço</span><span>Clientes</span><span>Histórico</span></aside><div className="osMain">
-        <div className="osHeading"><h4>Seu dia, organizado.</h4><span>+ Nova OS</span></div>
-        <div className="osStats"><div><span>Em aberto</span><strong>{step === 2 ? "02" : "03"}</strong></div><div><span>Concluídas</span><strong>{step === 2 ? "08" : "07"}</strong></div></div>
-        <div className="osRow"><span>OS #048</span><strong>Troca de tela</strong><i>{["Recebida", "Diagnóstico", "Concluída"][step]}</i></div>
-        <div className="osRow"><span>OS #047</span><strong>Revisão geral</strong><i>Em andamento</i></div>
-        <div className="osTimeline">{["Recebida", "Diagnóstico", "Concluída"].map((s, i) => <span key={s} className={i <= step ? "done" : ""}><b>{i <= step ? "✓" : "○"}</b>{s}</span>)}</div>
-        <button className="demoButton" onClick={() => setStep((step + 1) % 3)}>{step === 2 ? "Recomeçar o atendimento" : "Avançar o atendimento"} <span>→</span></button>
-      </div></div>
-    </div><span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
-  </div>;
+  if (project.type === "os") return <OsFacilDemo />;
   if (project.type === "embate") return <EmbateShowcase />;
   if (project.type === "treemap") return <Orchestra />;
   if (project.type === "stamp") return <StampDesk />;
@@ -57,11 +46,7 @@ export default function ProjectVisual({ project }) {
   if (project.type === "ticket") return <Pastelaria />;
   if (project.type === "switchboard") return <Switchboard />;
   if (project.type === "mask") return <MaskDemo />;
-  if (project.type === "komu") return <div className="projectVisual komuVisual">
-    <span className="komuBackground" aria-hidden="true">juntos.</span><div className="phoneDemo">
-      <div className="phoneNotch" /><div className="phoneTop">9:41 <span>● ● ▰</span></div><strong className="komuLogo">komu<span>✳</span></strong><p>As contas da casa,<br />sem complicar a vida.</p><div className="receipt"><span>Compra compartilhada</span><strong>R$ 180,00</strong><small>VALOR FICTÍCIO</small></div><div className="peopleControl"><button aria-label="Diminuir número de pessoas" disabled={people <= 2} onClick={() => setPeople(people - 1)}>−</button><span>{people} pessoas</span><button aria-label="Aumentar número de pessoas" disabled={people >= 6} onClick={() => setPeople(people + 1)}>+</button></div><div className="splitValue"><span>Para cada pessoa</span><strong>{(180 / people).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong></div>
-    </div><span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
-  </div>;
+  if (project.type === "komu") return <KomuDemo />;
   if (project.type === "flow") return <div className="projectVisual flowVisual">
     <span className="flowEyebrow">{project.eyebrow || "DA CONFERÊNCIA À DECISÃO"}</span>
     <div className="flowBoard">{phases.map((phase, i) => <div className={`flowPhase ${i <= step ? "lit" : ""}`} key={phase}><span>0{i + 1}</span><i>{i < step ? "✓" : i === step ? "●" : "○"}</i><strong>{phase}</strong></div>)}</div>
