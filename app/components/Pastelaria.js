@@ -10,6 +10,7 @@ const base = { k: "#0c1a14", W: "#f6f3ea", G: "#c9c4b6", s: "#f2c39b", S: "#d9a2
 const looks = {
   cookA: { j: "#3d6b55" }, cookB: { j: "#7a3b2c", s: "#c98e62", S: "#b0794f", h: "#2b1a10" },
   email: { j: "#3d5a8a", t: "#8fb4e8" }, moto: { j: "#2b2f36" }, teams: { j: "#6b4fa0", J: "#54397f", h: "#2b1a10", s: "#c98e62", S: "#b0794f" },
+  factory: { j: "#e8833a", t: "#f6d58c", h: "#3a2a1c" },
 };
 function Px({ name, look, className = "" }) {
   const rows = ART[name], pal = { ...base, ...(looks[look] || {}) }, rects = [];
@@ -17,7 +18,12 @@ function Px({ name, look, className = "" }) {
   return <svg className={`px ${className}`} viewBox={`0 0 ${rows[0].length} ${rows.length}`} shapeRendering="crispEdges" aria-hidden="true">{rects}</svg>;
 }
 
-const channels = { email: { label: "E-MAIL", color: "#8fb4e8", sprite: "email" }, whats: { label: "WHATSAPP", color: "#7fd8a0", sprite: "moto" }, teams: { label: "TEAMS", color: "#b49cf2", sprite: "teams" } };
+const channels = {
+  email: { label: "E-MAIL", short: "E-MAIL", color: "#8fb4e8", sprite: "email", look: "email" },
+  whats: { label: "WHATSAPP", short: "ZAP", color: "#7fd8a0", sprite: "moto", look: "moto" },
+  teams: { label: "TEAMS", short: "TEAMS", color: "#b49cf2", sprite: "teams", look: "teams" },
+  fab: { label: "TELEFONE", short: "FÁBRICA", color: "#f09a86", sprite: "email", look: "factory" },
+};
 const orders = [
   { id: 1, ch: "email", who: "Diretoria", job: "Apresentação Q3", flavor: "palmito", due: 12, shout: "URGENTE!!" },
   { id: 2, ch: "whats", who: "Vendas", job: "Post da promo", flavor: "carne", due: 10 },
@@ -25,9 +31,21 @@ const orders = [
   { id: 4, ch: "email", who: "Produto", job: "Flyer da feira", flavor: "queijo", due: 10 },
   { id: 5, ch: "whats", who: "Comercial", job: "Vídeo curto", flavor: "pizza", due: 11 },
 ];
+const EMERGENCY = { id: 6, ch: "fab", who: "Fábrica · linha 2 parada", job: "Placa de segurança", flavor: "especial", due: 11, max: true };
+const everyone = [...orders, EMERGENCY];
+const find = id => everyone.find(o => o.id === id);
 const X = x => `${x / 3.6}%`, Y = y => `${y / 1.5}%`;
-const queueX = i => 276 + i * 13;
-const finishAt = i => 10 + Math.floor(i / 2);
+const queueX = i => 272 + i * 12;
+
+function Ticket({ o, at }) {
+  const c = channels[o.ch], late = at && at > o.due;
+  return <span className={`ticketBody ${o.max ? "max" : ""} ${late ? "willLate" : ""}`} style={{ "--c": c.color }}>
+    <span className="tCh">{c.label}{o.shout && <em>{o.shout}</em>}{o.max && <em className="maxTag">PRIORIDADE MÁXIMA</em>}</span>
+    <b>{o.job}</b>
+    <span className="tWho">{o.who} · pastel de {o.flavor}</span>
+    <span className="tDue">entregar até <strong>{o.due}h</strong>{late && <i> · vai atrasar</i>}</span>
+  </span>;
+}
 
 function Shop({ open }) {
   const scallops = Array.from({ length: 39 }, (_, i) => <polygon key={i} points={`${24 + i * 8},41 ${32 + i * 8},41 ${28 + i * 8},45`} fill={i % 2 ? "#f4efe1" : "#e8836f"} />);
@@ -71,7 +89,7 @@ export default function Pastelaria() {
   const timers = useRef([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
   const later = (fn, ms) => timers.current.push(setTimeout(fn, ms));
-  const lineRef = useRef(null), dragRef = useRef(null);
+  const lineRef = useRef(null), dragRef = useRef(null), planRef = useRef({}), firedRef = useRef(false);
   const [phase, setPhase] = useState("closed");
   const [people, setPeople] = useState([]);
   const [inbox, setInbox] = useState([]);
@@ -80,24 +98,27 @@ export default function Pastelaria() {
   const [cooking, setCooking] = useState([]);
   const [ready, setReady] = useState([]);
   const [results, setResults] = useState({});
-  const [clock, setClock] = useState(9);
+  const [clock, setClock] = useState(null);
+  const [base, setBase] = useState(10);
   const [fried, setFried] = useState([]);
-  const arrived = people.length;
+  const canEdit = phase === "arriving" || phase === "emergency";
+  const readyAt = i => base + Math.floor(i / 2);
+  const slots = phase === "closed" || phase === "arriving" ? orders.length : phase === "emergency" ? line.length + inbox.length : line.length;
 
-  const open = () => {
-    setPhase("arriving"); sfx.lightSwitch();
-    orders.forEach((o, i) => later(() => {
-      setPeople(p => [...p, { id: o.id, ch: o.ch, x: -16, walking: true, slot: i, mood: null }]);
+  const walkIn = (o, i, delay) => {
+    later(() => {
+      setPeople(p => [...p, { id: o.id, ch: o.ch, x: -16, walking: true, mood: null }]);
       later(() => setPeople(p => p.map(c => (c.id === o.id ? { ...c, x: 64 } : c))), 40);
       later(() => { setInbox(b => [...b, o.id]); sfx.floor(); setPeople(p => p.map(c => (c.id === o.id ? { ...c, x: queueX(i) } : c))); }, 1150);
       later(() => setPeople(p => p.map(c => (c.id === o.id ? { ...c, walking: false } : c))), 2500);
-    }, i * 1300));
+    }, delay);
   };
-  const hang = id => { if (phase !== "arriving") return; setInbox(b => b.filter(x => x !== id)); setLine(l => [...l, id]); sfx.clip(); };
+  const open = () => { setPhase("arriving"); sfx.lightSwitch(); orders.forEach((o, i) => walkIn(o, i, i * 1100)); };
+  const hang = id => { if (!canEdit) return; setInbox(b => b.filter(x => x !== id)); setLine(l => [...l, id]); sfx.clip(); };
 
   const axis = () => (lineRef.current && getComputedStyle(lineRef.current).getPropertyValue("--axis").trim()) || "x";
-  const slotSize = () => { const r = lineRef.current.getBoundingClientRect(); return axis() === "x" ? r.width / 5 : 70; };
-  const onDown = (e, id) => { if (phase !== "arriving") return; e.currentTarget.setPointerCapture(e.pointerId); dragRef.current = { id, x0: e.clientX, y0: e.clientY, i0: line.indexOf(id), slot: slotSize(), ax: axis() }; setDrag({ id, d: 0, i0: line.indexOf(id) }); };
+  const slotSize = () => { const r = lineRef.current.getBoundingClientRect(); return axis() === "x" ? r.width / Math.max(slots, 1) : 108; };
+  const onDown = (e, id) => { if (!canEdit) return; e.currentTarget.setPointerCapture(e.pointerId); dragRef.current = { id, x0: e.clientX, y0: e.clientY, i0: line.indexOf(id), slot: slotSize(), ax: axis() }; setDrag({ id, d: 0 }); };
   const onMove = e => {
     const g = dragRef.current; if (!g) return;
     const d = g.ax === "x" ? e.clientX - g.x0 : e.clientY - g.y0;
@@ -107,73 +128,88 @@ export default function Pastelaria() {
   };
   const onUp = () => { dragRef.current = null; setDrag(null); };
 
-  const fry = () => {
-    if (line.length < 5) return;
-    setPhase("frying"); const order = [...line]; setFried(order);
-    [0, 1, 2].forEach(round => {
-      const pair = order.slice(round * 2, round * 2 + 2), t0 = round * 2600;
-      later(() => { setLine(l => l.filter(x => !pair.includes(x))); setCooking(pair); sfx.sizzle(); }, t0 + 200);
-      later(() => { setCooking([]); setReady(pair); setClock(10 + round); sfx.pop(); }, t0 + 1700);
-      later(() => {
-        setReady([]);
-        pair.forEach(id => {
-          const o = orders.find(x => x.id === id), ok = finishAt(order.indexOf(id)) <= o.due;
-          setResults(r => ({ ...r, [id]: ok }));
-          setPeople(p => p.map(c => (c.id === id ? { ...c, mood: ok ? "happy" : "late" } : c)));
-          ok ? sfx.fix() : sfx.buzz();
-          later(() => setPeople(p => p.map(c => (c.id === id ? { ...c, x: 380, walking: true } : c))), 1100);
-        });
-        if (round === 2) later(() => { setPhase("done"); sfx.ding(); }, 1300);
-      }, t0 + 2300);
-    });
+  const judge = (id, at) => {
+    const o = find(id), ok = at <= o.due;
+    const why = ok ? null : o.max ? "fabWait" : (planRef.current[id] ?? 99) <= o.due ? "fab" : "order";
+    setResults(r => ({ ...r, [id]: { ok, why } }));
+    setPeople(p => p.map(c => (c.id === id ? { ...c, mood: ok ? "happy" : why === "fab" ? "fine" : "late" } : c)));
+    ok ? sfx.fix() : why === "fab" ? sfx.pop() : sfx.buzz();
+    later(() => setPeople(p => p.map(c => (c.id === id ? { ...c, x: 380, walking: true } : c))), 1300);
   };
-  const reset = () => { timers.current.forEach(clearTimeout); timers.current = []; setPhase("closed"); setPeople([]); setInbox([]); setLine([]); setCooking([]); setReady([]); setResults({}); setClock(9); setFried([]); sfx.flip(); };
+  const cookRound = (order, at) => {
+    const pair = order.slice(0, 2), rest = order.slice(2);
+    later(() => { setLine(l => l.filter(x => !pair.includes(x))); setCooking(pair); setClock(at); sfx.sizzle(); }, 250);
+    later(() => { setCooking([]); setReady(pair); sfx.pop(); }, 1750);
+    later(() => {
+      setReady([]); pair.forEach(id => judge(id, at));
+      if (!firedRef.current) { firedRef.current = true; later(() => emergency(), 1300); }
+      else if (rest.length) later(() => cookRound(rest, at + 1), 900);
+      else later(() => { setPhase("done"); sfx.ding(); }, 1500);
+    }, 2350);
+  };
+  const emergency = () => {
+    setPhase("emergency"); setBase(11); sfx.phone();
+    setPeople(p => [...p, { id: 6, ch: "fab", x: -16, walking: true, mood: null }]);
+    later(() => setPeople(p => p.map(c => (c.id === 6 ? { ...c, x: 64 } : c))), 40);
+    later(() => { setInbox([6]); sfx.alert(); setPeople(p => p.map(c => (c.id === 6 ? { ...c, x: 256 } : c))); }, 1150);
+    later(() => setPeople(p => p.map(c => (c.id === 6 ? { ...c, walking: false } : c))), 2500);
+  };
+  const fry = () => {
+    if (line.length < orders.length) return;
+    planRef.current = Object.fromEntries(line.map((id, i) => [id, 10 + Math.floor(i / 2)]));
+    setFried([...line]); setPhase("frying"); cookRound([...line], 10);
+  };
+  const resume = () => { if (inbox.length) return; setPhase("frying"); cookRound([...line], 11); };
+  const reset = () => { timers.current.forEach(clearTimeout); timers.current = []; firedRef.current = false; planRef.current = {}; setPhase("closed"); setPeople([]); setInbox([]); setLine([]); setCooking([]); setReady([]); setResults({}); setClock(null); setBase(10); setFried([]); sfx.flip(); };
 
-  const onTime = Object.values(results).filter(Boolean).length, late = Object.values(results).length - onTime;
-  const urgentEarly = late > 0 && fried.indexOf(1) > -1 && fried.indexOf(1) < 2;
+  const res = Object.values(results), onTime = res.filter(r => r.ok).length, late = res.length - onTime;
+  const byOrder = res.filter(r => r.why === "order").length, byFab = res.filter(r => r.why === "fab").length, fabWait = res.some(r => r.why === "fabWait");
+  const shoutFirst = fried.indexOf(1) > -1 && fried.indexOf(1) < 2;
+  const willLate = line.some((id, i) => readyAt(i) > find(id).due);
+  const verdict = fabWait ? "A fábrica parada esperou na fila. Urgência real passa na frente de tudo."
+    : byOrder === 0 && byFab === 0 ? "Tudo no prazo, até com a fábrica parada. Varal impecável."
+    : [byFab ? `${byFab} ${byFab > 1 ? "pedidos atrasaram" : "pedido atrasou"} por causa da fábrica parada. Esse dá para renegociar com dados.` : "", byOrder ? `${byOrder} ${byOrder > 1 ? "atrasaram" : "atrasou"} pela ordem do varal${shoutFirst ? ": o grito no assunto furou a fila" : ""}.` : ""].filter(Boolean).join(" ");
   const hint = phase === "closed" ? "Hora de abrir. Os pedidos chegam por todo canal."
-    : phase === "arriving" ? (inbox.length && !line.length ? "Toque no papel para pendurar no fio." : arrived < 5 ? "Mais gente chegando. Vai pendurando." : line.length < 5 ? "Pendure todos os pedidos no fio." : "Arraste para ordenar pelo prazo. A ponta esquerda frita primeiro.")
-    : phase === "frying" ? "Cozinha a mil. Cada pastel no sabor do pedido."
-    : late === 0 ? "Prioridade pelo prazo real, não pelo grito. Todo mundo saiu feliz." : urgentEarly ? `O grito no assunto furou a fila e ${late} ${late > 1 ? "pedidos atrasaram" : "pedido atrasou"}.` : `${late} ${late > 1 ? "pedidos atrasaram" : "pedido atrasou"}. A ordem do fio decide.`;
-
-  const ticket = (o, extra = {}) => { const c = channels[o.ch]; return <span className="ticketBody" style={{ "--c": c.color }}>
-    <span className="tCh">{c.label}{o.shout && <em>{o.shout}</em>}</span>
-    <b>{o.job}</b>
-    <span className="tDue">prazo {o.due}h<i className="tWho"> · {o.who}</i></span>
-    <span className="tFlavor">pastel de {o.flavor}</span>
-  </span>; };
+    : phase === "arriving" ? (inbox.length && !line.length ? "Toque num pedido para pendurar no varal." : people.length < orders.length ? "Mais gente chegando. Vai pendurando." : line.length < orders.length ? "Pendure todos no varal." : willLate ? "Embaixo de cada vaga está a hora que fica pronto. Vermelho vai atrasar." : "Tudo dentro do prazo. Pode fritar!")
+    : phase === "emergency" ? (inbox.length ? "Telefone! Fábrica parada. Pendure o pedido vermelho." : "Encaixe a prioridade máxima e veja quem passa a atrasar.")
+    : phase === "frying" ? "Cozinha a mil. Dois pastéis por vez."
+    : "Fim do expediente.";
 
   return <div className={`projectVisual toyVisual pastelVisual phase-${phase}`} data-noswipe>
     <div className="toyTop"><span className="toyEyebrow">PORTAL DE BRIEFING · PASTELARIA</span><span className="toyHint" key={hint}>{hint}</span></div>
-    <div className="shopWrap">
-      <div className="shop">
-        <Shop open={phase !== "closed"} />
-        {["cookA", "cookB"].map((k, i) => <span key={k} className={`cook ${cooking[i] ? "working" : ""}`} style={{ left: X(i ? 216 : 126), top: Y(80), width: X(18) }}><Px name="cook" look={k} />{cooking[i] && <span className="cookTicket">{orders.find(o => o.id === cooking[i]).flavor}</span>}</span>)}
-        {cooking.length > 0 && <span className="steam" style={{ left: X(180), top: Y(84) }}><i /><i /><i /></span>}
-        {ready.map((id, i) => <span key={id} className="readyPastel" style={{ left: X(274 + i * 26), top: Y(86), width: X(16) }}><Px name="pastel" /><small>{orders.find(o => o.id === id).flavor}</small></span>)}
-        {people.map(c => { const ch = channels[c.ch]; return <span key={c.id} className={`customer ${c.walking ? "walking" : ""} ${c.x >= 270 && !c.walking ? "waiting" : ""}`} style={{ left: X(c.x - 7), top: Y(120), width: X(14) }}>
-          <span className="chBadge" style={{ "--c": ch.color }}>{ch.label === "WHATSAPP" ? "ZAP" : ch.label}</span>
-          {c.mood && <span className={`mood ${c.mood}`}><Px name={c.mood === "happy" ? "heart" : "storm"} /><small>{c.mood === "happy" ? "valeu!" : "atrasou!"}</small></span>}
-          <Px name={ch.sprite} look={ch.sprite} />
-        </span>; })}
-      </div>
-      <div className="board">
-        <div className="inbox"><span className="boardLabel">CHEGARAM <b>{inbox.length}</b></span>
-          <div className="inboxStack">{inbox.map((id, i) => <button key={id} className="ticket loose" style={{ "--i": i }} onClick={() => hang(id)}>{ticket(orders.find(o => o.id === id))}</button>)}
-            {phase === "arriving" && inbox.length > 0 && !line.length && <span className="guide hangGuide"><PixelHand dir="down" /></span>}</div>
-        </div>
-        <div className="lineWrap"><span className="boardLabel">NO FIO · <b>A ESQUERDA SAI PRIMEIRO</b></span>
-          <div className="line" ref={lineRef}>{line.map((id, i) => { const o = orders.find(x => x.id === id), dragging = drag?.id === id; return <button key={id} className={`ticket hung ${dragging ? "dragging" : ""}`} style={{ "--i": i, "--d": dragging ? `${drag.d}px` : "0px" }} onPointerDown={e => onDown(e, id)} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}><i className="pin" /><span className="slotNo">{i + 1}º</span>{ticket(o)}</button>; })}
-            {Array.from({ length: 5 - line.length }, (_, i) => <span key={`e${i}`} className="slotEmpty" style={{ "--i": line.length + i }} />)}</div>
-        </div>
-      </div>
+    <div className="shop">
+      <Shop open={phase !== "closed"} />
+      {phase === "emergency" && <span className="phoneRing" style={{ left: X(58), top: Y(60) }}>TRIM TRIM</span>}
+      {["cookA", "cookB"].map((k, i) => <span key={k} className={`cook ${cooking[i] ? "working" : ""}`} style={{ left: X(i ? 216 : 126), top: Y(80), width: X(18) }}><Px name="cook" look={k} />{cooking[i] && <span className="cookTicket">{find(cooking[i]).flavor}</span>}</span>)}
+      {cooking.length > 0 && <span className="steam" style={{ left: X(180), top: Y(84) }}><i /><i /><i /></span>}
+      {ready.map((id, i) => <span key={id} className="readyPastel" style={{ left: X(274 + i * 26), top: Y(86), width: X(16) }}><Px name="pastel" /><small>{find(id).flavor}</small></span>)}
+      {people.map(c => { const ch = channels[c.ch]; return <span key={c.id} className={`customer ${c.walking ? "walking" : ""}`} style={{ left: X(c.x - 7), top: Y(120), width: X(14) }}>
+        <span className="chBadge" style={{ "--c": ch.color }}>{ch.short}</span>
+        {c.mood && <span className={`mood ${c.mood}`}>{c.mood !== "fine" && <Px name={c.mood === "happy" ? "heart" : "storm"} />}<small>{c.mood === "happy" ? "valeu!" : c.mood === "fine" ? "tudo bem" : "atrasou!"}</small></span>}
+        <Px name={ch.sprite} look={ch.look} />
+      </span>; })}
     </div>
+    {(phase === "closed" || canEdit) && <div className="tray">
+      <span className="boardLabel">CHEGARAM <b>{inbox.length}</b></span>
+      <div className="trayRow">{inbox.map((id, i) => <button key={id} className="ticket loose" style={{ "--i": i }} onClick={() => hang(id)}><Ticket o={find(id)} /></button>)}
+        {!inbox.length && <span className="trayEmpty">{phase === "closed" ? "Os pedidos chegam aqui quando a loja abrir." : phase === "arriving" ? "Tudo pendurado." : "Bandeja vazia."}</span>}
+        {canEdit && inbox.length > 0 && (!line.length || phase === "emergency") && <span className="guide trayGuide"><PixelHand /><em>toque para pendurar</em></span>}</div>
+    </div>}
+    {phase !== "done" && <div className="varal">
+      <span className="boardLabel">VARAL · <b className="dirX">A ESQUERDA FRITA PRIMEIRO</b><b className="dirY">O DE CIMA FRITA PRIMEIRO</b></span>
+      <div className="line" ref={lineRef} style={{ "--n": Math.max(slots, 1) }}>
+        {line.map((id, i) => { const dragging = drag?.id === id; return <button key={id} className={`ticket hung ${dragging ? "dragging" : ""}`} style={{ "--i": i, "--d": dragging ? `${drag.d}px` : "0px" }} onPointerDown={e => onDown(e, id)} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}><i className="pin" /><Ticket o={find(id)} at={canEdit ? readyAt(i) : null} /></button>; })}
+        {Array.from({ length: Math.max(0, slots - line.length) }, (_, k) => <span key={`e${k}`} className="slotEmpty" style={{ "--i": line.length + k }} />)}
+        {canEdit && Array.from({ length: slots }, (_, i) => { const id = line[i], bad = id && readyAt(i) > find(id).due; return <span key={`t${i}`} className={`slotTime ${bad ? "bad" : id ? "good" : ""}`} style={{ "--i": i }}>{i + 1}º · pronto às <b>{readyAt(i)}h</b></span>; })}
+      </div>
+    </div>}
     <div className="pastelFoot">
-      <span className="clock">{String(clock).padStart(2, "0")}:00</span>
+      {clock && <span className="clock"><small>COZINHA</small>{clock}h</span>}
       <span className="score">NO PRAZO <b>{onTime}</b></span><span className="score late">ATRASADOS <b>{late}</b></span>
-      <span className="chLegend">{Object.entries(channels).map(([k, c]) => <i key={k} style={{ "--c": c.color }}>{c.label}</i>)}</span>
+      {phase === "done" && <span className="verdict">{verdict}</span>}
       {phase === "closed" && <><span className="guide footGuide"><PixelHand /></span><button className="primaryAction nudge" onClick={open}>Abrir a loja</button></>}
-      {phase === "arriving" && <button className={`primaryAction ${line.length === 5 ? "nudge" : ""}`} onClick={fry} disabled={line.length < 5}>Pode fritar!</button>}
+      {phase === "arriving" && <button className={`primaryAction ${line.length === orders.length ? "nudge" : ""}`} onClick={fry} disabled={line.length < orders.length}>Pode fritar!</button>}
+      {phase === "emergency" && <button className={`primaryAction ${inbox.length ? "" : "nudge"}`} onClick={resume} disabled={inbox.length > 0}>Retomar a fritura</button>}
       {phase === "done" && <button className="ghostAction" onClick={reset}>Novo dia</button>}
     </div>
     <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
