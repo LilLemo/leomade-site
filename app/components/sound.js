@@ -64,6 +64,14 @@ export const sfx = {
   tear() { for (let i = 0; i < 9; i++) noise({ delay: i * .018, dur: .016, gain: .05 + (i % 3) * .015, filter: "highpass", freq: 2500 + (i % 4) * 500 }); },
   thump() { tone({ freq: 92, to: 42, dur: .26, gain: .3 }); noise({ dur: .06, gain: .16, filter: "lowpass", freq: 520 }); tone({ freq: 360 + Math.random() * 40, to: 250, dur: .05, gain: .06, type: "triangle" }); },
   rattle() { for (let i = 0; i < 7; i++) noise({ delay: i * .045 + Math.random() * .02, dur: .025, gain: .05, filter: "bandpass", freq: 2200 + Math.random() * 1400, q: 3 }); },
+  concert(n = 3) {
+    const mel = [523.3, 659.3, 784, 659.3, 698.5, 880, 784, 659.3, 587.3, 698.5, 659.3, 523.3];
+    mel.forEach((f, i) => tone({ freq: f, delay: i * .22, dur: .32, gain: .045, type: "triangle", attack: .01 }));
+    [130.8, 174.6, 196, 130.8].forEach((f, i) => tone({ freq: f, delay: i * .66, dur: .62, gain: .055, attack: .02 }));
+    if (n > 2) mel.forEach((f, i) => { if (i % 2) tone({ freq: f * 1.5, delay: i * .22 + .11, dur: .18, gain: .018 }); });
+    if (n > 4) [0, .66, 1.32, 1.98].forEach(d => noise({ delay: d, dur: .05, gain: .05, filter: "lowpass", freq: 300 }));
+    tone({ freq: 523.3, delay: 2.64, dur: .9, gain: .04, type: "triangle" }); tone({ freq: 659.3, delay: 2.64, dur: .9, gain: .03, type: "triangle" }); tone({ freq: 784, delay: 2.64, dur: .9, gain: .03, type: "triangle" });
+  },
   pick() { noise({ dur: .03, gain: .07, filter: "lowpass", freq: 900 }); tone({ freq: 240, to: 180, dur: .08, gain: .05, type: "triangle" }); },
   print(n = 8) { for (let i = 0; i < n; i++) noise({ delay: i * .045, dur: .025, gain: .05, filter: "bandpass", freq: 2400 + (i % 2) * 400, q: 2 }); },
   drop(i = 0) { tone({ freq: 520 - i * 60, to: 260 - i * 30, dur: .12, gain: .06, type: "triangle", delay: i * .09 }); },

@@ -1,52 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import EmbateShowcase from "./EmbateShowcase";
+import Orchestra from "./Orchestra";
 import { StampDesk, ClosingHub, BriefingFlow, Switchboard } from "./CaseToys";
-
-// Fictional data only. Nothing here comes from a real company base.
-const queue = {
-  valor: [
-    { id: "aprovacao", label: "Aguardando aprovação", v: 41, rows: [["#1042", "Padaria Aurora", "12 dias"], ["#1057", "Mercado Bom Fim", "9 dias"], ["#1061", "Café Duas Pontes", "4 dias"]] },
-    { id: "separacao", label: "Separação", v: 24, rows: [["#1033", "Empório Serra Azul", "6 dias"], ["#1066", "Hortifruti Vila Nova", "3 dias"]] },
-    { id: "transporte", label: "Transporte", v: 17, rows: [["#1018", "Armazém Lagoa", "8 dias"], ["#1070", "Doceria Primavera", "2 dias"]] },
-    { id: "faturamento", label: "Faturamento", v: 13, rows: [["#1049", "Restaurante Maré Alta", "5 dias"]] },
-    { id: "outros", label: "Outros", v: .6, rows: [["#1072", "Quitanda do Morro", "1 dia"]] },
-  ],
-  pedidos: [
-    { id: "aprovacao", v: 18 }, { id: "separacao", v: 31 }, { id: "transporte", v: 12 }, { id: "faturamento", v: 9 }, { id: "outros", v: 1 },
-  ],
-};
-const MIN_SHARE = .07;
-
-function splitTreemap(items, x, y, w, h, out) {
-  if (items.length === 1) { out.push({ ...items[0], x, y, w, h }); return out; }
-  const total = items.reduce((sum, item) => sum + item.shown, 0);
-  let i = 1, acc = items[0].shown;
-  while (i < items.length - 1 && acc + items[i].shown <= total / 2) { acc += items[i].shown; i++; }
-  const ratio = acc / total;
-  if (w >= h) { splitTreemap(items.slice(0, i), x, y, w * ratio, h, out); splitTreemap(items.slice(i), x + w * ratio, y, w * (1 - ratio), h, out); }
-  else { splitTreemap(items.slice(0, i), x, y, w, h * ratio, out); splitTreemap(items.slice(i), x, y + h * ratio, w, h * (1 - ratio), out); }
-  return out;
-}
-
-function TreemapDemo() {
-  const [metric, setMetric] = useState("valor");
-  const [open, setOpen] = useState("aprovacao");
-  const blocks = useMemo(() => {
-    const base = queue.valor.map(item => ({ ...item, v: metric === "valor" ? item.v : queue.pedidos.find(p => p.id === item.id).v }));
-    const total = base.reduce((sum, item) => sum + item.v, 0);
-    const shown = base.map(item => ({ ...item, share: item.v / total, shown: Math.max(item.v, total * MIN_SHARE) })).sort((a, b) => b.shown - a.shown);
-    return splitTreemap(shown, 0, 0, 160, 100, []);
-  }, [metric]);
-  const current = blocks.find(item => item.id === open) || blocks[0];
-  return <div className="projectVisual treemapVisual">
-    <div className="treemapTop"><span className="flowEyebrow">PEDIDOS PARADOS POR ETAPA</span><div className="treemapToggle" role="group" aria-label="Medir por">{[["valor", "Valor"], ["pedidos", "Pedidos"]].map(([id, label]) => <button key={id} aria-pressed={metric === id} onClick={() => setMetric(id)}>{label}</button>)}</div></div>
-    <div className="treemapCanvas">{blocks.map((item, i) => <button key={item.id} className={`treemapBlock ${open === item.id ? "open" : ""}`} style={{ left: `${item.x / 1.6}%`, top: `${item.y}%`, width: `${item.w / 1.6}%`, height: `${item.h}%`, "--i": i }} aria-pressed={open === item.id} onClick={() => setOpen(item.id)}><strong>{(item.share * 100).toLocaleString("pt-BR", { maximumFractionDigits: item.share < .01 ? 1 : 0 })}%</strong><span>{item.label}</span>{item.shown > item.v && <i>tamanho mínimo</i>}</button>)}</div>
-    <div className="treemapDetail" aria-live="polite"><span>MERGULHO · {current.label.toUpperCase()}</span><ul>{current.rows.map(row => <li key={row[0]}><b>{row[0]}</b>{row[1]}<i>{row[2]}</i></li>)}</ul></div>
-    <span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS · TOQUE NOS BLOCOS</span>
-  </div>;
-}
 
 const ledger = [
   { name: "Padaria Aurora Ltda", alias: "Fornecedor A", doc: "4500129873", value: 12480 },
@@ -93,7 +50,7 @@ export default function ProjectVisual({ project }) {
     </div><span className="visualCaption">EXEMPLO INTERATIVO · DADOS FICTÍCIOS</span>
   </div>;
   if (project.type === "embate") return <EmbateShowcase />;
-  if (project.type === "treemap") return <TreemapDemo />;
+  if (project.type === "treemap") return <Orchestra />;
   if (project.type === "stamp") return <StampDesk />;
   if (project.type === "mold") return <ClosingHub />;
   if (project.type === "ticket") return <BriefingFlow />;
