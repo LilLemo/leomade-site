@@ -12,7 +12,7 @@ export default function Ribbon() {
     let x = 0, boost = 0, last = performance.now(), lastY = window.scrollY, frame;
     const onScroll = () => {
       const y = window.scrollY, dy = y - lastY; lastY = y;
-      boost = Math.max(-2400, Math.min(2400, boost + dy * 9));
+      boost = Math.max(-900, Math.min(900, boost + dy * 3.5));
     };
     const tick = now => {
       const dt = Math.min(.05, (now - last) / 1000); last = now;
@@ -21,7 +21,7 @@ export default function Ribbon() {
       x -= speed * dt;
       if (period) { while (x <= -period) x += period; while (x > 0) x -= period; }
       boost *= Math.pow(.04, dt);
-      const skew = Math.max(-10, Math.min(10, -boost / 160));
+      const skew = Math.max(-6, Math.min(6, -boost / 170));
       el.style.transform = `translate3d(${x}px,0,0) skewX(${skew}deg)`;
       frame = requestAnimationFrame(tick);
     };
