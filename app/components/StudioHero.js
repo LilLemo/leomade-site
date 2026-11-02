@@ -8,7 +8,7 @@ export function CuriosityEye({ className = "" }) {
 export default function StudioHero({ onEnter, opening = false }) {
   return <section className={`curiosityHome ${opening ? "opening" : ""}`} aria-labelledby="curiosity-title">
     <header className="curiosityHeader"><a className="studioBrand" href="/" aria-label="LEOMADE, início">leomade<span>✳</span></a><span>MADE WITH CURIOSITY</span></header>
-    <div className="curiosityBody"><div className="curiosityCopy"><p className="monoLabel">PARA QUEM QUER DESCOBRIR, CRIAR E IR ALÉM</p><h1 id="curiosity-title">A curiosidade<br />é só o <em>começo.</em></h1><p><span className="noteLine">Sou o Léo.</span><span className="noteLine">Crio ferramentas de dados, automação e IA que resolvem gargalos reais de empresas.</span></p>
+    <div className="curiosityBody"><div className="curiosityCopy"><h1 id="curiosity-title">A curiosidade<br />é só o <em>começo.</em></h1><p><span className="noteLine">Crio ferramentas de dados, automação e IA que resolvem gargalos reais de empresas.</span></p>
       <button className="curiosityEnter" onClick={e => { const rect = e.currentTarget.querySelector("svg").getBoundingClientRect(); onEnter({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }); }} disabled={opening}><span>Mergulhe na curiosidade</span><CuriosityEye className="entryEye" /></button>
     </div><div className="curiosityLens" aria-hidden="true"><i /><i /><EyeEasterEgg /></div></div>
     <footer className="curiosityBottom" aria-hidden="true" />
