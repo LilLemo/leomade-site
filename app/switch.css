@@ -442,3 +442,14 @@ html:not(.lightOn) .leomadePage .vibeSection { background: linear-gradient(#061e
 .metroTracks { cursor: pointer; }
 .metroTracks .metroTrack.stops > i { transition: transform .45s cubic-bezier(.3,1.6,.4,1), box-shadow .2s; }
 .metroStop:hover .metroTrack.stops > i, .metroStop.source .metroTrack.stops > i { box-shadow: 0 0 0 4px rgba(238,232,213,.12), 0 0 12px var(--line); }
+
+/* Résumé detail: three even columns with hairline separators and breathing room. */
+.cvDetail { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 6px 0 26px; }
+.cvDetail > div { padding: 4px 28px; min-width: 0; }
+.cvDetail > div:first-child { padding-left: 6px; }
+.cvDetail > div + div { border-left: 1px solid var(--line); }
+@media (max-width: 720px) {
+  .cvDetail { grid-template-columns: 1fr; gap: 0; }
+  .cvDetail > div, .cvDetail > div:first-child { padding: 14px 6px; }
+  .cvDetail > div + div { border-left: 0; border-top: 1px solid var(--line); }
+}
