@@ -4,6 +4,7 @@ import "./impact.css";
 import "./switch.css";
 import "./toys.css";
 import "./demos.css";
+import "./edition.css";
 import { LightArrival, lightArrivalScript, themeScript } from "./components/ModeSwitch";
 import { RevealObserver, ScrollProgress } from "./components/Motion";
 

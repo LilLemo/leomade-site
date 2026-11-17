@@ -1,18 +1,14 @@
-import { preload } from "react-dom";
-import StudioEntrance from "./components/StudioEntrance";
+import StudioCover from "./components/StudioCover";
 import ProjectExperience from "./components/ProjectExperience";
 import ProcessJourney from "./components/ProcessJourney";
-import { StudioHeader, StudioFooter, linkedIn } from "./components/StudioChrome";
+import { StudioHeader, StudioFooter } from "./components/StudioChrome";
 import { ProjectDetailProvider } from "./components/ProjectDetail";
 import { ReuseMetro, ProjectCurriculum } from "./components/Impact";
 import CoinFlip from "./components/CoinFlip";
-import Ribbon from "./components/Ribbon";
 
 export default function Home() {
-  preload("/fonts/dm-serif-display-italic.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
-  return <StudioEntrance><ProjectDetailProvider><StudioHeader />
-    <section className="studioWelcome" id="inicio"><p className="monoLabel">OI, SOU O LÉO · LEOMADE É MEU ESTÚDIO</p><h1 id="studio-start" tabIndex={-1}>Transformo perguntas{" "}em<br /><em>possibilidades.</em></h1><div className="welcomeBottom"><p><span className="noteLine">Sou bacharel em Ciência da Computação, estudo Inteligência Artificial e trabalho com transformação de processos.</span><span className="noteLine">Conecto processos, dados e tecnologia e, dirigindo IA, construo ferramentas para finanças, marketing, comunicação e comercial.</span></p><div className="welcomeLinks"><a className="textLink" href="#laboratorio">Experimente meus projetos <span>↓</span></a><a className="textLink" href={linkedIn} target="_blank" rel="noreferrer">Meu LinkedIn <span>↗</span></a></div></div></section>
-    <Ribbon />
+  return <main className="leomadePage printEdition"><a className="skipLink" href="#laboratorio">Ir para os projetos</a><div className="studioContent"><ProjectDetailProvider><StudioHeader />
+    <StudioCover />
     <ProcessJourney />
     <ProjectExperience personal />
     <ReuseMetro />
@@ -21,5 +17,5 @@ export default function Home() {
     <section className="leoMethod" id="como-trabalho"><p className="monoLabel">05 / COMO EU TRABALHO</p><h2>Prompt é o começo.<br /><em>Critério é o trabalho.</em></h2><div className="methodColumns" data-reveal><article><span>01</span><h3>Entender</h3><p>Começo pelas pessoas, pela regra real e pelas exceções. As áreas abrem a demanda por um formulário que criei, com casos reais, o que fica fora e a definição de pronto.</p></article><article><span>02</span><h3>Dirigir com IA</h3><p>Uso agentes de código para transformar especificações e prompts em software. Dou direção, reviso a lógica e ajusto o que precisa melhorar.</p></article><article><span>03</span><h3>Validar</h3><p>Comparo saídas com os relatórios de origem, questiono o resultado e testo com quem vai usar. Dados reais não vão para a IA: anonimizo antes.</p></article></div><div className="leoTools"><span>Python</span><span>SQL</span><span>JavaScript</span><span>ETL & data mapping</span><span>Power BI</span><span>Power Automate</span><span>SharePoint</span><span>Process design</span><span>Data analysis</span><span>Generative AI</span><span>Vibe coding</span></div></section>
     <section className="vibeSection"><CoinFlip /><div><p className="monoLabel">COMO CRIEI ESTE SITE</p><h2>Sim, é<br /><em>vibe coding.</em></h2><p>Criei este site por prompts, sem escrever o código à mão. Defini a ideia, trouxe referências, pedi mudanças e revisei o resultado. A IA escreveu o código.</p><p className="vibeSecond">Uso a IA para acelerar a execução. Eu cuido da direção, questiono as respostas e decido o que precisa mudar. A responsabilidade pelas escolhas continua comigo.</p><a href="#como-trabalho" className="textLink">Como eu trabalho <span>↑</span></a></div></section>
     <StudioFooter />
-  </ProjectDetailProvider></StudioEntrance>;
+  </ProjectDetailProvider></div></main>;
 }
